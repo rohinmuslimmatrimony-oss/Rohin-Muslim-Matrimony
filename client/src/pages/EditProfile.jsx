@@ -113,16 +113,16 @@ const EditProfile = () => {
   return (
     <div className="min-h-screen bg-cream-50 pt-24 pb-12 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-serif font-bold text-emerald-950 mb-2">Edit Your Profile</h1>
+        <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-2">Edit Your Profile</h1>
         <p className="text-slate-600 mb-8">Update your biodata, preferences, and privacy settings.</p>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
           {/* Section 1: Photo & Privacy */}
-          <div className="glass-card p-6 md:p-8 rounded-3xl border border-emerald-900/10 shadow-sm relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-900/5 rounded-full blur-[80px]"></div>
+          <div className="glass-card p-6 md:p-8 rounded-3xl border border-crimson-900/10 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-crimson-900/5 rounded-full blur-[80px]"></div>
              
-             <h2 className="text-xl font-serif font-bold text-emerald-950 mb-6 flex items-center gap-2 relative z-10">
+             <h2 className="text-xl font-serif font-bold text-crimson-950 mb-6 flex items-center gap-2 relative z-10">
                <FaUserShield className="text-gold-500" /> Photo & Privacy
              </h2>
              
@@ -139,13 +139,13 @@ const EditProfile = () => {
                    </div>
                  </div>
                  <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-                 <button type="button" onClick={() => fileInputRef.current?.click()} className="text-sm font-bold text-emerald-800 bg-emerald-50 px-4 py-2 rounded-full hover:bg-emerald-100 transition-colors border border-emerald-200">
+                 <button type="button" onClick={() => fileInputRef.current?.click()} className="text-sm font-bold text-crimson-800 bg-crimson-50 px-4 py-2 rounded-full hover:bg-crimson-100 transition-colors border border-crimson-200">
                    Change Photo
                  </button>
                </div>
                
                <div className="flex-1 space-y-4">
-                 <div className={`p-4 rounded-xl border transition-colors ${formData.isPhotoPublic ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-100 border-slate-300'}`}>
+                 <div className={`p-4 rounded-xl border transition-colors ${formData.isPhotoPublic ? 'bg-crimson-50 border-crimson-200' : 'bg-slate-100 border-slate-300'}`}>
                    <label className="flex items-start gap-3 cursor-pointer">
                      <div className="mt-0.5">
                        <input 
@@ -153,12 +153,12 @@ const EditProfile = () => {
                          name="isPhotoPublic" 
                          checked={formData.isPhotoPublic} 
                          onChange={handleChange} 
-                         className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
+                         className="w-5 h-5 accent-crimson-600 rounded cursor-pointer"
                        />
                      </div>
                      <div>
                        <span className="font-bold text-slate-800 block mb-1 flex items-center gap-2">
-                         {formData.isPhotoPublic ? <><FaGlobe className="text-emerald-600"/> Public Photo</> : <><FaLock className="text-slate-500"/> Private Photo (Blurred)</>}
+                         {formData.isPhotoPublic ? <><FaGlobe className="text-crimson-600"/> Public Photo</> : <><FaLock className="text-slate-500"/> Private Photo (Blurred)</>}
                        </span>
                        <p className="text-xs text-slate-500 leading-relaxed">
                          {formData.isPhotoPublic 
@@ -179,8 +179,8 @@ const EditProfile = () => {
           </div>
 
           {/* Section 2: Core Biodata */}
-          <div className="glass-card p-6 md:p-8 rounded-3xl border border-emerald-900/10 shadow-sm relative overflow-hidden">
-            <h2 className="text-xl font-serif font-bold text-emerald-950 mb-6">Core Biodata</h2>
+          <div className="glass-card p-6 md:p-8 rounded-3xl border border-crimson-900/10 shadow-sm relative overflow-hidden">
+            <h2 className="text-xl font-serif font-bold text-crimson-950 mb-6">Core Biodata</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
@@ -253,8 +253,8 @@ const EditProfile = () => {
 
           {/* Section 3: Professional & Family */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="glass-card p-6 rounded-3xl border border-emerald-900/10 shadow-sm">
-              <h2 className="text-lg font-serif font-bold text-emerald-950 mb-4">Education & Career</h2>
+            <div className="glass-card p-6 rounded-3xl border border-crimson-900/10 shadow-sm">
+              <h2 className="text-lg font-serif font-bold text-crimson-950 mb-4">Education & Career</h2>
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Profession</label>
@@ -267,8 +267,8 @@ const EditProfile = () => {
               </div>
             </div>
 
-            <div className="glass-card p-6 rounded-3xl border border-emerald-900/10 shadow-sm">
-              <h2 className="text-lg font-serif font-bold text-emerald-950 mb-4">Family Background</h2>
+            <div className="glass-card p-6 rounded-3xl border border-crimson-900/10 shadow-sm">
+              <h2 className="text-lg font-serif font-bold text-crimson-950 mb-4">Family Background</h2>
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Father's Occupation</label>
@@ -287,8 +287,8 @@ const EditProfile = () => {
           </div>
 
           {/* Section 4: Partner Preferences */}
-          <div className="glass-card p-6 md:p-8 rounded-3xl border border-emerald-900/10 shadow-sm">
-            <h2 className="text-xl font-serif font-bold text-emerald-950 mb-6">Partner Preferences</h2>
+          <div className="glass-card p-6 md:p-8 rounded-3xl border border-crimson-900/10 shadow-sm">
+            <h2 className="text-xl font-serif font-bold text-crimson-950 mb-6">Partner Preferences</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Preferred Age Range</label>
@@ -311,14 +311,14 @@ const EditProfile = () => {
           </div>
 
           {/* Action Bar */}
-          <div className="flex justify-end pt-4 border-t border-emerald-900/10">
+          <div className="flex justify-end pt-4 border-t border-crimson-900/10">
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-gold-gradient text-emerald-950 px-10 py-4 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+              className="bg-gold-gradient text-crimson-950 px-10 py-4 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
             >
               {isSubmitting ? (
-                <span className="w-6 h-6 border-2 border-emerald-950 border-t-transparent rounded-full animate-spin"></span>
+                <span className="w-6 h-6 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
               ) : (
                 <><FaSave /> Save Profile Changes</>
               )}

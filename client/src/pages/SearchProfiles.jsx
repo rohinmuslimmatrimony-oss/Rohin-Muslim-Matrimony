@@ -93,16 +93,16 @@ const SearchProfiles = () => {
         {/* Mobile Filter Toggle */}
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className="md:hidden w-full bg-emerald-950 text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 mb-4"
+          className="md:hidden w-full bg-crimson-950 text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 mb-4"
         >
           <FaFilter /> {isFilterOpen ? 'Close Filters' : 'Advanced Search Filters'}
         </button>
 
         {/* Filters Sidebar */}
         <div className={`md:w-1/4 ${isFilterOpen ? 'block' : 'hidden'} md:block transition-all duration-300`}>
-          <div className="glass-card p-6 rounded-3xl sticky top-24 border border-emerald-900/10 shadow-sm">
+          <div className="glass-card p-6 rounded-3xl sticky top-24 border border-crimson-900/10 shadow-sm">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-serif font-bold text-emerald-950 flex items-center gap-2">
+              <h2 className="text-xl font-serif font-bold text-crimson-950 flex items-center gap-2">
                 <FaFilter className="text-gold-500 text-sm" /> Filters
               </h2>
               {isFilterOpen && <button onClick={() => setIsFilterOpen(false)} className="md:hidden text-slate-500"><FaTimes /></button>}
@@ -150,7 +150,7 @@ const SearchProfiles = () => {
                 <input type="text" name="profession" value={filters.profession} onChange={handleFilterChange} placeholder="e.g. Doctor" className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm" />
               </div>
 
-              <button type="submit" className="w-full bg-emerald-950 text-gold-400 font-bold py-3 rounded-xl hover:bg-emerald-900 transition-colors flex items-center justify-center gap-2">
+              <button type="submit" className="w-full bg-crimson-950 text-gold-400 font-bold py-3 rounded-xl hover:bg-crimson-900 transition-colors flex items-center justify-center gap-2">
                 <FaSearch /> Apply Filters
               </button>
             </form>
@@ -160,18 +160,18 @@ const SearchProfiles = () => {
         {/* Results Grid */}
         <div className="md:w-3/4">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-emerald-950">Discover Matches</h1>
-            <span className="text-slate-500 bg-emerald-900/10 px-3 py-1 rounded-full text-sm font-semibold">{profiles.length} Found</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-crimson-950">Discover Matches</h1>
+            <span className="text-slate-500 bg-crimson-900/10 px-3 py-1 rounded-full text-sm font-semibold">{profiles.length} Found</span>
           </div>
 
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <span className="w-10 h-10 border-4 border-emerald-950 border-t-transparent rounded-full animate-spin"></span>
+              <span className="w-10 h-10 border-4 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
             </div>
           ) : profiles.length === 0 ? (
-            <div className="glass-card p-12 rounded-3xl text-center border border-emerald-900/10 flex flex-col items-center justify-center h-64">
+            <div className="glass-card p-12 rounded-3xl text-center border border-crimson-900/10 flex flex-col items-center justify-center h-64">
                <span className="text-4xl mb-4">🔍</span>
-               <h3 className="text-xl font-bold text-emerald-950 mb-2">No Matches Found</h3>
+               <h3 className="text-xl font-bold text-crimson-950 mb-2">No Matches Found</h3>
                <p className="text-slate-500">Try adjusting your filters to broaden your search criteria.</p>
             </div>
           ) : (

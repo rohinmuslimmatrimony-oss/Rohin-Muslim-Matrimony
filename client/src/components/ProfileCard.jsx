@@ -6,7 +6,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
   const isFreePlan = currentPlan === 'free';
 
   return (
-    <div className="glass-card hover:-translate-y-1.5 transition-all duration-300 rounded-2xl overflow-hidden shadow-md flex flex-col group border border-emerald-950/5">
+    <div className="glass-card hover:-translate-y-1.5 transition-all duration-300 rounded-2xl overflow-hidden shadow-md flex flex-col group border border-crimson-950/5">
       {/* Profile Image & Gold Gradient Trim */}
       <div className="relative h-60 w-full overflow-hidden bg-slate-900 flex items-center justify-center">
         {profile.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
@@ -17,7 +17,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
           />
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div className="w-16 h-16 rounded-full bg-emerald-900/30 flex items-center justify-center border border-emerald-800/40">
+            <div className="w-16 h-16 rounded-full bg-crimson-900/30 flex items-center justify-center border border-crimson-800/40">
               <span className="text-2xl font-serif text-gold-500 font-bold uppercase">{profile.name[0]}</span>
             </div>
             <span className="text-slate-400 text-xs font-medium uppercase tracking-widest">Matrimony Member</span>
@@ -25,14 +25,14 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
         )}
 
         {/* Sect Badge (Emerald) */}
-        <span className="absolute top-3 left-3 bg-emerald-900/90 text-gold-400 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md border border-emerald-700/50">
+        <span className="absolute top-3 left-3 bg-crimson-900/90 text-gold-400 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md border border-crimson-700/50">
           {profile.sect || 'Sunni'}
         </span>
 
         {/* Locked Overlay for Free Users */}
         {isFreePlan && (
-          <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <span className="flex items-center gap-1.5 bg-gold-gradient text-emerald-950 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+          <div className="absolute inset-0 bg-crimson-950/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span className="flex items-center gap-1.5 bg-gold-gradient text-crimson-950 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
               <FaLock /> View Locked
             </span>
           </div>
@@ -43,7 +43,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
       <div className="p-5 flex-1 flex flex-col gap-3.5">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-slate-900 text-xl font-bold font-serif group-hover:text-emerald-850 transition-colors">
+            <h3 className="text-slate-900 text-xl font-bold font-serif group-hover:text-crimson-850 transition-colors">
               {profile.name}, <span className="font-sans font-light text-lg text-slate-500">{profile.age}</span>
             </h3>
             <span className="text-xs text-slate-400 font-medium tracking-wider uppercase">{profile.religion || 'Islam'}</span>
@@ -53,7 +53,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
         {/* Core Attributes */}
         <div className="space-y-2 text-sm text-slate-600 flex-1">
           <div className="flex items-center gap-2">
-            <FaMapMarkerAlt className="text-emerald-700" />
+            <FaMapMarkerAlt className="text-crimson-700" />
             <span>{profile.city}</span>
           </div>
 
@@ -72,11 +72,11 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
           ) : (
             <div className="space-y-2 border-t border-slate-100 pt-2.5 mt-2.5">
               <div className="flex items-center gap-2">
-                <FaBriefcase className="text-emerald-700 text-[13px]" />
+                <FaBriefcase className="text-crimson-700 text-[13px]" />
                 <span className="truncate">{profile.profession}</span>
               </div>
               <div className="flex items-center gap-2">
-                <FaGraduationCap className="text-emerald-700 text-base" />
+                <FaGraduationCap className="text-crimson-700 text-base" />
                 <span className="truncate">{profile.education}</span>
               </div>
             </div>
@@ -87,7 +87,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
         <div className="flex gap-2.5 mt-2 pt-3.5 border-t border-slate-100">
           <Link
             to={`/profile/${profile.user?._id || profile.user}`}
-            className="flex-1 text-center border border-emerald-900/10 text-emerald-900 hover:bg-emerald-900/5 font-semibold text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 text-center border border-crimson-900/10 text-crimson-900 hover:bg-crimson-900/5 font-semibold text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5"
           >
             {isFreePlan ? <FaLock className="text-[10px] text-gold-600" /> : null} View Details
           </Link>
@@ -100,8 +100,8 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
                 isSent
                   ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
                   : isReceived
-                  ? 'bg-emerald-900/10 text-emerald-900 cursor-not-allowed shadow-none'
-                  : 'bg-gold-gradient text-emerald-950 hover:shadow-gold-500/20 hover:scale-[1.02]'
+                  ? 'bg-crimson-900/10 text-crimson-900 cursor-not-allowed shadow-none'
+                  : 'bg-gold-gradient text-crimson-950 hover:shadow-gold-500/20 hover:scale-[1.02]'
               }`}
             >
               <FaHeart className="text-[10px]" />

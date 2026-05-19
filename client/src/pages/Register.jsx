@@ -5,6 +5,7 @@ import {
   FaMoon, FaEnvelope, FaLock, FaUser, FaCompass, 
   FaChevronRight, FaChevronLeft, FaPhoneAlt, FaBriefcase, FaGraduationCap
 } from 'react-icons/fa';
+import logo3 from '../assets/logo3.png';
 
 const Register = () => {
   const { register, user, loading } = useContext(AuthContext);
@@ -77,17 +78,17 @@ const Register = () => {
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-16 relative bg-cream-50 overflow-hidden">
       {/* Background Glows */}
-      <div className="absolute top-[10%] left-[10%] w-80 h-80 bg-emerald-900/5 rounded-full blur-[80px]"></div>
+      <div className="absolute top-[10%] left-[10%] w-80 h-80 bg-crimson-900/5 rounded-full blur-[80px]"></div>
       <div className="absolute bottom-[10%] right-[10%] w-80 h-80 bg-gold-500/5 rounded-full blur-[80px]"></div>
 
-      <div className="w-full max-w-2xl glass-card rounded-3xl shadow-xl border border-emerald-950/5 overflow-hidden p-8 md:p-10 relative z-10">
+      <div className="w-full max-w-2xl glass-card rounded-3xl shadow-xl border border-crimson-950/5 overflow-hidden p-8 md:p-10 relative z-10">
         {/* Stepper Progress Bar */}
         <div className="flex justify-between items-center mb-8 max-w-sm mx-auto relative">
           {/* Progress Line Background */}
           <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full"></div>
           {/* Active Progress Line */}
           <div 
-            className="absolute top-1/2 left-0 h-1 bg-emerald-800 -z-10 -translate-y-1/2 rounded-full transition-all duration-300"
+            className="absolute top-1/2 left-0 h-1 bg-crimson-800 -z-10 -translate-y-1/2 rounded-full transition-all duration-300"
             style={{ width: `${((step - 1) / 3) * 100}%` }}
           ></div>
           
@@ -96,7 +97,7 @@ const Register = () => {
               key={stepNum}
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${
                 step >= stepNum
-                  ? 'bg-emerald-950 text-gold-400 border-emerald-900 shadow-md shadow-emerald-900/20'
+                  ? 'bg-crimson-950 text-gold-400 border-crimson-900 shadow-md shadow-crimson-900/20'
                   : 'bg-white text-slate-400 border-slate-200'
               }`}
             >
@@ -106,11 +107,9 @@ const Register = () => {
         </div>
 
         {/* Headings */}
-        <div className="flex flex-col items-center gap-2 mb-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-950 flex items-center justify-center text-gold-400 text-2xl border border-emerald-800 shadow-sm mb-2">
-            <FaMoon />
-          </div>
-          <h2 className="text-slate-900 text-3xl font-bold font-serif">Create Free Profile</h2>
+        <div className="flex flex-col items-center gap-2 mb-6 text-center">
+          <img src={logo3} alt="Rohin Muslim Matrimony Logo" className="h-16 w-auto object-contain" />
+          <h2 className="text-slate-900 text-3xl font-bold font-serif mt-2">Create Free Profile</h2>
           <p className="text-slate-500 text-sm font-medium">
             {step === 1 && 'Step 1: Account Setup'}
             {step === 2 && 'Step 2: Personal Details'}
@@ -298,12 +297,12 @@ const Register = () => {
           )}
 
           {/* Navigation Controls */}
-          <div className="flex gap-4 pt-6 mt-4 border-t border-emerald-900/10">
+          <div className="flex gap-4 pt-6 mt-4 border-t border-crimson-900/10">
             {step > 1 && (
               <button
                 type="button"
                 onClick={prevStep}
-                className="flex-1 border-2 border-emerald-900 text-emerald-950 font-bold py-3.5 rounded-2xl hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2 text-sm"
+                className="flex-1 border-2 border-crimson-900 text-crimson-950 font-bold py-3.5 rounded-2xl hover:bg-crimson-50 transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <FaChevronLeft className="text-xs" /> Back
               </button>
@@ -312,10 +311,10 @@ const Register = () => {
             <button
               type="submit"
               disabled={isSubmitting || loading}
-              className="flex-[2] bg-gold-gradient text-emerald-950 font-bold py-3.5 rounded-2xl shadow-lg hover:shadow-gold-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:scale-100"
+              className="flex-[2] bg-gold-gradient text-crimson-950 font-bold py-3.5 rounded-2xl shadow-lg hover:shadow-gold-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:scale-100"
             >
               {isSubmitting ? (
-                <span className="w-5 h-5 border-2 border-emerald-950 border-t-transparent rounded-full animate-spin"></span>
+                <span className="w-5 h-5 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
               ) : step === 4 ? (
                 'Create Profile (Free)'
               ) : (
@@ -328,7 +327,7 @@ const Register = () => {
         {/* Redirect */}
         <p className="text-slate-500 text-sm mt-8 text-center">
           Already registered?{' '}
-          <Link to="/login" className="text-emerald-800 font-bold hover:text-emerald-600 transition-colors">
+          <Link to="/login" className="text-crimson-800 font-bold hover:text-crimson-600 transition-colors">
             Sign In here
           </Link>
         </p>

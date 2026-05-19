@@ -129,13 +129,13 @@ const AdminDashboard = () => {
       <div className="w-64 bg-slate-950 border-r border-slate-800 hidden md:flex flex-col flex-shrink-0">
         <div className="p-6">
           <h2 className="text-xl font-serif font-bold text-white mb-1">Command Center</h2>
-          <p className="text-xs text-emerald-500 font-bold tracking-widest uppercase">Admin</p>
+          <p className="text-xs text-crimson-500 font-bold tracking-widest uppercase">Admin</p>
         </div>
         
         <div className="flex-1 px-4 space-y-2">
           <button 
             onClick={() => setActiveTab('metrics')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all ${activeTab === 'metrics' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all ${activeTab === 'metrics' ? 'bg-crimson-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           >
             <FaChartPie className="text-lg" /> Metrics
           </button>
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
           
           <button 
             onClick={() => setActiveTab('users')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all ${activeTab === 'users' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all ${activeTab === 'users' ? 'bg-crimson-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           >
             <FaUsers className="text-lg" /> User Database
           </button>
@@ -172,9 +172,9 @@ const AdminDashboard = () => {
 
       {/* MOBILE SIDEBAR (Horizontal scroller for very small screens if needed) */}
       <div className="md:hidden flex overflow-x-auto bg-slate-950 border-b border-slate-800 p-2 gap-2 whitespace-nowrap">
-          <button onClick={() => setActiveTab('metrics')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'metrics' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}><FaChartPie /> Metrics</button>
+          <button onClick={() => setActiveTab('metrics')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'metrics' ? 'bg-crimson-600 text-white' : 'text-slate-400'}`}><FaChartPie /> Metrics</button>
           <button onClick={() => setActiveTab('approvals')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'approvals' ? 'bg-amber-600 text-white' : 'text-slate-400'}`}><FaCheckCircle /> Approvals</button>
-          <button onClick={() => setActiveTab('users')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'users' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}><FaUsers /> Users</button>
+          <button onClick={() => setActiveTab('users')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'users' ? 'bg-crimson-600 text-white' : 'text-slate-400'}`}><FaUsers /> Users</button>
           <button onClick={() => setActiveTab('reports')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'reports' ? 'bg-red-600 text-white' : 'text-slate-400'}`}><FaExclamationTriangle /> Reports</button>
           <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 ${activeTab === 'settings' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><FaCog /> Settings</button>
       </div>
@@ -183,7 +183,7 @@ const AdminDashboard = () => {
       <div className="flex-1 p-6 md:p-10 overflow-y-auto">
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <span className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></span>
+            <span className="w-10 h-10 border-4 border-crimson-500 border-t-transparent rounded-full animate-spin"></span>
           </div>
         ) : (
           <div className="animate-fadeIn max-w-6xl mx-auto">
@@ -202,7 +202,7 @@ const AdminDashboard = () => {
                     <h3 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Active Profiles</h3>
                     <p className="text-4xl font-bold text-white">{metrics.totalProfiles}</p>
                     <div className="flex gap-4 mt-2 text-xs">
-                      <span className="text-emerald-400">{metrics.genderSplit.male} Males</span>
+                      <span className="text-crimson-400">{metrics.genderSplit.male} Males</span>
                       <span className="text-purple-400">{metrics.genderSplit.female} Females</span>
                     </div>
                   </div>
@@ -210,7 +210,7 @@ const AdminDashboard = () => {
                     <h3 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Subscriptions</h3>
                     <p className="text-4xl font-bold text-white">{metrics.planBreakdown.premium + metrics.planBreakdown.elite}</p>
                     <div className="flex gap-3 mt-2 text-xs">
-                      <span className="text-emerald-400">{metrics.planBreakdown.premium} Premium</span>
+                      <span className="text-crimson-400">{metrics.planBreakdown.premium} Premium</span>
                       <span className="text-gold-400">{metrics.planBreakdown.elite} Elite</span>
                     </div>
                   </div>
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
                         <p className="text-xs text-slate-400">Total</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-emerald-400">{metrics.requests.accepted}</p>
+                        <p className="text-2xl font-bold text-crimson-400">{metrics.requests.accepted}</p>
                         <p className="text-xs text-slate-400">Accepted</p>
                       </div>
                       <div>
@@ -251,7 +251,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {users.filter(u => !(u.profile?.user?.isManuallyVerified || u.isManuallyVerified)).length === 0 ? (
                     <div className="col-span-full p-12 text-center text-slate-500 bg-slate-800 rounded-2xl border border-slate-700">
-                      <FaCheckCircle className="text-4xl text-emerald-500 mx-auto mb-3" />
+                      <FaCheckCircle className="text-4xl text-crimson-500 mx-auto mb-3" />
                       <h3 className="text-xl font-bold text-white mb-1">Queue is empty</h3>
                       <p>All profiles have been manually verified.</p>
                     </div>
@@ -271,7 +271,7 @@ const AdminDashboard = () => {
                         )}
 
                         <div className="flex gap-2 mt-auto">
-                          <button onClick={() => handleVerifyUser(u._id)} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition-colors text-xs flex items-center justify-center gap-1">
+                          <button onClick={() => handleVerifyUser(u._id)} className="flex-1 bg-crimson-600 hover:bg-crimson-700 text-white font-bold py-2 rounded-lg transition-colors text-xs flex items-center justify-center gap-1">
                             <FaCheckCircle /> Approve
                           </button>
                           <button onClick={() => handleDeleteUser(u._id)} className="flex-1 bg-red-900/40 hover:bg-red-900/60 text-red-400 font-bold py-2 rounded-lg transition-colors text-xs border border-red-900/50">
@@ -305,7 +305,7 @@ const AdminDashboard = () => {
                           <tr key={u._id} className="hover:bg-slate-750 transition-colors">
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-emerald-900 flex items-center justify-center font-bold text-emerald-400">
+                                <div className="w-10 h-10 rounded-full bg-crimson-900 flex items-center justify-center font-bold text-crimson-400">
                                   {u.profile ? u.profile.name[0] : u.email[0].toUpperCase()}
                                 </div>
                                 <div>
@@ -316,8 +316,8 @@ const AdminDashboard = () => {
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-2 mb-1">
-                                {u.plan === 'elite' ? <FaCrown className="text-gold-500" /> : u.plan === 'premium' ? <FaStar className="text-emerald-500" /> : null}
-                                <span className={`font-bold capitalize ${u.plan === 'elite' ? 'text-gold-500' : u.plan === 'premium' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                {u.plan === 'elite' ? <FaCrown className="text-gold-500" /> : u.plan === 'premium' ? <FaStar className="text-crimson-500" /> : null}
+                                <span className={`font-bold capitalize ${u.plan === 'elite' ? 'text-gold-500' : u.plan === 'premium' ? 'text-crimson-500' : 'text-slate-400'}`}>
                                   {u.plan}
                                 </span>
                               </div>
@@ -325,14 +325,14 @@ const AdminDashboard = () => {
                             </td>
                             <td className="px-6 py-4">
                               {u.profile?.user?.isManuallyVerified || u.isManuallyVerified ? (
-                                <span className="bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-800">Verified ✓</span>
+                                <span className="bg-crimson-900/30 text-crimson-400 px-3 py-1 rounded-full text-xs font-bold border border-crimson-800">Verified ✓</span>
                               ) : (
                                 <span className="bg-slate-700 text-slate-300 px-3 py-1 rounded-full text-xs font-bold border border-slate-600">Pending</span>
                               )}
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex justify-end gap-2">
-                                <button onClick={() => handleVerifyUser(u._id)} className="p-2 bg-slate-700 hover:bg-slate-600 text-emerald-400 rounded transition-colors" title="Toggle Verification">
+                                <button onClick={() => handleVerifyUser(u._id)} className="p-2 bg-slate-700 hover:bg-slate-600 text-crimson-400 rounded transition-colors" title="Toggle Verification">
                                   <FaCheckCircle />
                                 </button>
                                 <button onClick={() => handleChangePlan(u._id, u.plan)} className="p-2 bg-slate-700 hover:bg-slate-600 text-gold-400 rounded transition-colors" title="Change Plan">
@@ -364,7 +364,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {reports.length === 0 ? (
                     <div className="col-span-full p-12 text-center text-slate-500 bg-slate-800 rounded-2xl border border-slate-700">
-                      <FaCheckCircle className="text-4xl text-emerald-500 mx-auto mb-3" />
+                      <FaCheckCircle className="text-4xl text-crimson-500 mx-auto mb-3" />
                       <h3 className="text-xl font-bold text-white mb-1">Queue is empty</h3>
                       <p>No moderation reports pending at this time.</p>
                     </div>
@@ -413,14 +413,14 @@ const AdminDashboard = () => {
                 <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-lg space-y-6">
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2"><FaStar /> Premium Plan Price (₹/month)</label>
+                    <label className="text-sm font-bold text-crimson-400 uppercase tracking-wider flex items-center gap-2"><FaStar /> Premium Plan Price (₹/month)</label>
                     <div className="relative">
                       <FaRupeeSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input 
                         type="number" 
                         value={settings.premiumPrice} 
                         onChange={(e) => setSettings({...settings, premiumPrice: parseInt(e.target.value) || 0})}
-                        className="w-full bg-slate-900 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-emerald-500 transition-colors"
+                        className="w-full bg-slate-900 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-crimson-500 transition-colors"
                       />
                     </div>
                   </div>
@@ -453,7 +453,7 @@ const AdminDashboard = () => {
 
                   <button 
                     onClick={saveSettings}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-colors shadow-lg mt-4"
+                    className="w-full bg-crimson-600 hover:bg-crimson-500 text-white font-bold py-4 rounded-xl transition-colors shadow-lg mt-4"
                   >
                     Save All Settings
                   </button>
