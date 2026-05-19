@@ -6,7 +6,7 @@ import { FaFilter, FaSearch, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const SearchProfiles = () => {
-  const { user } = useContext(AuthContext);
+  const { user, profile } = useContext(AuthContext);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sentRequests, setSentRequests] = useState([]);
@@ -88,7 +88,27 @@ const SearchProfiles = () => {
     fetchProfiles(defaultFilters);
   };
 
+  const getMyCompleteness = () => {
+    if (!profile) return 0;
+    let score = 20; // Base profile
+    if (profile.waliContact && profile.waliContact.trim() !== '') score += 25;
+    if (profile.familyDetails && (profile.familyDetails.fatherOccupation || profile.familyDetails.motherOccupation || profile.familyDetails.siblingsCount !== undefined)) score += 25;
+    if (profile.customCareerDetails && (profile.customCareerDetails.degree || profile.customCareerDetails.occupation)) score += 30;
+    return score;
+  };
+
   const handleSendInterest = async (receiverId) => {
+    if (user?.role !== 'admin') {
+      const completeness = getMyCompleteness();
+      if (completeness < 100) {
+        toast.error('Please complete your profile details to 100% on the Dashboard before sending interest requests!', {
+          duration: 5000,
+          icon: '🔒',
+        });
+        return;
+      }
+    }
+
     try {
       const res = await api.post('/requests', { receiverId });
       if (res.data.success) {

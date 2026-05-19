@@ -8,6 +8,7 @@ const Report = require('./models/Report');
 
 dotenv.config();
 
+// Base Admin User
 const usersData = [
   {
     email: 'admin@matrimony.com',
@@ -16,172 +17,75 @@ const usersData = [
     plan: 'elite',
     viewLimit: 99999,
     isManuallyVerified: true
-  },
-  // Male Profiles
-  {
-    email: 'zayd.khan@gmail.com',
-    password: 'password123',
-    role: 'user',
-    plan: 'free',
-    viewLimit: 5,
-    isManuallyVerified: false,
-    profile: {
-      name: 'Zayd Khan',
-      age: 27,
-      gender: 'male',
-      sect: 'Sunni',
-      height: "5'10\"",
-      maritalStatus: 'Never Married',
-      motherTongue: 'Urdu',
-      namazFrequency: 'Always Praying',
-      profession: 'Senior Software Engineer',
-      education: 'B.Tech in Computer Science',
-      city: 'Hyderabad',
-      about: 'Assalamu Alaikum. I am a practicing Muslim, career-focused, and love to travel. Looking for an educated, family-oriented partner who values both Islamic and modern principles.',
-      phoneNumber: '+91 99887 76655',
-      profilePhoto: '',
-      isPhotoPublic: true,
-      familyDetails: { fatherOccupation: 'Retired Banker', motherOccupation: 'Homemaker', siblingsCount: 2 },
-      partnerPreferences: { ageRange: '22-26', sectPreference: 'Sunni', educationPreference: 'Graduate' }
-    }
-  },
-  {
-    email: 'riza.hussein@gmail.com',
-    password: 'password123',
-    role: 'user',
-    plan: 'premium',
-    viewLimit: 30,
-    isManuallyVerified: true,
-    profile: {
-      name: 'Riza Hussein',
-      age: 29,
-      gender: 'male',
-      sect: 'Shia',
-      height: "6'0\"",
-      maritalStatus: 'Never Married',
-      motherTongue: 'Hindi',
-      namazFrequency: 'Usually Praying',
-      profession: 'Medical Doctor (MD)',
-      education: 'MBBS, MD Pediatrics',
-      city: 'Lucknow',
-      about: 'Assalamu Alaikum, I am a pediatric resident. Dedicated to my work and family. I enjoy reading, hiking, and Islamic history. Looking for a compassionate partner to share life with.',
-      phoneNumber: '+91 98480 22338',
-      profilePhoto: '',
-      isPhotoPublic: true,
-      familyDetails: { fatherOccupation: 'Doctor', motherOccupation: 'Teacher', siblingsCount: 1 },
-      partnerPreferences: { ageRange: '24-28', sectPreference: 'Shia', educationPreference: 'Post Graduate' }
-    }
-  },
-  {
-    email: 'fahad.qureshi@gmail.com',
-    password: 'password123',
-    role: 'user',
-    plan: 'elite',
-    viewLimit: 99999,
-    isManuallyVerified: true,
-    profile: {
-      name: 'Fahad Qureshi',
-      age: 31,
-      gender: 'male',
-      sect: 'Sunni',
-      height: "5'11\"",
-      maritalStatus: 'Divorced',
-      motherTongue: 'Urdu',
-      namazFrequency: 'Always Praying',
-      profession: 'Business Consultant',
-      education: 'MBA in Finance',
-      city: 'Mumbai',
-      about: 'Assalamu Alaikum. I run an advisory firm in Mumbai. Balanced individual with a deep love for family. I seek a supportive partner who is educated, understanding, and practicing.',
-      phoneNumber: '+91 88776 65544',
-      profilePhoto: '',
-      isPhotoPublic: false, // Elite user, keeps photo private!
-      familyDetails: { fatherOccupation: 'Businessman', motherOccupation: 'Homemaker', siblingsCount: 3 },
-      partnerPreferences: { ageRange: '25-30', sectPreference: 'No Preference', educationPreference: "Doesn't Matter" }
-    }
-  },
-  // Female Profiles
-  {
-    email: 'aisha.siddiqui@gmail.com',
-    password: 'password123',
-    role: 'user',
-    plan: 'free',
-    viewLimit: 5,
-    isManuallyVerified: false,
-    profile: {
-      name: 'Aisha Siddiqui',
-      age: 24,
-      gender: 'female',
-      sect: 'Sunni',
-      height: "5'4\"",
-      maritalStatus: 'Never Married',
-      motherTongue: 'Urdu',
-      namazFrequency: 'Always Praying',
-      profession: 'Graphic Designer',
-      education: 'Bachelor of Fine Arts',
-      city: 'Hyderabad',
-      about: 'Assalamu Alaikum. I am creative, cheerful, and family-oriented. I practice my prayers and am looking for a partner who is gentle, loving, and keeps a halal lifestyle.',
-      phoneNumber: '+91 77665 54433',
-      profilePhoto: '',
-      isPhotoPublic: false, // Free female user, photo is blurred to public
-      familyDetails: { fatherOccupation: 'Govt Employee', motherOccupation: 'Homemaker', siblingsCount: 1 },
-      partnerPreferences: { ageRange: '26-30', sectPreference: 'Sunni', educationPreference: 'Professional' }
-    }
-  },
-  {
-    email: 'yasmin.naqvi@gmail.com',
-    password: 'password123',
-    role: 'user',
-    plan: 'premium',
-    viewLimit: 30,
-    isManuallyVerified: true,
-    profile: {
-      name: 'Yasmin Naqvi',
-      age: 26,
-      gender: 'female',
-      sect: 'Shia',
-      height: "5'6\"",
-      maritalStatus: 'Never Married',
-      motherTongue: 'Hindi',
-      namazFrequency: 'Usually Praying',
-      profession: 'High School Teacher',
-      education: 'M.Sc in Chemistry, B.Ed',
-      city: 'Delhi',
-      about: 'Assalamu Alaikum. I am an optimistic educator. I believe in mutual respect and emotional understanding. Seeking an educated, kind-hearted gentleman with strong moral character.',
-      phoneNumber: '+91 91234 56789',
-      profilePhoto: '',
-      isPhotoPublic: false, // Private photo
-      familyDetails: { fatherOccupation: 'Engineer', motherOccupation: 'Teacher', siblingsCount: 2 },
-      partnerPreferences: { ageRange: '27-32', sectPreference: 'Shia', educationPreference: 'Post Graduate' }
-    }
-  },
-  {
-    email: 'sara.ahmed@gmail.com',
-    password: 'password123',
-    role: 'user',
-    plan: 'elite',
-    viewLimit: 99999,
-    isManuallyVerified: true,
-    profile: {
-      name: 'Sara Ahmed',
-      age: 28,
-      gender: 'female',
-      sect: 'Sunni',
-      height: "5'5\"",
-      maritalStatus: 'Never Married',
-      motherTongue: 'English',
-      namazFrequency: 'Always Praying',
-      profession: 'Chartered Accountant (CA)',
-      education: 'CA, B.Com',
-      city: 'Bangalore',
-      about: 'Assalamu Alaikum. I work at a multinational firm in Bangalore. Love dining out, reading, and learning new things. Looking for an ambitious, religious and respectful life partner.',
-      phoneNumber: '+91 96543 21098',
-      profilePhoto: '',
-      isPhotoPublic: true,
-      familyDetails: { fatherOccupation: 'CEO', motherOccupation: 'Homemaker', siblingsCount: 0 },
-      partnerPreferences: { ageRange: '29-35', sectPreference: 'Sunni', educationPreference: 'CA/MBA/MD' }
-    }
   }
 ];
+
+// Helper for random selection
+const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const getRandomAge = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomHeight = () => `5'${Math.floor(Math.random() * 11) + 1}"`;
+
+const maleNames = ['Zayd Khan', 'Fahad Qureshi', 'Riza Hussein', 'Aamir Ali', 'Bilal Ahmed', 'Tariq Mehmood', 'Danish Syed', 'Imran Shaikh', 'Kashif Raza', 'Hassan Jafri', 'Omar Farooq', 'Saad Siddiqui', 'Reza Haider', 'Arif Malik', 'Nabeel Baig', 'Yusuf Pathan', 'Salman Chisti', 'Zakir Hussain', 'Faisal Nawaz', 'Ibrahim Mirza'];
+const femaleNames = ['Aisha Siddiqui', 'Yasmin Naqvi', 'Sara Ahmed', 'Fatima Ali', 'Zoya Khan', 'Sana Mirza', 'Mariam Jafri', 'Nida Shaikh', 'Hina Raza', 'Zahra Syed', 'Farah Baig', 'Amina Qureshi', 'Rabia Malik', 'Bushra Farooq', 'Madiha Nawaz', 'Sadia Chisti', 'Khadija Pathan', 'Noreen Mehmood', 'Samira Hussain', 'Ayesha Tariq'];
+const cities = ['Hyderabad', 'Vijayawada', 'Guntur', 'Kurnool', 'Visakhapatnam', 'Warangal', 'Karimnagar', 'Nizamabad', 'Bangalore', 'Chennai', 'Mumbai', 'Lucknow', 'Delhi', 'Pune'];
+const sects = ['Sunni', 'Shia', 'Sufi', 'Other', 'No Preference'];
+const professions = ['Software Engineer', 'Medical Doctor', 'Business Owner', 'High School Teacher', 'Civil Engineer', 'Govt Employee', 'Graphic Designer', 'Architect', 'Chartered Accountant', 'Data Analyst', 'Bank Manager'];
+const motherTongues = ['Urdu', 'Telugu', 'Hindi', 'English'];
+const educations = ['B.Tech in CS', 'MBBS, MD', 'B.Com, MBA', 'M.Sc, B.Ed', 'CA', 'B.Arch', 'BBA', 'BCA'];
+const maritalStatuses = ['Never Married', 'Never Married', 'Never Married', 'Divorced', 'Widowed']; // Weighted towards Never Married
+const namazFrequencies = ['Always Praying', 'Usually Praying', 'Sometimes Praying', 'Only Jummah'];
+const plans = ['free', 'premium', 'elite'];
+
+// Generate 40 Mock Profiles (20 Male, 20 Female)
+for (let i = 0; i < 40; i++) {
+  const isMale = i < 20;
+  const name = isMale ? maleNames[i] : femaleNames[i - 20];
+  const gender = isMale ? 'male' : 'female';
+  const email = `${name.toLowerCase().replace(' ', '.')}@gmail.com`;
+  const age = isMale ? getRandomAge(25, 38) : getRandomAge(21, 32);
+  const plan = getRandom(plans);
+  const isManuallyVerified = Math.random() > 0.3; // 70% chance of being verified
+
+  let viewLimit = 5;
+  if (plan === 'premium') viewLimit = 30;
+  if (plan === 'elite') viewLimit = 99999;
+
+  usersData.push({
+    email,
+    password: 'password123',
+    role: 'user',
+    plan,
+    viewLimit,
+    isManuallyVerified,
+    profile: {
+      name,
+      age,
+      gender,
+      sect: getRandom(sects),
+      height: getRandomHeight(),
+      maritalStatus: getRandom(maritalStatuses),
+      motherTongue: getRandom(motherTongues),
+      namazFrequency: getRandom(namazFrequencies),
+      profession: getRandom(professions),
+      education: getRandom(educations),
+      city: getRandom(cities),
+      about: `Assalamu Alaikum! I am ${name}. I am a practicing Muslim who balances deen and dunya. Looking for a compatible life partner who shares similar values. Family is very important to me.`,
+      phoneNumber: `+91 9${Math.floor(100000000 + Math.random() * 900000000)}`,
+      profilePhoto: '',
+      isPhotoPublic: Math.random() > 0.2, // 80% public
+      familyDetails: { 
+        fatherOccupation: getRandom(['Businessman', 'Retired Govt Officer', 'Doctor', 'Teacher', 'Farmer']), 
+        motherOccupation: getRandom(['Homemaker', 'Teacher', 'Govt Employee']), 
+        siblingsCount: getRandomAge(0, 4) 
+      },
+      partnerPreferences: { 
+        ageRange: isMale ? `${age - 5}-${age - 1}` : `${age + 1}-${age + 5}`, 
+        sectPreference: getRandom(['Sunni', 'Shia', 'No Preference', 'Other']), 
+        educationPreference: getRandom(["Doesn't Matter", 'Graduate', 'Post Graduate', 'Professional']) 
+      }
+    }
+  });
+}
 
 const seedDatabase = async () => {
   try {
@@ -190,14 +94,14 @@ const seedDatabase = async () => {
     await mongoose.connect(connString);
 
     // Clean DB
-    console.log('Clearing database collections...');
+    console.log('Clearing existing database collections...');
     await User.deleteMany({});
     await Profile.deleteMany({});
     await InterestRequest.deleteMany({});
     await Message.deleteMany({});
     await Report.deleteMany({});
 
-    console.log('Seeding new user and profile data...');
+    console.log(`Seeding ${usersData.length} users and profiles...`);
 
     for (const data of usersData) {
       // Create user with plan and viewLimit
@@ -220,7 +124,7 @@ const seedDatabase = async () => {
       }
     }
 
-    console.log('Database seeded successfully!');
+    console.log('Database seeded successfully with massive data for testing!');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error.message);
