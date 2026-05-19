@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import api from '../services/api';
+import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 import { 
   FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaLock, 
@@ -126,7 +126,7 @@ const UserProfile = () => {
               {/* Photo Area */}
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-cream-50 bg-slate-900 shadow-xl overflow-hidden relative flex-shrink-0 mx-auto md:mx-0">
                 {profile.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
-                  <img src={`http://localhost:5000${profile.profilePhoto}`} alt={profile.name} className="w-full h-full object-cover" />
+                  <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-4xl text-gold-500 font-serif font-bold uppercase bg-crimson-900">
                     {profile.name[0]}

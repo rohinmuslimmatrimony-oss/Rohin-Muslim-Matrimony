@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import api from '../services/api';
+import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 import { FaCamera, FaSave, FaUserShield, FaRegImage, FaLock, FaGlobe } from 'react-icons/fa';
 
@@ -61,7 +61,7 @@ const EditProfile = () => {
       });
       
       if (profile.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png') {
-        setPhotoPreview(`http://localhost:5000${profile.profilePhoto}`);
+        setPhotoPreview(`${SOCKET_BASE_URL}${profile.profilePhoto}`);
       }
     }
   }, [profile]);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaUserLock, FaLock, FaHeart } from 'react-icons/fa';
+import { SOCKET_BASE_URL } from '../services/api';
 
 const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived }) => {
   const isFreePlan = currentPlan === 'free';
@@ -11,7 +12,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
       <div className="relative h-60 w-full overflow-hidden bg-slate-900 flex items-center justify-center">
         {profile.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
           <img
-            src={`http://localhost:5000${profile.profilePhoto}`}
+            src={`${SOCKET_BASE_URL}${profile.profilePhoto}`}
             alt={profile.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />

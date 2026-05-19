@@ -1,8 +1,19 @@
 import axios from 'axios';
 
+const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// 1. Clean the root server URL (remove trailing slashes and /api if present)
+let cleanServerUrl = rawUrl.replace(/\/$/, ''); // Remove trailing slash
+if (cleanServerUrl.endsWith('/api')) {
+  cleanServerUrl = cleanServerUrl.substring(0, cleanServerUrl.length - 4);
+}
+
+export const SOCKET_BASE_URL = cleanServerUrl || 'http://localhost:5000';
+export const API_BASE_URL = `${SOCKET_BASE_URL}/api`;
+
 // Create custom axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

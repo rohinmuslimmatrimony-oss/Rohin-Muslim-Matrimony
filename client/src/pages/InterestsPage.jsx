@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import api from '../services/api';
+import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 import io from 'socket.io-client';
 import { FaCheckCircle, FaTimesCircle, FaCommentDots, FaPaperPlane } from 'react-icons/fa';
@@ -25,7 +25,7 @@ const InterestsPage = () => {
     fetchConnections();
     
     // Initialize Socket
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io(SOCKET_BASE_URL);
     if (user?._id) {
       socketRef.current.emit('join_room', user._id);
     }
