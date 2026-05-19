@@ -25,17 +25,17 @@ const SearchProfiles = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-    fetchProfiles();
+    fetchProfiles(filters);
     fetchMyRequests();
   }, []);
 
-  const fetchProfiles = async () => {
+  const fetchProfiles = async (currentFilters = filters) => {
     try {
       setLoading(true);
       // Clean empty filters
-      const queryParams = Object.keys(filters).reduce((acc, key) => {
-        if (filters[key] !== '' && filters[key] !== 'All') {
-          acc[key] = filters[key];
+      const queryParams = Object.keys(currentFilters).reduce((acc, key) => {
+        if (currentFilters[key] !== '' && currentFilters[key] !== 'All') {
+          acc[key] = currentFilters[key];
         }
         return acc;
       }, {});
@@ -70,8 +70,22 @@ const SearchProfiles = () => {
 
   const applyFilters = (e) => {
     e.preventDefault();
-    fetchProfiles();
+    fetchProfiles(filters);
     setIsFilterOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    const defaultFilters = {
+      gender: '',
+      ageMin: 18,
+      ageMax: 60,
+      sect: 'All',
+      maritalStatus: '',
+      profession: '',
+      city: ''
+    };
+    setFilters(defaultFilters);
+    fetchProfiles(defaultFilters);
   };
 
   const handleSendInterest = async (receiverId) => {
@@ -105,7 +119,14 @@ const SearchProfiles = () => {
               <h2 className="text-xl font-serif font-bold text-crimson-950 flex items-center gap-2">
                 <FaFilter className="text-gold-500 text-sm" /> Filters
               </h2>
-              {isFilterOpen && <button onClick={() => setIsFilterOpen(false)} className="md:hidden text-slate-500"><FaTimes /></button>}
+              <button 
+                type="button"
+                onClick={handleResetFilters}
+                className="text-xs font-bold text-crimson-800 hover:text-gold-600 transition-colors uppercase tracking-wider"
+              >
+                Reset
+              </button>
+              {isFilterOpen && <button onClick={() => setIsFilterOpen(false)} className="md:hidden text-slate-500 ml-2"><FaTimes /></button>}
             </div>
 
             <form onSubmit={applyFilters} className="space-y-5">
