@@ -50,13 +50,9 @@ const Navbar = () => {
     <nav className="w-full bg-cream-50/80 backdrop-blur-md border-b border-crimson-900/10 py-3.5 px-4 md:px-8 transition-colors">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
-        {/* Brand Logo and Title */}
-        <Link to="/" className="flex items-center gap-2.5">
-          <img src={logo3} alt="Rohin Matrimony Logo" className="h-10 w-auto object-contain" />
-          <div className="flex flex-col">
-            <span className="text-crimson-950 font-bold font-serif text-lg tracking-wide leading-none">Rohin Muslim</span>
-            <span className="text-gold-600 font-bold text-xs uppercase tracking-widest leading-none mt-1">Matrimony</span>
-          </div>
+        {/* Brand Logo */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <img src={logo3} alt="Rohin Muslim Matrimony Logo" className="h-11 md:h-14 w-auto object-contain" />
         </Link>
 
         {/* Desktop Navigation Links */}
