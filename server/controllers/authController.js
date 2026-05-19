@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Profile = require('../models/Profile');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/sendEmail');
 
 // Helper to generate token
 const generateToken = (id) => {
@@ -68,6 +69,34 @@ exports.register = async (req, res) => {
 
     // Generate JWT
     const token = generateToken(user._id);
+
+    // Send transactional welcome email safely in the background
+    sendEmail({
+      email: user.email,
+      subject: 'Welcome to Rohin Muslim Matrimony! 🕌✨',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f2e8db; border-radius: 12px; background-color: #faf8f5;">
+          <h2 style="color: #4f080e; text-align: center; font-family: Georgia, serif;">Assalamu Alaikum, ${profile.name}!</h2>
+          <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+            Thank you for registering with <strong>Rohin Muslim Matrimony</strong> – the most trusted, secure, and premium matrimonial platform.
+          </p>
+          <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+            We are dedicated to helping you find your ideal life partner under Halal values. Here are your account details:
+          </p>
+          <div style="background-color: #4f080e; color: #ffffff; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin: 20px 0;">
+            Registered Email: ${user.email}
+          </div>
+          <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+            Please log in to your dashboard to complete your profile verification and start searching verified profiles!
+          </p>
+          <p style="font-size: 12px; color: #666666; text-align: center; margin-top: 30px; border-top: 1px solid #e6dccf; padding-top: 15px;">
+            <strong>Rohin Muslim Matrimony Office Address:</strong><br>
+            D.No.12-13-86, Abdulkhader Street, Islampet, Vijayawada-1<br>
+            Contact: 7386083446, 7075900448 | Email: shaikhabeebiti@gmail.com
+          </p>
+        </div>
+      `
+    }).catch(err => console.error('Failed to trigger email asynchronously:', err));
 
     return res.status(201).json({
       success: true,

@@ -1,6 +1,7 @@
 const InterestRequest = require('../models/InterestRequest');
 const Profile = require('../models/Profile');
 const User = require('../models/User');
+const sendEmail = require('../utils/sendEmail');
 
 // @desc    Send an interest request to a profile
 // @route   POST /api/requests/send/:id
@@ -45,6 +46,31 @@ exports.sendInterest = async (req, res) => {
       receiver: receiverId,
       status: 'pending'
     });
+
+    // Send email notification to the recipient asynchronously
+    const senderProfile = await Profile.findOne({ user: senderId });
+    const receiverProfile = await Profile.findOne({ user: receiverId });
+
+    sendEmail({
+      email: receiverUser.email,
+      subject: 'New Interest Received! 💖 - Rohin Muslim Matrimony',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f2e8db; border-radius: 12px; background-color: #faf8f5;">
+          <h2 style="color: #4f080e; text-align: center; font-family: Georgia, serif;">Assalamu Alaikum, ${receiverProfile?.name || 'Member'}!</h2>
+          <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+            A new member, <strong>${senderProfile?.name || 'someone'}</strong>, has expressed interest in your profile on <strong>Rohin Muslim Matrimony</strong>.
+          </p>
+          <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+            You can log into your dashboard to review their details, accept their connection, and start chatting!
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://rohin-muslim-matrimony.onrender.com/interests" style="background-color: #4f080e; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block;">
+              View Pending Interests
+            </a>
+          </div>
+        </div>
+      `
+    }).catch(err => console.error('Failed to trigger sendInterest email:', err));
 
     return res.status(201).json({
       success: true,
@@ -93,6 +119,34 @@ exports.acceptInterest = async (req, res) => {
       { user: request.receiver },
       { $addToSet: { connections: request.sender } }
     );
+
+    // Notify the sender that their interest request was accepted
+    const senderUser = await User.findById(request.sender);
+    const senderProfile = await Profile.findOne({ user: request.sender });
+    const receiverProfile = await Profile.findOne({ user: request.receiver });
+
+    if (senderUser) {
+      sendEmail({
+        email: senderUser.email,
+        subject: 'Interest Accepted! 🎉 - Rohin Muslim Matrimony',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f2e8db; border-radius: 12px; background-color: #faf8f5;">
+            <h2 style="color: #4f080e; text-align: center; font-family: Georgia, serif;">Assalamu Alaikum, ${senderProfile?.name || 'Member'}!</h2>
+            <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+              Great news! <strong>${receiverProfile?.name || 'Member'}</strong> has accepted your interest request on <strong>Rohin Muslim Matrimony</strong>.
+            </p>
+            <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+              You are now connected! You can now start communicating directly in the chat tab and view their contact details.
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://rohin-muslim-matrimony.onrender.com/interests" style="background-color: #4f080e; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block;">
+                Start Chatting Now
+              </a>
+            </div>
+          </div>
+        `
+      }).catch(err => console.error('Failed to trigger acceptInterest email:', err));
+    }
 
     return res.status(200).json({
       success: true,
