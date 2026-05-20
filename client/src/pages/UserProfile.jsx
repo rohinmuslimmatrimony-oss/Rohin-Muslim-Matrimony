@@ -131,6 +131,61 @@ const UserProfile = () => {
   const isLocked = profile.locked;
   const isOwnProfile = user?._id === id;
 
+  const getOrdinalSuffix = (num) => {
+    const j = num % 10, k = num % 100;
+    if (j === 1 && k !== 11) return "st";
+    if (j === 2 && k !== 12) return "nd";
+    if (j === 3 && k !== 13) return "rd";
+    return "th";
+  };
+
+  const getSiblingOrderedList = () => {
+    if (!profile?.familyDetails?.siblingsList || profile.familyDetails.siblingsList.length === 0) {
+      return null;
+    }
+    
+    const list = profile.familyDetails.siblingsList;
+    const elders = list.filter(s => s.relation.startsWith('Elder'));
+    const youngers = list.filter(s => s.relation.startsWith('Younger'));
+    
+    const ordered = [];
+    
+    // 1. Add elders
+    elders.forEach((s, idx) => {
+      ordered.push({
+        label: `${idx + 1}${getOrdinalSuffix(idx + 1)} Child`,
+        name: s.relation,
+        status: s.maritalStatus,
+        occupation: s.occupation,
+        isSelf: false
+      });
+    });
+    
+    // 2. Add Self
+    const selfIndex = elders.length + 1;
+    ordered.push({
+      label: `${selfIndex}${getOrdinalSuffix(selfIndex)} Child`,
+      name: `Self (${profile.name})`,
+      status: profile.maritalStatus || 'Unmarried',
+      occupation: profile.profession || 'Not Specified',
+      isSelf: true
+    });
+    
+    // 3. Add youngers
+    youngers.forEach((s, idx) => {
+      const childIndex = selfIndex + idx + 1;
+      ordered.push({
+        label: `${childIndex}${getOrdinalSuffix(childIndex)} Child`,
+        name: s.relation,
+        status: s.maritalStatus,
+        occupation: s.occupation,
+        isSelf: false
+      });
+    });
+    
+    return ordered;
+  };
+
   return (
     <div className="min-h-screen bg-cream-50 pt-24 pb-12 px-4 md:px-8 relative">
       <div className="max-w-4xl mx-auto">
@@ -359,6 +414,22 @@ const UserProfile = () => {
                       <span className="text-slate-500">Siblings</span>
                       <span className={`font-semibold ${isLocked ? 'text-slate-400 italic' : 'text-slate-700'}`}>{isLocked ? '🔒 Locked' : `${profile.familyDetails?.siblingsCount || 0} brothers/sisters`}</span>
                     </div>
+                    {!isLocked && profile.familyDetails?.siblingsList && profile.familyDetails.siblingsList.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
+                        <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Children Birth Order (సంతానం క్రమం)</span>
+                        <div className="space-y-2">
+                          {getSiblingOrderedList()?.map((item, idx) => (
+                            <div key={idx} className={`flex justify-between items-center p-2.5 rounded-xl text-xs ${item.isSelf ? 'bg-gold-500/10 border border-gold-400 font-bold text-crimson-950 shadow-sm' : 'bg-slate-50 text-slate-700 border border-slate-200/50'}`}>
+                              <span className="flex items-center gap-1.5">
+                                <span className={`w-1.5 h-1.5 rounded-full ${item.isSelf ? 'bg-gold-600' : 'bg-slate-400'}`}></span>
+                                {item.label}: {item.name}
+                              </span>
+                              <span className="text-[10px] uppercase font-bold text-slate-500">{item.status}{item.occupation ? ` • ${item.occupation}` : ''}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -213,11 +213,24 @@ exports.updateMyProfile = async (req, res) => {
     if (namazFrequency) updateData.namazFrequency = namazFrequency;
     if (isPhotoPublic !== undefined) updateData.isPhotoPublic = isPhotoPublic === 'true' || isPhotoPublic === true;
 
+    // Parse siblingsList if sent (it might be a JSON string due to multipart/form-data upload format)
+    let parsedSiblingsList = undefined;
+    if (req.body.siblingsList !== undefined) {
+      try {
+        parsedSiblingsList = typeof req.body.siblingsList === 'string'
+          ? JSON.parse(req.body.siblingsList)
+          : req.body.siblingsList;
+      } catch (err) {
+        console.error('Failed to parse siblingsList in profile update:', err);
+      }
+    }
+
     // Handle nested objects
     updateData.familyDetails = {
-      fatherOccupation: fatherOccupation || profile.familyDetails.fatherOccupation,
-      motherOccupation: motherOccupation || profile.familyDetails.motherOccupation,
-      siblingsCount: siblingsCount ? parseInt(siblingsCount) : profile.familyDetails.siblingsCount,
+      fatherOccupation: fatherOccupation !== undefined ? fatherOccupation : profile.familyDetails.fatherOccupation,
+      motherOccupation: motherOccupation !== undefined ? motherOccupation : profile.familyDetails.motherOccupation,
+      siblingsCount: parsedSiblingsList !== undefined ? parsedSiblingsList.length : (siblingsCount ? parseInt(siblingsCount) : profile.familyDetails.siblingsCount),
+      siblingsList: parsedSiblingsList !== undefined ? parsedSiblingsList : profile.familyDetails.siblingsList
     };
 
     updateData.partnerPreferences = {

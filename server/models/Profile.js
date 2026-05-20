@@ -80,11 +80,18 @@ const ProfileSchema = new mongoose.Schema(
       maxlength: [1000, 'About cannot be more than 1000 characters'],
     },
 
-    // Family Details
     familyDetails: {
       fatherOccupation: { type: String, default: '' },
       motherOccupation: { type: String, default: '' },
       siblingsCount: { type: Number, default: 0 },
+      siblingsList: [
+        {
+          gender: { type: String, enum: ['male', 'female'], required: true },
+          relation: { type: String, enum: ['Elder Brother', 'Younger Brother', 'Elder Sister', 'Younger Sister'], required: true },
+          maritalStatus: { type: String, enum: ['Married', 'Unmarried'], default: 'Unmarried' },
+          occupation: { type: String, default: '' }
+        }
+      ]
     },
 
     // Partner Preferences

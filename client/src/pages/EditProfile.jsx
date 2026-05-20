@@ -26,6 +26,7 @@ const EditProfile = () => {
     fatherOccupation: '',
     motherOccupation: '',
     siblingsCount: 0,
+    siblingsList: [],
     partnerAgeRange: '',
     partnerSect: '',
     partnerEducation: ''
@@ -57,6 +58,7 @@ const EditProfile = () => {
         fatherOccupation: profile.familyDetails?.fatherOccupation || '',
         motherOccupation: profile.familyDetails?.motherOccupation || '',
         siblingsCount: profile.familyDetails?.siblingsCount || 0,
+        siblingsList: profile.familyDetails?.siblingsList || [],
         partnerAgeRange: profile.partnerPreferences?.ageRange || '',
         partnerSect: profile.partnerPreferences?.sectPreference || '',
         partnerEducation: profile.partnerPreferences?.educationPreference || ''
@@ -105,6 +107,49 @@ const EditProfile = () => {
     setFormData({ ...formData, [e.target.name]: value });
   };
 
+  const handleAddSibling = () => {
+    const newSibling = {
+      gender: 'male',
+      relation: 'Elder Brother',
+      maritalStatus: 'Unmarried',
+      occupation: ''
+    };
+    const updatedList = [...(formData.siblingsList || []), newSibling];
+    setFormData({
+      ...formData,
+      siblingsList: updatedList,
+      siblingsCount: updatedList.length
+    });
+  };
+
+  const handleSiblingFieldChange = (index, field, value) => {
+    const updatedList = [...formData.siblingsList];
+    updatedList[index][field] = value;
+    
+    // Automatically set gender based on relation
+    if (field === 'relation') {
+      if (value.endsWith('Sister')) {
+        updatedList[index].gender = 'female';
+      } else {
+        updatedList[index].gender = 'male';
+      }
+    }
+    
+    setFormData({
+      ...formData,
+      siblingsList: updatedList
+    });
+  };
+
+  const handleRemoveSibling = (index) => {
+    const updatedList = formData.siblingsList.filter((_, idx) => idx !== index);
+    setFormData({
+      ...formData,
+      siblingsList: updatedList,
+      siblingsCount: updatedList.length
+    });
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -120,7 +165,11 @@ const EditProfile = () => {
     try {
       const data = new FormData();
       Object.keys(formData).forEach(key => {
-        data.append(key, formData[key]);
+        if (key === 'siblingsList') {
+          data.append(key, JSON.stringify(formData[key]));
+        } else {
+          data.append(key, formData[key]);
+        }
       });
       
       if (photoFile) {
@@ -394,13 +443,77 @@ const EditProfile = () => {
                     <p className="text-[10px] text-amber-600 font-semibold pl-1 mt-1">* Father's Occupation is required to complete Family details.</p>
                   )}
                 </div>
-                <div className="space-y-1.5">
+                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Mother's Occupation</label>
                   <input type="text" name="motherOccupation" value={formData.motherOccupation} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Number of Siblings</label>
-                  <input type="number" name="siblingsCount" min="0" value={formData.siblingsCount} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
+                
+                <div className="space-y-4 pt-4 border-t border-slate-100 col-span-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Siblings Details (తోబుట్టువుల వివరాలు)</label>
+                    <button 
+                      type="button" 
+                      onClick={handleAddSibling}
+                      className="text-xs font-bold text-crimson-800 bg-crimson-50 hover:bg-crimson-100 px-3 py-1.5 rounded-lg border border-crimson-200 transition-colors"
+                    >
+                      + Add Sibling
+                    </button>
+                  </div>
+                  
+                  {formData.siblingsList && formData.siblingsList.map((sib, index) => (
+                    <div key={index} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3 relative">
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveSibling(index)}
+                        className="absolute top-2 right-2 text-xs text-red-500 hover:text-red-700 font-bold"
+                      >
+                        Remove
+                      </button>
+                      <div className="text-[10px] font-bold text-slate-400">Sibling #{index + 1}</div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-500">Relation</label>
+                          <select 
+                            value={sib.relation} 
+                            onChange={(e) => handleSiblingFieldChange(index, 'relation', e.target.value)}
+                            className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs focus:outline-none"
+                          >
+                            <option value="Elder Brother">Elder Brother (అన్నయ్య)</option>
+                            <option value="Younger Brother">Younger Brother (తమ్ముడు)</option>
+                            <option value="Elder Sister">Elder Sister (అక్క)</option>
+                            <option value="Younger Sister">Younger Sister (చెల్లెలు)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-500">Marital Status</label>
+                          <select 
+                            value={sib.maritalStatus} 
+                            onChange={(e) => handleSiblingFieldChange(index, 'maritalStatus', e.target.value)}
+                            className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs focus:outline-none"
+                          >
+                            <option value="Unmarried">Unmarried (పెళ్లి కాలేదు)</option>
+                            <option value="Married">Married (పెళ్ళయింది)</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-500">Occupation (optional)</label>
+                        <input 
+                          type="text" 
+                          value={sib.occupation || ''} 
+                          onChange={(e) => handleSiblingFieldChange(index, 'occupation', e.target.value)}
+                          placeholder="e.g. Student, Software Engineer" 
+                          className="w-full px-2 py-1.5 rounded bg-white border border-slate-200 text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {(!formData.siblingsList || formData.siblingsList.length === 0) && (
+                    <p className="text-xs text-slate-400 italic text-center py-2">No siblings added yet. Click "+ Add Sibling" to list them in order of birth.</p>
+                  )}
                 </div>
               </div>
             </div>
