@@ -416,7 +416,7 @@ const UserProfile = () => {
                     </div>
                     {!isLocked && profile.familyDetails?.siblingsList && profile.familyDetails.siblingsList.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-fadeIn">
-                        <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Children Birth Order (సంతానం క్రమం)</span>
+                        <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Children Birth Order</span>
                         <div className="space-y-2">
                           {getSiblingOrderedList()?.map((item, idx) => (
                             <div key={idx} className={`flex justify-between items-center p-2.5 rounded-xl text-xs ${item.isSelf ? 'bg-gold-500/10 border border-gold-400 font-bold text-crimson-950 shadow-sm' : 'bg-slate-50 text-slate-700 border border-slate-200/50'}`}>

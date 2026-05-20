@@ -450,7 +450,7 @@ const EditProfile = () => {
                 
                 <div className="space-y-4 pt-4 border-t border-slate-100 col-span-1">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Siblings Details (తోబుట్టువుల వివరాలు)</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Siblings Details</label>
                     <button 
                       type="button" 
                       onClick={handleAddSibling}
@@ -479,10 +479,10 @@ const EditProfile = () => {
                             onChange={(e) => handleSiblingFieldChange(index, 'relation', e.target.value)}
                             className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs focus:outline-none"
                           >
-                            <option value="Elder Brother">Elder Brother (అన్నయ్య)</option>
-                            <option value="Younger Brother">Younger Brother (తమ్ముడు)</option>
-                            <option value="Elder Sister">Elder Sister (అక్క)</option>
-                            <option value="Younger Sister">Younger Sister (చెల్లెలు)</option>
+                            <option value="Elder Brother">Elder Brother</option>
+                            <option value="Younger Brother">Younger Brother</option>
+                            <option value="Elder Sister">Elder Sister</option>
+                            <option value="Younger Sister">Younger Sister</option>
                           </select>
                         </div>
                         <div className="space-y-1">
@@ -492,8 +492,8 @@ const EditProfile = () => {
                             onChange={(e) => handleSiblingFieldChange(index, 'maritalStatus', e.target.value)}
                             className="w-full px-2 py-1 rounded bg-white border border-slate-200 text-xs focus:outline-none"
                           >
-                            <option value="Unmarried">Unmarried (పెళ్లి కాలేదు)</option>
-                            <option value="Married">Married (పెళ్ళయింది)</option>
+                            <option value="Unmarried">Unmarried</option>
+                            <option value="Married">Married</option>
                           </select>
                         </div>
                       </div>
