@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { FaHeart, FaShieldAlt, FaComments, FaCrown, FaUsers, FaArrowRight, FaMoon, FaLock, FaPhoneAlt, FaMosque } from 'react-icons/fa';
 import logo3 from '../assets/logo3.png';
 import bannerMatrimony from '../assets/banner_matrimony.png';
+import premiumBanner from '../assets/transparent_banner.png';
 
 const LandingPage = () => {
   const { user } = useContext(AuthContext);
@@ -11,52 +12,29 @@ const LandingPage = () => {
   return (
     <div className="bg-cream-50 overflow-hidden">
       {/* Premium Hero Section */}
-      <section className="relative bg-white py-3 md:py-4 px-4 md:px-8 border-b border-slate-100 overflow-hidden flex flex-col items-center justify-center text-center lg:h-[calc(100vh-80px)] lg:max-h-[800px] min-h-[560px]">
-        {/* Abstract Gold Background Glows */}
-        <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-gold-500/5 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-gold-600/5 rounded-full blur-[120px]"></div>
+      <section
+        className="relative py-3 md:py-4 px-4 md:px-8 border-b-2 border-gold-500/30 overflow-hidden flex flex-col items-center justify-center text-center lg:h-[calc(100vh-80px)] lg:max-h-[800px] min-h-[560px]"
+        style={{ background: 'linear-gradient(135deg, #4f080e 50%, #d4af37 50%)' }}
+      >
+        <div className="max-w-[1550px] mx-auto w-full relative z-10">
 
-        <div className="max-w-7xl mx-auto w-full relative z-10">
-          
-          {/* Top Titles Box (Thick Logo Cherry Red Background) */}
-          <div className="max-w-2xl mx-auto mb-3 md:mb-4 p-0.5 rounded-2xl bg-gradient-to-r from-gold-500/40 via-gold-400/20 to-gold-500/40 border border-gold-500/30 shadow-2xl relative overflow-hidden">
-            <div className="bg-[#4f080e] rounded-xl px-5 py-2.5 md:py-3.5 border border-gold-500/20 relative">
-              {/* Corner Stars */}
-              <div className="absolute top-2 left-2 text-gold-500/25 text-xs">✨</div>
-              <div className="absolute top-2 right-2 text-gold-500/25 text-xs">✨</div>
-              <div className="absolute bottom-2 left-2 text-gold-500/25 text-xs">✨</div>
-              <div className="absolute bottom-2 right-2 text-gold-500/25 text-xs">✨</div>
-
-              <span className="text-gold-400 text-[10px] md:text-xs font-bold tracking-widest uppercase mb-0.5 block">Most Trusted Matrimony Service</span>
-              <h1 className="text-white text-2xl md:text-[32px] font-serif font-extrabold leading-tight">
-                Rohin Muslim <span className="text-gold-400 text-gold-gradient font-extrabold">Matrimony</span>
-              </h1>
-              <div className="flex items-center justify-center gap-3 mt-1.5">
-                <span className="h-[1px] w-8 md:w-16 bg-gradient-to-r from-transparent to-gold-500/50"></span>
-                <span className="text-gold-400 text-[9px] md:text-[11px] font-bold uppercase tracking-widest border-t border-b border-gold-500/35 px-4 py-1 backdrop-blur-sm bg-crimson-900/40">
-                  Premium Matchmaking Service
-                </span>
-                <span className="h-[1px] w-8 md:w-16 bg-gradient-to-l from-transparent to-gold-500/50"></span>
-              </div>
-            </div>
-          </div>
 
           {/* Three-Column Banner Content */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-center mt-2">
-            
+
             {/* Left Column Features (Visible on Desktop) */}
             <div className="lg:col-span-3 hidden lg:flex flex-col gap-3 md:gap-4 text-right">
               {/* Feature 1 */}
               <div className="flex gap-3.5 items-center justify-end group">
                 <div className="flex flex-col">
-                  <h3 className="text-slate-900 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-700 transition-colors">Verified Profiles</h3>
-                  <p className="text-slate-600 text-[11px] md:text-xs leading-relaxed font-semibold">A secured database of authentic profiles.</p>
+                  <h3 className="text-white text-sm md:text-base font-extrabold font-serif group-hover:text-gold-200 transition-colors">Verified Profiles</h3>
+                  <p className="text-gold-100/90 text-[11px] md:text-xs leading-relaxed font-semibold">A secured database of authentic profiles.</p>
                 </div>
                 <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-[#4f080e] border border-gold-500/50 rounded-lg shadow-md transform rotate-0 transition-transform duration-500 group-hover:rotate-12"></div>
-                  <div className="absolute inset-0 bg-[#4f080e] border border-gold-500/50 rounded-lg shadow-md transform rotate-45 transition-transform duration-500 group-hover:rotate-57"></div>
-                  <div className="absolute w-9.5 h-9.5 rounded-full border border-gold-400/40 flex items-center justify-center z-10 bg-gradient-to-b from-[#4f080e] to-[#2a0407]">
-                    <FaShieldAlt className="text-gold-400 text-sm group-hover:text-gold-300 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)] z-20" />
+                  <div className="absolute inset-0 bg-[#d4af37] border border-gold-300 rounded-lg shadow-md transform rotate-0 transition-transform duration-500 group-hover:rotate-12"></div>
+                  <div className="absolute inset-0 bg-[#d4af37] border border-gold-300 rounded-lg shadow-md transform rotate-45 transition-transform duration-500 group-hover:rotate-57"></div>
+                  <div className="absolute w-9.5 h-9.5 rounded-full border border-gold-200/40 flex items-center justify-center z-10 bg-gradient-to-b from-[#ebd94e] to-[#d4af37]">
+                    <FaShieldAlt className="text-[#4f080e] text-sm group-hover:text-crimson-950 drop-shadow-[0_0_4px_rgba(79,8,14,0.3)] z-20" />
                   </div>
                 </div>
               </div>
@@ -64,14 +42,14 @@ const LandingPage = () => {
               {/* Feature 2 */}
               <div className="flex gap-3.5 items-center justify-end group">
                 <div className="flex flex-col">
-                  <h3 className="text-slate-900 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-700 transition-colors">Personalized Matching</h3>
-                  <p className="text-slate-600 text-[11px] md:text-xs leading-relaxed font-semibold">Matches filtered to fit your values.</p>
+                  <h3 className="text-white text-sm md:text-base font-extrabold font-serif group-hover:text-gold-200 transition-colors">Personalized Matching</h3>
+                  <p className="text-gold-100/90 text-[11px] md:text-xs leading-relaxed font-semibold">Matches filtered to fit your values.</p>
                 </div>
                 <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-[#4f080e] border border-gold-500/50 rounded-lg shadow-md transform rotate-0 transition-transform duration-500 group-hover:rotate-12"></div>
-                  <div className="absolute inset-0 bg-[#4f080e] border border-gold-500/50 rounded-lg shadow-md transform rotate-45 transition-transform duration-500 group-hover:rotate-57"></div>
-                  <div className="absolute w-9.5 h-9.5 rounded-full border border-gold-400/40 flex items-center justify-center z-10 bg-gradient-to-b from-[#4f080e] to-[#2a0407]">
-                    <FaHeart className="text-gold-400 text-sm group-hover:text-gold-300 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)] z-20 animate-pulse" />
+                  <div className="absolute inset-0 bg-[#d4af37] border border-gold-300 rounded-lg shadow-md transform rotate-0 transition-transform duration-500 group-hover:rotate-12"></div>
+                  <div className="absolute inset-0 bg-[#d4af37] border border-gold-300 rounded-lg shadow-md transform rotate-45 transition-transform duration-500 group-hover:rotate-57"></div>
+                  <div className="absolute w-9.5 h-9.5 rounded-full border border-gold-200/40 flex items-center justify-center z-10 bg-gradient-to-b from-[#ebd94e] to-[#d4af37]">
+                    <FaHeart className="text-[#4f080e] text-sm group-hover:text-crimson-950 drop-shadow-[0_0_4px_rgba(79,8,14,0.3)] z-20 animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -79,82 +57,33 @@ const LandingPage = () => {
               {/* Feature 3 */}
               <div className="flex gap-3.5 items-center justify-end group">
                 <div className="flex flex-col">
-                  <h3 className="text-slate-900 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-700 transition-colors">100% Privacy Lock</h3>
-                  <p className="text-slate-600 text-[11px] md:text-xs leading-relaxed font-semibold">Complete confidentiality for all users.</p>
+                  <h3 className="text-white text-sm md:text-base font-extrabold font-serif group-hover:text-gold-200 transition-colors">100% Privacy Lock</h3>
+                  <p className="text-gold-100/90 text-[11px] md:text-xs leading-relaxed font-semibold">Complete confidentiality for all users.</p>
                 </div>
                 <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-[#4f080e] border border-gold-500/50 rounded-lg shadow-md transform rotate-0 transition-transform duration-500 group-hover:rotate-12"></div>
-                  <div className="absolute inset-0 bg-[#4f080e] border border-gold-500/50 rounded-lg shadow-md transform rotate-45 transition-transform duration-500 group-hover:rotate-57"></div>
-                  <div className="absolute w-9.5 h-9.5 rounded-full border border-gold-400/40 flex items-center justify-center z-10 bg-gradient-to-b from-[#4f080e] to-[#2a0407]">
-                    <FaLock className="text-gold-400 text-sm group-hover:text-gold-300 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)] z-20" />
+                  <div className="absolute inset-0 bg-[#d4af37] border border-gold-300 rounded-lg shadow-md transform rotate-0 transition-transform duration-500 group-hover:rotate-12"></div>
+                  <div className="absolute inset-0 bg-[#d4af37] border border-gold-300 rounded-lg shadow-md transform rotate-45 transition-transform duration-500 group-hover:rotate-57"></div>
+                  <div className="absolute w-9.5 h-9.5 rounded-full border border-gold-200/40 flex items-center justify-center z-10 bg-gradient-to-b from-[#ebd94e] to-[#d4af37]">
+                    <FaLock className="text-[#4f080e] text-sm group-hover:text-crimson-950 drop-shadow-[0_0_4px_rgba(79,8,14,0.3)] z-20" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Center Column Banner Image styled as Mihrab Islamic Archway */}
-            <div className="lg:col-span-6 flex justify-center relative px-2">
+            <div className="lg:col-span-6 flex justify-center items-center relative px-2 -mt-6 md:-mt-10 lg:-mt-14">
               {/* Starry Outer Aura Glow */}
-              <div className="absolute inset-0 bg-gold-500/5 rounded-2xl blur-xl"></div>
-              
-              {/* Inner Wrapper Container for Pillars and Arch Frame */}
-              <div className="relative max-w-[360px] md:max-w-[520px] w-full mx-auto px-5 md:px-9 pt-4">
-                
-                {/* Decorative Hanging Lantern */}
-                <div className="absolute top-[-10px] left-1/2 transform -translate-x-1/2 flex flex-col items-center z-25">
-                  <span className="w-[1.5px] h-5 bg-gradient-to-b from-transparent via-gold-500/80 to-gold-400"></span>
-                  <div className="w-8 h-8 rounded-full bg-[#4f080e] border border-gold-500/50 flex items-center justify-center text-gold-400 shadow-lg glow-gold shadow-gold-500/40 transform -translate-y-0.5">
-                    <FaMosque className="text-xs text-gold-400 animate-pulse" />
-                  </div>
-                </div>
+              <div className="absolute inset-0 bg-gold-500/5 rounded-2xl blur-xl pointer-events-none"></div>
 
-                {/* Left Decorative Islamic Pillar */}
-                <div className="absolute bottom-0 left-1.5 md:left-3 w-3.5 md:w-5 h-[75%] flex flex-col items-center z-10">
-                  {/* Minaret Dome Top */}
-                  <div className="w-5 md:w-7 h-4 md:h-5 bg-gradient-to-b from-gold-300 via-gold-500 to-gold-600 rounded-t-full border border-gold-500/50 shadow-lg flex items-center justify-center">
-                    <div className="w-1 h-1.5 bg-gold-200 rounded-t-full"></div>
-                  </div>
-                  {/* Pillar Capital */}
-                  <div className="w-4 md:w-6 h-1 md:h-1.5 bg-gold-500 border border-gold-600 rounded-sm"></div>
-                  {/* Shaft */}
-                  <div className="flex-1 w-2.5 md:w-4 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600 border-x border-gold-500/35 relative">
-                    <div className="absolute top-[20%] left-0 right-0 h-[2px] bg-gold-700/60"></div>
-                    <div className="absolute top-[50%] left-0 right-0 h-[2px] bg-gold-700/60"></div>
-                    <div className="absolute top-[80%] left-0 right-0 h-[2px] bg-gold-700/60"></div>
-                  </div>
-                  {/* Pillar Base */}
-                  <div className="w-4.5 md:w-7 h-2.5 md:h-3.5 bg-gradient-to-r from-gold-700 to-gold-500 border border-gold-600 rounded-t-sm shadow-md"></div>
-                </div>
-
-                {/* Right Decorative Islamic Pillar */}
-                <div className="absolute bottom-0 right-1.5 md:right-3 w-3.5 md:w-5 h-[75%] flex flex-col items-center z-10">
-                  {/* Minaret Dome Top */}
-                  <div className="w-5 md:w-7 h-4 md:h-5 bg-gradient-to-b from-gold-300 via-gold-500 to-gold-600 rounded-t-full border border-gold-500/50 shadow-lg flex items-center justify-center">
-                    <div className="w-1 h-1.5 bg-gold-200 rounded-t-full"></div>
-                  </div>
-                  {/* Pillar Capital */}
-                  <div className="w-4 md:w-6 h-1 md:h-1.5 bg-gold-500 border border-gold-600 rounded-sm"></div>
-                  {/* Shaft */}
-                  <div className="flex-1 w-2.5 md:w-4 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600 border-x border-gold-500/35 relative">
-                    <div className="absolute top-[20%] left-0 right-0 h-[2px] bg-gold-700/60"></div>
-                    <div className="absolute top-[50%] left-0 right-0 h-[2px] bg-gold-700/60"></div>
-                    <div className="absolute top-[80%] left-0 right-0 h-[2px] bg-gold-700/60"></div>
-                  </div>
-                  {/* Pillar Base */}
-                  <div className="w-4.5 md:w-7 h-2.5 md:h-3.5 bg-gradient-to-r from-gold-700 to-gold-500 border border-gold-600 rounded-t-sm shadow-md"></div>
-                </div>
-
-                {/* Islamic Mughal Arch Frame */}
-                <div className="relative rounded-t-[180px] md:rounded-t-[260px] border-[4px] md:border-[5px] border-gold-500 p-1 bg-gradient-to-b from-gold-400 to-gold-600 shadow-2xl w-full overflow-hidden group hover:border-gold-400 transition-all duration-300">
-                  <div className="rounded-t-[170px] md:rounded-t-[250px] overflow-hidden bg-crimson-950">
-                    <img 
-                      src={bannerMatrimony} 
-                      alt="Muslim Marriage Consultancy Banner" 
-                      className="max-h-[220px] md:max-h-[290px] w-full object-cover rounded-t-[170px] md:rounded-t-[250px] group-hover:scale-105 transition-transform duration-750"
-                    />
-                  </div>
-                </div>
-
+              <div className="relative max-w-[420px] md:max-w-[620px] w-full mx-auto filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.55)] transform hover:scale-[1.02] transition-transform duration-500">
+                <img
+                  src={bannerMatrimony}
+                  alt="Muslim Marriage Consultancy Banner"
+                  className="max-h-[380px] md:max-h-[580px] w-full h-auto object-contain block mx-auto"
+                  style={{
+                    clipPath: 'polygon(0% 100%, 0% 42%, 4% 35%, 8% 28%, 14% 22%, 20% 17%, 28% 13%, 37% 10%, 46% 8.5%, 50% 7.5%, 54% 8.5%, 63% 10%, 72% 13%, 80% 17%, 86% 22%, 92% 28%, 96% 35%, 100% 42%, 100% 100%)'
+                  }}
+                />
               </div>
             </div>
 
@@ -170,8 +99,8 @@ const LandingPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="text-slate-900 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-700 transition-colors">Expert Advisors</h3>
-                  <p className="text-slate-600 text-[11px] md:text-xs leading-relaxed font-semibold">Assistance from experienced matchmakers.</p>
+                  <h3 className="text-crimson-950 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-800 transition-colors">Expert Advisors</h3>
+                  <p className="text-[#4f080e]/80 text-[11px] md:text-xs leading-relaxed font-semibold">Assistance from experienced matchmakers.</p>
                 </div>
               </div>
 
@@ -185,8 +114,8 @@ const LandingPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="text-slate-900 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-700 transition-colors">Family Meetings</h3>
-                  <p className="text-slate-600 text-[11px] md:text-xs leading-relaxed font-semibold">Family interactions coordinated safely.</p>
+                  <h3 className="text-crimson-950 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-800 transition-colors">Family Meetings</h3>
+                  <p className="text-[#4f080e]/80 text-[11px] md:text-xs leading-relaxed font-semibold">Family interactions coordinated safely.</p>
                 </div>
               </div>
 
@@ -200,46 +129,15 @@ const LandingPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="text-slate-900 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-700 transition-colors">End-to-End Support</h3>
-                  <p className="text-slate-600 text-[11px] md:text-xs leading-relaxed font-semibold">Guidance from sign-up to marriage.</p>
+                  <h3 className="text-crimson-950 text-sm md:text-base font-extrabold font-serif group-hover:text-crimson-800 transition-colors">End-to-End Support</h3>
+                  <p className="text-[#4f080e]/80 text-[11px] md:text-xs leading-relaxed font-semibold">Guidance from sign-up to marriage.</p>
                 </div>
               </div>
             </div>
 
           </div>
 
-          {/* Bottom Action Card Banner */}
-          <div className="max-w-lg mx-auto mt-3 md:mt-4 p-1 rounded-2xl bg-gradient-to-r from-gold-500/15 via-slate-200/50 to-gold-500/15 border border-gold-500/25 shadow-md relative overflow-hidden backdrop-blur-md">
-            <div className="bg-white/95 rounded-xl p-2.5 md:p-3 border border-gold-500/15 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="text-left space-y-0.5">
-                <span className="text-[9px] font-bold tracking-widest text-gold-600 uppercase">Begin Your Journey</span>
-                <h4 className="text-slate-900 font-serif font-extrabold text-xs md:text-sm">Toward a Blessed Halal Marriage</h4>
-              </div>
-              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-                {user ? (
-                  <Link
-                    to="/dashboard"
-                    className="bg-gold-gradient text-crimson-950 font-bold text-center text-[11px] px-4 py-2 rounded-full shadow-md hover:scale-105 transition-all flex items-center justify-center gap-1"
-                  >
-                    Dashboard <FaArrowRight className="text-[8px]" />
-                  </Link>
-                ) : (
-                  <>
-                    <Link
-                      to="/register"
-                      className="bg-gold-gradient text-crimson-950 font-bold text-center text-[11px] px-4 py-2 rounded-full shadow-md hover:scale-105 transition-all flex items-center justify-center gap-1"
-                    >
-                      Register Free <FaArrowRight className="text-[8px]" />
-                    </Link>
-                  </>
-                )}
-                <div className="flex items-center gap-1 text-[11px] text-gold-600 font-extrabold px-3 py-1.5 rounded-full border border-gold-500/20 bg-gold-500/5">
-                  <FaPhoneAlt className="text-[9px]" />
-                  <span>09880453131</span>
-                </div>
-              </div>
-            </div>
-          </div>
+
 
         </div>
       </section>
@@ -516,3 +414,4 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
