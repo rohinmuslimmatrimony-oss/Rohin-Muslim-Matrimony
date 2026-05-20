@@ -60,6 +60,15 @@ exports.sendInterest = async (req, res) => {
       });
     }
 
+    // Trigger Web Push notification
+    const sendPushNotification = require('../utils/pushNotifier');
+    sendPushNotification(
+      receiverId,
+      'New Interest Expressed 💖',
+      `${senderProfile?.name || 'Someone'} is interested in your profile!`,
+      '/interests'
+    ).catch(err => console.error('Failed to trigger sendInterest push notification:', err));
+
     sendEmail({
       email: receiverUser.email,
       subject: 'New Interest Received! 💖 - Rohin Muslim Matrimony',
@@ -142,6 +151,15 @@ exports.acceptInterest = async (req, res) => {
         message: `${receiverProfile?.name || 'A user'} accepted your interest request! 🎉`
       });
     }
+
+    // Trigger Web Push notification
+    const sendPushNotification = require('../utils/pushNotifier');
+    sendPushNotification(
+      request.sender.toString(),
+      'Interest Accepted! 🎉',
+      `${receiverProfile?.name || 'Someone'} accepted your interest request!`,
+      '/interests'
+    ).catch(err => console.error('Failed to trigger acceptInterest push notification:', err));
 
     if (senderUser) {
       sendEmail({

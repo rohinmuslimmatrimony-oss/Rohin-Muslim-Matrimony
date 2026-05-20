@@ -231,3 +231,42 @@ exports.upgradePlan = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Save push subscription keys for Web Push
+// @route   POST /api/auth/subscribe
+// @access  Private
+exports.saveSubscription = async (req, res) => {
+  try {
+    const { endpoint, keys } = req.body;
+    if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
+      return res.status(400).json({ success: false, message: 'Invalid subscription details' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Avoid duplicate subscriptions
+    const exists = user.pushSubscriptions.some(sub => sub.endpoint === endpoint);
+    if (!exists) {
+      user.pushSubscriptions.push({ endpoint, keys });
+      await user.save();
+    }
+
+    return res.status(200).json({ success: true, message: 'Subscription saved successfully' });
+  } catch (error) {
+    console.error('SaveSubscription Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get VAPID public key
+// @route   GET /api/auth/vapid-public-key
+// @access  Private
+exports.getVapidPublicKey = (req, res) => {
+  return res.status(200).json({
+    success: true,
+    publicKey: process.env.VAPID_PUBLIC_KEY || ''
+  });
+};

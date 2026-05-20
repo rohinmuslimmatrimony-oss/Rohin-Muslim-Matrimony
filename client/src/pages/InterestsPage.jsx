@@ -46,6 +46,17 @@ const InterestsPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    if (activeChat) {
+      localStorage.setItem('activeChatPartnerId', activeChat.user?._id || activeChat.user);
+    } else {
+      localStorage.removeItem('activeChatPartnerId');
+    }
+    return () => {
+      localStorage.removeItem('activeChatPartnerId');
+    };
+  }, [activeChat]);
+
   const fetchRequests = async () => {
     try {
       const res = await api.get('/requests');

@@ -111,6 +111,44 @@ export const AuthProvider = ({ children }) => {
           }
         });
       });
+
+      socket.on('receive_message', (data) => {
+        const activePartnerId = localStorage.getItem('activeChatPartnerId');
+        const isCurrentlyChatting = window.location.pathname === '/interests' && activePartnerId === data.sender;
+        
+        if (!isCurrentlyChatting) {
+          toast((t) => (
+            <div 
+              onClick={() => { 
+                toast.dismiss(t.id); 
+                window.location.href = '/interests'; 
+              }} 
+              className="cursor-pointer py-1"
+            >
+              <div className="font-bold text-white flex items-center gap-2">
+                <span>💬</span> New Message Received!
+              </div>
+              <div className="text-xs text-slate-200 mt-1">
+                You have received a new message from a connected member.
+              </div>
+              <div className="text-[10px] text-gold-400 font-bold underline mt-1.5 hover:text-white transition-colors">
+                Click to open chat & reply
+              </div>
+            </div>
+          ), {
+            duration: 6000,
+            position: 'top-right',
+            style: {
+              background: '#0d6efd',
+              color: '#fff',
+              border: '1px solid rgba(212, 175, 55, 0.3)',
+              borderRadius: '16px',
+              padding: '12px 16px',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            }
+          });
+        }
+      });
     }
 
     return () => {
@@ -118,6 +156,59 @@ export const AuthProvider = ({ children }) => {
         socket.disconnect();
       }
     };
+  }, [user]);
+
+  // Helper to convert base64 VAPID public key to Uint8Array
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+  const subscribeToPushNotifications = async () => {
+    if ('serviceWorker' in navigator && 'PushManager' in window && user?._id) {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        
+        // Wait until service worker is ready
+        await navigator.serviceWorker.ready;
+
+        const keyRes = await api.get('/auth/vapid-public-key');
+        if (!keyRes.data.success || !keyRes.data.publicKey) {
+          console.warn('VAPID public key not configured on server.');
+          return;
+        }
+        
+        const vapidPublicKey = keyRes.data.publicKey;
+        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+        });
+
+        await api.post('/auth/subscribe', subscription);
+        console.log('Web Push subscription registered successfully.');
+      } catch (error) {
+        console.error('Failed to subscribe to Web Push notifications:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (user?._id) {
+      // Trigger Web Push registration dynamically
+      subscribeToPushNotifications();
+    }
   }, [user]);
 
   // Login handler
