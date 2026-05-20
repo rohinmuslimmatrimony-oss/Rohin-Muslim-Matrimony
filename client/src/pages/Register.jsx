@@ -36,9 +36,9 @@ const Register = () => {
     fatherOccupation: '',
     motherOccupation: '',
     siblingsCount: 0,
-    profession: 'Business',
-    education: 'Graduate',
-    about: 'Assalamu Alaikum, I am looking for a suitable partner.',
+    profession: '',
+    education: '',
+    about: '',
     partnerAgeRange: '20-30',
     partnerSect: 'No Preference',
     partnerEducation: "Doesn't Matter"

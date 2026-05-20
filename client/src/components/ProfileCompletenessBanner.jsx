@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { FaLock, FaArrowRight } from 'react-icons/fa';
 
 const ProfileCompletenessBanner = () => {
-  const { user, profile } = useContext(AuthContext);
+  const { user, profile, getCompleteness } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
@@ -42,27 +42,7 @@ const ProfileCompletenessBanner = () => {
   const hiddenPaths = ['/login', '/register', '/edit-profile', '/admin'];
   if (hiddenPaths.includes(location.pathname)) return null;
 
-  // Calculate completeness
-  const getCompleteness = () => {
-    if (!profile) return 0;
-    let score = 20; // Base profile from registration
-    
-    // Check Wali details (+25%)
-    if (profile.waliContact && profile.waliContact.trim() !== '') {
-      score += 25;
-    }
-    // Check Family details (+25%)
-    if (profile.familyDetails && (profile.familyDetails.fatherOccupation || profile.familyDetails.motherOccupation || profile.familyDetails.siblingsCount !== undefined)) {
-      score += 25;
-    }
-    // Check Custom details (+30%)
-    if (profile.customCareerDetails && (profile.customCareerDetails.degree || profile.customCareerDetails.occupation)) {
-      score += 30;
-    }
-    return score;
-  };
-
-  const completeness = getCompleteness();
+  const completeness = getCompleteness().score;
 
   // If 100% complete, hide the banner completely
   if (completeness >= 100) return null;

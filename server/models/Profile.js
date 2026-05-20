@@ -37,6 +37,10 @@ const ProfileSchema = new mongoose.Schema(
       type: String,
       default: 'Urdu',
     },
+    profileCreatedBy: {
+      type: String,
+      default: 'Self',
+    },
     
     // Religious Background
     religion: {
@@ -57,12 +61,12 @@ const ProfileSchema = new mongoose.Schema(
     // Professional & Location
     profession: {
       type: String,
-      required: [true, 'Please provide a profession'],
+      default: '',
       trim: true,
     },
     education: {
       type: String,
-      required: [true, 'Please provide education details'],
+      default: '',
       trim: true,
     },
     city: {
@@ -72,7 +76,7 @@ const ProfileSchema = new mongoose.Schema(
     },
     about: {
       type: String,
-      required: [true, 'Please provide an about section'],
+      default: '',
       maxlength: [1000, 'About cannot be more than 1000 characters'],
     },
 
@@ -106,7 +110,11 @@ const ProfileSchema = new mongoose.Schema(
     // Contact
     phoneNumber: {
       type: String,
-      default: '+91 98765 43210',
+      default: '',
+    },
+    waliContact: {
+      type: String,
+      default: '',
     },
 
     // Social Graph

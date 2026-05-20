@@ -120,6 +120,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getCompleteness = (prof = profile) => {
+    if (!prof) return { score: 0, missingFields: [] };
+    let score = 20; // Base score (email, password, name, gender, age, city)
+    const missingFields = [];
+    
+    // 1. Family Details (+40%)
+    if (prof.familyDetails?.fatherOccupation && prof.familyDetails?.fatherOccupation.trim() !== '') {
+      score += 40;
+    } else {
+      missingFields.push({ name: '👪 Family Details', percentage: 40, field: 'familyDetails' });
+    }
+    
+    // 2. Career Details Customization (+40%)
+    if (
+      prof.profession && 
+      prof.profession.trim() !== '' && 
+      prof.profession !== 'Not Specified' && 
+      prof.education && 
+      prof.education.trim() !== '' && 
+      prof.education !== 'Not Specified'
+    ) {
+      score += 40;
+    } else {
+      missingFields.push({ name: '💼 Career & Education Details', percentage: 40, field: 'careerDetails' });
+    }
+
+    // 3. Wali Contact (Optional)
+    if (!prof.waliContact || prof.waliContact.trim() === '') {
+      missingFields.push({ name: '📞 Chaperone / Wali Contact (Optional)', percentage: 0, field: 'waliContact' });
+    }
+    
+    return {
+      score: Math.min(score, 100),
+      missingFields
+    };
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -131,6 +168,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateProfile,
         refreshUser,
+        getCompleteness,
       }}
     >
       {children}

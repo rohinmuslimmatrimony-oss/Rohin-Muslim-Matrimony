@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { FaCamera, FaSave, FaUserShield, FaRegImage, FaLock, FaGlobe } from 'react-icons/fa';
 
 const EditProfile = () => {
-  const { user, profile, refreshUser } = useContext(AuthContext);
+  const { user, profile, refreshUser, getCompleteness } = useContext(AuthContext);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -17,6 +17,7 @@ const EditProfile = () => {
     city: '',
     about: '',
     phoneNumber: '',
+    waliContact: '',
     height: '',
     maritalStatus: '',
     motherTongue: '',
@@ -46,7 +47,8 @@ const EditProfile = () => {
         education: profile.education || '',
         city: profile.city || '',
         about: profile.about || '',
-        phoneNumber: profile.phoneNumber || profile.waliContact || '',
+        phoneNumber: profile.phoneNumber || '',
+        waliContact: profile.waliContact || '',
         height: profile.height || '',
         maritalStatus: profile.maritalStatus || '',
         motherTongue: profile.motherTongue || '',
@@ -65,6 +67,38 @@ const EditProfile = () => {
       }
     }
   }, [profile]);
+
+  const getDynamicCompleteness = () => {
+    if (!profile) return { score: 0, missingFields: [] };
+    const tempProfile = {
+      ...profile,
+      profession: formData.profession,
+      education: formData.education,
+      waliContact: formData.waliContact,
+      familyDetails: {
+        ...profile.familyDetails,
+        fatherOccupation: formData.fatherOccupation,
+        motherOccupation: formData.motherOccupation,
+        siblingsCount: formData.siblingsCount
+      }
+    };
+    return getCompleteness(tempProfile);
+  };
+
+  const { score } = getDynamicCompleteness();
+
+  const isCareerComplete = formData.profession && 
+    formData.profession.trim() !== '' && 
+    formData.profession !== 'Not Specified' && 
+    formData.education && 
+    formData.education.trim() !== '' && 
+    formData.education !== 'Not Specified';
+
+  const isFamilyComplete = !!(formData.fatherOccupation && formData.fatherOccupation.trim() !== '');
+
+  const isProfessionEmpty = !formData.profession || formData.profession.trim() === '' || formData.profession === 'Not Specified';
+  const isEducationEmpty = !formData.education || formData.education.trim() === '' || formData.education === 'Not Specified';
+  const isFatherOccupationEmpty = !formData.fatherOccupation || formData.fatherOccupation.trim() === '';
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -114,7 +148,28 @@ const EditProfile = () => {
     <div className="min-h-screen bg-cream-50 pt-24 pb-12 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-2">Edit Your Profile</h1>
-        <p className="text-slate-600 mb-8">Update your biodata, preferences, and privacy settings.</p>
+        <p className="text-slate-600 mb-6">Update your biodata, preferences, and privacy settings.</p>
+
+        {/* Real-time Completeness Progress Header */}
+        <div className="bg-gradient-to-r from-crimson-900 to-crimson-950 text-white rounded-3xl p-6 md:p-8 mb-8 border border-gold-500/20 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-[80px]"></div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+            <div>
+              <h2 className="text-xl font-serif font-bold text-gold-400">Profile Completeness: {score}%</h2>
+              <p className="text-xs text-slate-300 mt-1">
+                {score === 100 
+                  ? '🎉 Mashallah! Your profile is 100% complete.' 
+                  : 'Complete the highlighted fields below to reach 100% completeness.'}
+              </p>
+            </div>
+            <div className="w-full md:w-64 bg-crimson-950/60 rounded-full h-3.5 border border-gold-500/20 p-0.5 overflow-hidden">
+              <div 
+                className="bg-gold-gradient h-full rounded-full transition-all duration-500" 
+                style={{ width: `${score}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
@@ -123,7 +178,7 @@ const EditProfile = () => {
              <div className="absolute top-0 right-0 w-64 h-64 bg-crimson-900/5 rounded-full blur-[80px]"></div>
              
              <h2 className="text-xl font-serif font-bold text-crimson-950 mb-6 flex items-center gap-2 relative z-10">
-               <FaUserShield className="text-gold-500" /> Photo & Privacy
+                <FaUserShield className="text-gold-500" /> Photo & Privacy
              </h2>
              
              <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
@@ -169,11 +224,18 @@ const EditProfile = () => {
                    </label>
                  </div>
                  
-                 <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Contact Number / Wali Phone</label>
-                    <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
-                    <p className="text-[10px] text-slate-400 pl-1">This is securely hidden. Only connected premium users can see this.</p>
-                 </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Your Contact Number</label>
+                       <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
+                       <p className="text-[10px] text-slate-400 pl-1">This is securely hidden. Only connected premium users can see this.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Chaperone / Wali Contact Number</label>
+                       <input type="text" name="waliContact" value={formData.waliContact} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
+                       <p className="text-[10px] text-slate-400 pl-1">Optional (Wali details are not required to reach 100% completeness).</p>
+                    </div>
+                  </div>
                </div>
              </div>
           </div>
@@ -254,25 +316,76 @@ const EditProfile = () => {
           {/* Section 3: Professional & Family */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="glass-card p-6 rounded-3xl border border-crimson-900/10 shadow-sm">
-              <h2 className="text-lg font-serif font-bold text-crimson-950 mb-4">Education & Career</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-serif font-bold text-crimson-950">Education & Career</h2>
+                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${
+                  isCareerComplete 
+                    ? 'bg-green-500/10 text-green-600 border-green-200' 
+                    : 'bg-amber-500/10 text-amber-600 border-amber-200 animate-pulse'
+                }`}>
+                  {isCareerComplete ? '✓ Complete' : 'Required +40%'}
+                </span>
+              </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Profession</label>
-                  <input type="text" name="profession" value={formData.profession} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
+                  <input 
+                    type="text" 
+                    name="profession" 
+                    value={formData.profession} 
+                    onChange={handleChange} 
+                    className={`w-full px-4 py-3 rounded-xl bg-white/70 border focus:border-gold-500 focus:outline-none transition-all text-sm ${
+                      isProfessionEmpty ? 'border-amber-500/40 shadow-sm shadow-amber-500/5' : 'border-slate-200'
+                    }`} 
+                  />
+                  {isProfessionEmpty && (
+                    <p className="text-[10px] text-amber-600 font-semibold pl-1 mt-1">* Specify your profession (do not use 'Not Specified').</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Highest Education</label>
-                  <input type="text" name="education" value={formData.education} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
+                  <input 
+                    type="text" 
+                    name="education" 
+                    value={formData.education} 
+                    onChange={handleChange} 
+                    className={`w-full px-4 py-3 rounded-xl bg-white/70 border focus:border-gold-500 focus:outline-none transition-all text-sm ${
+                      isEducationEmpty ? 'border-amber-500/40 shadow-sm shadow-amber-500/5' : 'border-slate-200'
+                    }`} 
+                  />
+                  {isEducationEmpty && (
+                    <p className="text-[10px] text-amber-600 font-semibold pl-1 mt-1">* Specify highest education (do not use 'Not Specified').</p>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="glass-card p-6 rounded-3xl border border-crimson-900/10 shadow-sm">
-              <h2 className="text-lg font-serif font-bold text-crimson-950 mb-4">Family Background</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-serif font-bold text-crimson-950">Family Background</h2>
+                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${
+                  isFamilyComplete 
+                    ? 'bg-green-500/10 text-green-600 border-green-200' 
+                    : 'bg-amber-500/10 text-amber-600 border-amber-200 animate-pulse'
+                }`}>
+                  {isFamilyComplete ? '✓ Complete' : 'Required +40%'}
+                </span>
+              </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Father's Occupation</label>
-                  <input type="text" name="fatherOccupation" value={formData.fatherOccupation} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
+                  <input 
+                    type="text" 
+                    name="fatherOccupation" 
+                    value={formData.fatherOccupation} 
+                    onChange={handleChange} 
+                    className={`w-full px-4 py-3 rounded-xl bg-white/70 border focus:border-gold-500 focus:outline-none transition-all text-sm ${
+                      isFatherOccupationEmpty ? 'border-amber-500/40 shadow-sm shadow-amber-500/5' : 'border-slate-200'
+                    }`} 
+                  />
+                  {isFatherOccupationEmpty && (
+                    <p className="text-[10px] text-amber-600 font-semibold pl-1 mt-1">* Father's Occupation is required to complete Family details.</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Mother's Occupation</label>

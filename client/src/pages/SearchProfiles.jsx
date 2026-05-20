@@ -7,10 +7,15 @@ import toast from 'react-hot-toast';
 import LogoLoader from '../components/LogoLoader';
 
 const SearchProfiles = () => {
-  const { user, profile } = useContext(AuthContext);
+  const { user, profile, getCompleteness } = useContext(AuthContext);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sentRequests, setSentRequests] = useState([]);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProfiles, setTotalProfiles] = useState(0);
 
   // Filters State
   const [filters, setFilters] = useState({
@@ -26,11 +31,11 @@ const SearchProfiles = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-    fetchProfiles(filters);
+    fetchProfiles(filters, 1);
     fetchMyRequests();
   }, []);
 
-  const fetchProfiles = async (currentFilters = filters) => {
+  const fetchProfiles = async (currentFilters = filters, page = 1) => {
     try {
       setLoading(true);
       // Clean empty filters
@@ -41,9 +46,15 @@ const SearchProfiles = () => {
         return acc;
       }, {});
 
+      queryParams.page = page;
+      queryParams.limit = 6;
+
       const res = await api.get('/profiles', { params: queryParams });
       if (res.data.success) {
         setProfiles(res.data.data);
+        setCurrentPage(res.data.pagination?.page || 1);
+        setTotalPages(res.data.pagination?.pages || 1);
+        setTotalProfiles(res.data.total || 0);
       }
     } catch (error) {
       toast.error('Failed to load profiles');
@@ -57,11 +68,11 @@ const SearchProfiles = () => {
       // Assuming GET /requests returns sent & received requests
       const res = await api.get('/requests');
       if (res.data.success) {
-        const sent = res.data.data.filter(r => r.sender._id === user?._id).map(r => r.receiver._id);
+        const sent = res.data.sent.map(r => r.receiver?._id || r.receiver);
         setSentRequests(sent);
       }
     } catch (error) {
-      console.error('Failed to fetch requests');
+      console.error('Failed to fetch requests:', error);
     }
   };
 
@@ -71,7 +82,8 @@ const SearchProfiles = () => {
 
   const applyFilters = (e) => {
     e.preventDefault();
-    fetchProfiles(filters);
+    setCurrentPage(1);
+    fetchProfiles(filters, 1);
     setIsFilterOpen(false);
   };
 
@@ -86,21 +98,13 @@ const SearchProfiles = () => {
       city: ''
     };
     setFilters(defaultFilters);
-    fetchProfiles(defaultFilters);
-  };
-
-  const getMyCompleteness = () => {
-    if (!profile) return 0;
-    let score = 20; // Base profile
-    if (profile.waliContact && profile.waliContact.trim() !== '') score += 25;
-    if (profile.familyDetails && (profile.familyDetails.fatherOccupation || profile.familyDetails.motherOccupation || profile.familyDetails.siblingsCount !== undefined)) score += 25;
-    if (profile.customCareerDetails && (profile.customCareerDetails.degree || profile.customCareerDetails.occupation)) score += 30;
-    return score;
+    setCurrentPage(1);
+    fetchProfiles(defaultFilters, 1);
   };
 
   const handleSendInterest = async (receiverId) => {
     if (user?.role !== 'admin') {
-      const completeness = getMyCompleteness();
+      const completeness = getCompleteness().score;
       if (completeness < 100) {
         toast.error('Please complete your profile details to 100% on the Dashboard before sending interest requests!', {
           duration: 5000,
@@ -111,7 +115,7 @@ const SearchProfiles = () => {
     }
 
     try {
-      const res = await api.post('/requests', { receiverId });
+      const res = await api.post(`/requests/send/${receiverId}`);
       if (res.data.success) {
         toast.success('Interest sent successfully!');
         setSentRequests([...sentRequests, receiverId]);
@@ -203,7 +207,7 @@ const SearchProfiles = () => {
         <div className="md:w-3/4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-serif font-bold text-crimson-950">Discover Matches</h1>
-            <span className="text-slate-500 bg-crimson-900/10 px-3 py-1 rounded-full text-sm font-semibold">{profiles.length} Found</span>
+            <span className="text-slate-500 bg-crimson-900/10 px-3 py-1 rounded-full text-sm font-semibold">{totalProfiles} Found</span>
           </div>
 
           {loading ? (
@@ -215,16 +219,49 @@ const SearchProfiles = () => {
                <p className="text-slate-500">Try adjusting your filters to broaden your search criteria.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {profiles.map(profile => (
-                <ProfileCard 
-                  key={profile._id} 
-                  profile={profile} 
-                  currentPlan={user?.plan} 
-                  onSendInterest={handleSendInterest}
-                  isSent={sentRequests.includes(profile.user?._id || profile.user)}
-                />
-              ))}
+            <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {profiles.map(profile => (
+                  <ProfileCard 
+                    key={profile._id} 
+                    profile={profile} 
+                    currentPlan={user?.plan} 
+                    onSendInterest={handleSendInterest}
+                    isSent={sentRequests.includes(profile.user?._id || profile.user)}
+                  />
+                ))}
+              </div>
+
+              {/* PAGINATION CONTROLLER */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-10 bg-white border border-slate-100 p-3 rounded-2xl shadow-sm max-w-sm mx-auto">
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => {
+                      const prevPage = currentPage - 1;
+                      setCurrentPage(prevPage);
+                      fetchProfiles(filters, prevPage);
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#4f080e] text-gold-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-crimson-900 transition-all uppercase tracking-wider"
+                  >
+                    Prev
+                  </button>
+                  <span className="text-xs font-bold text-slate-600 px-3">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button 
+                    disabled={currentPage === totalPages}
+                    onClick={() => {
+                      const nextPage = currentPage + 1;
+                      setCurrentPage(nextPage);
+                      fetchProfiles(filters, nextPage);
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#4f080e] text-gold-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-crimson-900 transition-all uppercase tracking-wider"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

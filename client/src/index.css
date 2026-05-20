@@ -32,6 +32,14 @@
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   }
 
+  .glass-card-elite {
+    background: linear-gradient(135deg, #2a0307 0%, #150002 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid #d4af37;
+    box-shadow: 0 10px 40px 0 rgba(212, 175, 55, 0.25);
+  }
+
   /* Gold Gradient Backgrounds */
   .bg-gold-gradient {
     background: linear-gradient(135deg, #f5ef92 0%, #d4af37 50%, #b28e28 100%);

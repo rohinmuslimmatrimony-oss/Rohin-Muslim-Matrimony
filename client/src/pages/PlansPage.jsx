@@ -54,9 +54,7 @@ const PlansPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  return (
+  };  return (
     <div className="min-h-screen bg-cream-50 pt-20 pb-20 px-4 md:px-8 relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-[0%] left-[50%] -translate-x-1/2 w-full max-w-3xl h-[400px] bg-gradient-to-b from-crimson-900/10 to-transparent rounded-full blur-[100px] -z-10"></div>
@@ -70,10 +68,10 @@ const PlansPage = () => {
         </p>
       </div>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10 items-center">
         
         {/* FREE PLAN */}
-        <div className="glass-card rounded-3xl p-8 border border-crimson-900/10 flex flex-col hover:-translate-y-2 transition-transform duration-300">
+        <div className="glass-card rounded-3xl p-8 border border-crimson-900/10 flex flex-col hover:-translate-y-1 transition-all duration-300">
           <div className="mb-6">
             <h3 className="text-slate-500 font-bold uppercase tracking-wider text-sm mb-2">Basic</h3>
             <div className="flex items-end gap-1">
@@ -81,19 +79,28 @@ const PlansPage = () => {
             </div>
           </div>
           <DynamicFeatureList planKey="freePlanFeatures" />
-          <button 
-            disabled={user?.plan === 'free'}
-            className="w-full py-3.5 rounded-full font-bold text-crimson-900 bg-crimson-900/10 hover:bg-crimson-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-8"
-          >
-            {user?.plan === 'free' ? 'Current Plan' : 'Select Free'}
-          </button>
+          {user?.plan === 'free' ? (
+            <button 
+              disabled
+              className="w-full py-3.5 rounded-full font-bold text-crimson-900 bg-crimson-900/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+            >
+              Current Plan
+            </button>
+          ) : (user?.plan === 'premium' || user?.plan === 'elite') ? (
+            <div className="h-[52px] mt-8"></div>
+          ) : (
+            <button 
+              onClick={() => handleUpgrade('free')}
+              disabled={loading}
+              className="w-full py-3.5 rounded-full font-bold text-crimson-900 bg-crimson-900/10 hover:bg-crimson-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+            >
+              Select Free
+            </button>
+          )}
         </div>
 
         {/* PREMIUM PLAN */}
-        <div className="glass-card-dark rounded-3xl p-8 border border-crimson-700 flex flex-col transform scale-105 shadow-2xl relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold-gradient px-4 py-1 rounded-full text-crimson-950 text-xs font-bold uppercase tracking-wider shadow-lg flex items-center gap-1.5">
-            <FaStar /> Most Popular
-          </div>
+        <div className="glass-card-dark rounded-3xl p-8 border border-crimson-700 flex flex-col hover:-translate-y-1 transition-all duration-300 relative">
           <div className="mb-6">
             <h3 className="text-crimson-400 font-bold uppercase tracking-wider text-sm mb-2">Premium</h3>
             <div className="flex items-end gap-1">
@@ -102,35 +109,58 @@ const PlansPage = () => {
             </div>
           </div>
           <DynamicFeatureList planKey="premiumPlanFeatures" dark />
-          <button 
-            onClick={() => handleUpgrade('premium')}
-            disabled={loading || user?.plan === 'premium' || user?.plan === 'elite'}
-            className="w-full py-3.5 rounded-full font-bold bg-gold-gradient text-crimson-950 hover:shadow-gold-500/30 hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed mt-8"
-          >
-            {user?.plan === 'premium' ? 'Current Plan' : 'Upgrade to Premium'}
-          </button>
+          {user?.plan === 'premium' ? (
+            <button 
+              disabled
+              className="w-full py-3.5 rounded-full font-bold bg-gold-gradient text-crimson-950 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed mt-8"
+            >
+              Current Plan
+            </button>
+          ) : user?.plan === 'elite' ? (
+            <div className="h-[52px] mt-8"></div>
+          ) : (
+            <button 
+              onClick={() => handleUpgrade('premium')}
+              disabled={loading}
+              className="w-full py-3.5 rounded-full font-bold bg-gold-gradient text-crimson-950 hover:shadow-gold-500/30 hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed mt-8"
+            >
+              Upgrade to Premium
+            </button>
+          )}
         </div>
 
-        {/* ELITE PLAN */}
-        <div className="glass-card rounded-3xl p-8 border border-gold-500/30 flex flex-col hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden">
-          <div className="absolute top-[-20%] right-[-20%] w-40 h-40 bg-gold-500/10 rounded-full blur-2xl"></div>
+        {/* ELITE PLAN (Elevated & Highlighted) */}
+        <div className="glass-card-elite rounded-3xl p-8 flex flex-col md:scale-105 shadow-2xl relative z-10 transition-all duration-300">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold-gradient px-4 py-1 rounded-full text-crimson-950 text-xs font-bold uppercase tracking-wider shadow-lg flex items-center gap-1.5 z-20">
+            <FaCrown /> Best Value
+          </div>
+          <div className="absolute top-[-20%] right-[-20%] w-40 h-40 bg-gold-500/20 rounded-full blur-2xl"></div>
           <div className="mb-6 relative z-10">
-            <h3 className="text-gold-600 font-bold uppercase tracking-wider text-sm mb-2 flex items-center gap-1.5">
+            <h3 className="text-gold-500 font-bold uppercase tracking-wider text-sm mb-2 flex items-center gap-1.5">
               <FaCrown /> Elite
             </h3>
             <div className="flex items-end gap-1">
-              <span className="text-4xl font-serif font-bold text-crimson-950">₹{prices.elite}</span>
-              <span className="text-slate-500 text-sm mb-1">/ month</span>
+              <span className="text-4xl font-serif font-bold text-white">₹{prices.elite}</span>
+              <span className="text-slate-300 text-sm mb-1">/ month</span>
             </div>
           </div>
-          <DynamicFeatureList planKey="elitePlanFeatures" gold />
-          <button 
-            onClick={() => handleUpgrade('elite')}
-            disabled={loading || user?.plan === 'elite'}
-            className="w-full py-3.5 rounded-full font-bold bg-crimson-950 text-gold-400 hover:bg-crimson-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-10 border border-crimson-800 mt-8"
-          >
-            {user?.plan === 'elite' ? 'Current Plan' : 'Get Elite Access'}
-          </button>
+          <DynamicFeatureList planKey="elitePlanFeatures" dark gold />
+          {user?.plan === 'elite' ? (
+            <button 
+              disabled
+              className="w-full py-3.5 rounded-full font-bold bg-gold-gradient text-crimson-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-10 mt-8"
+            >
+              Current Plan
+            </button>
+          ) : (
+            <button 
+              onClick={() => handleUpgrade('elite')}
+              disabled={loading}
+              className="w-full py-3.5 rounded-full font-bold bg-gold-gradient text-crimson-950 hover:shadow-gold-500/30 hover:scale-105 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-10 mt-8"
+            >
+              Get Elite Access
+            </button>
+          )}
         </div>
 
       </div>

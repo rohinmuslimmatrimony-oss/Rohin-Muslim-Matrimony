@@ -28,7 +28,7 @@ exports.getProfiles = async (req, res) => {
 
     const defaultOppositeGender = myProfile.gender === 'male' ? 'female' : 'male';
     const query = { user: { $ne: req.user.id } };
-    const { gender, city, profession, ageMin, ageMax, sect, maritalStatus } = req.query;
+    const { gender, city, profession, ageMin, ageMax, sect, maritalStatus, page = 1, limit = 6 } = req.query;
 
     if (gender) query.gender = gender;
     else query.gender = defaultOppositeGender;
@@ -44,10 +44,19 @@ exports.getProfiles = async (req, res) => {
       if (ageMax) query.age.$lte = parseInt(ageMax);
     }
 
-    // Retrieve profiles
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.max(1, parseInt(limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get total matching count
+    const totalCount = await Profile.countDocuments(query);
+
+    // Retrieve profiles with skip and limit
     let profiles = await Profile.find(query)
       .populate('user', 'email role plan isManuallyVerified')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
     // Apply photo privacy rules
     profiles = profiles.map(profile => {
@@ -63,6 +72,12 @@ exports.getProfiles = async (req, res) => {
     return res.status(200).json({
       success: true,
       count: profiles.length,
+      total: totalCount,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(totalCount / limitNum)
+      },
       data: profiles,
     });
   } catch (error) {
@@ -139,6 +154,7 @@ exports.getProfileById = async (req, res) => {
 
       if (!planFeatures.viewContactDetails || !isConnected) {
         profileData.phoneNumber = '🔒 Contact details locked (requires Premium & Connection)';
+        profileData.waliContact = '🔒 Wali Contact locked (requires Premium & Connection)';
         if (profileData.user) {
           profileData.user.email = '🔒 Email locked';
         }
@@ -176,7 +192,8 @@ exports.updateMyProfile = async (req, res) => {
       name, age, gender, sect, profession, education, city, about, phoneNumber,
       height, maritalStatus, motherTongue, namazFrequency, isPhotoPublic,
       fatherOccupation, motherOccupation, siblingsCount,
-      partnerAgeRange, partnerSect, partnerEducation
+      partnerAgeRange, partnerSect, partnerEducation,
+      waliContact
     } = req.body;
 
     const updateData = {};
@@ -189,6 +206,7 @@ exports.updateMyProfile = async (req, res) => {
     if (city) updateData.city = city;
     if (about) updateData.about = about;
     if (phoneNumber) updateData.phoneNumber = phoneNumber;
+    if (waliContact !== undefined) updateData.waliContact = waliContact;
     if (height) updateData.height = height;
     if (maritalStatus) updateData.maritalStatus = maritalStatus;
     if (motherTongue) updateData.motherTongue = motherTongue;

@@ -10,7 +10,7 @@ import {
 import LogoLoader from '../components/LogoLoader';
 
 const Dashboard = () => {
-  const { user, profile, refreshUser } = useContext(AuthContext);
+  const { user, profile, refreshUser, getCompleteness } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Modal States
@@ -56,27 +56,7 @@ const Dashboard = () => {
 
   if (!user || !profile) return <LogoLoader fullScreen text="Loading Dashboard..." />;
 
-  // Calculate profile completeness score
-  const getCompleteness = () => {
-    let score = 20; // Base score (email, password, name, gender, age, city)
-    
-    // 1. Wali Contact (+25%)
-    if (profile.waliContact && profile.waliContact.trim() !== '') {
-      score += 25;
-    }
-    // 2. Family Details (+25%)
-    if (profile.familyDetails?.fatherOccupation && profile.familyDetails?.fatherOccupation.trim() !== '') {
-      score += 25;
-    }
-    // 3. Career Details Customization (+30%)
-    if (profile.profession && profile.profession !== 'Business' && profile.education && profile.education !== 'Graduate') {
-      score += 30;
-    }
-    
-    return Math.min(score, 100);
-  };
-
-  const completeness = getCompleteness();
+  const { score: completeness, missingFields } = getCompleteness();
 
   // Helper to submit profile updates using FormData
   const handleUpdate = async (fieldsToUpdate) => {
@@ -128,48 +108,83 @@ const Dashboard = () => {
         </div>
 
         {/* PROFILE COMPLETION BANNER */}
-        <div 
-          onClick={() => navigate('/edit-profile')}
-          className="w-full mb-8 rounded-3xl p-0.5 bg-gradient-to-r from-gold-500/40 via-gold-400/20 to-gold-500/40 border border-gold-500/30 shadow-xl overflow-hidden cursor-pointer hover:scale-[1.01] hover:shadow-gold-500/20 transition-all duration-300"
-        >
-          <div className="bg-[#4f080e] rounded-[22px] p-6 md:p-8 text-white relative">
-            <div className="absolute top-2 right-2 text-gold-500/20 text-xl">✨</div>
-            
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-              <div className="text-center md:text-left space-y-2">
-                <span className="bg-gold-500/20 text-gold-400 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border border-gold-500/35">
-                  Profile Status
-                </span>
-                <h2 className="text-xl md:text-2xl font-serif font-bold">Complete your biodata to unlock better matches</h2>
-                <p className="text-slate-300 text-xs md:text-sm max-w-xl font-medium">
-                  Detailed profiles get up to 5x more responses and faster mutual connections! Click here to update your profile.
-                </p>
-              </div>
-
-              <div className="w-full md:w-64 flex flex-col items-center md:items-end gap-2 flex-shrink-0">
-                <div className="flex justify-between w-full text-xs font-bold text-gold-400">
-                  <span>COMPLETENESS</span>
-                  <span>{completeness}%</span>
-                </div>
-                <div className="w-full bg-crimson-950 rounded-full h-3 overflow-hidden shadow-inner border border-gold-500/10">
-                  <div 
-                    className="bg-gold-gradient h-3 rounded-full transition-all duration-500" 
-                    style={{ width: `${completeness}%` }}
-                  ></div>
-                </div>
-                {completeness === 100 ? (
-                  <span className="text-emerald-400 text-xs font-extrabold flex items-center gap-1.5 mt-1">
-                    <FaCheckCircle /> 100% Completed
+        {completeness < 100 && (
+          <div 
+            onClick={() => navigate('/edit-profile')}
+            className="w-full mb-8 rounded-3xl p-0.5 bg-gradient-to-r from-gold-500/40 via-gold-400/20 to-gold-500/40 border border-gold-500/30 shadow-xl overflow-hidden cursor-pointer hover:scale-[1.01] hover:shadow-gold-500/20 transition-all duration-300"
+          >
+            <div className="bg-[#4f080e] rounded-[22px] p-6 md:p-8 text-white relative">
+              <div className="absolute top-2 right-2 text-gold-500/20 text-xl">✨</div>
+              
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                <div className="text-center md:text-left space-y-2">
+                  <span className="bg-gold-500/20 text-gold-400 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border border-gold-500/35">
+                    Profile Status
                   </span>
-                ) : (
-                  <span className="text-gold-400/80 text-xs font-semibold mt-1">
-                    Complete all steps to get verified badge.
-                  </span>
-                )}
+                  <h2 className="text-xl md:text-2xl font-serif font-bold">Complete your biodata to unlock better matches</h2>
+                  <p className="text-slate-300 text-xs md:text-sm max-w-xl font-medium">
+                    Detailed profiles get up to 5x more responses and faster mutual connections! Click here to update your profile.
+                  </p>
+                </div>
+  
+                <div className="w-full md:w-64 flex flex-col items-center md:items-end gap-2 flex-shrink-0">
+                  <div className="flex justify-between w-full text-xs font-bold text-gold-400">
+                    <span>COMPLETENESS</span>
+                    <span>{completeness}%</span>
+                  </div>
+                  <div className="w-full bg-crimson-950 rounded-full h-3 overflow-hidden shadow-inner border border-gold-500/10">
+                    <div 
+                      className="bg-gold-gradient h-3 rounded-full transition-all duration-500" 
+                      style={{ width: `${completeness}%` }}
+                    ></div>
+                  </div>
+                  {completeness === 100 ? (
+                    <span className="text-emerald-400 text-xs font-extrabold flex items-center gap-1.5 mt-1">
+                      <FaCheckCircle /> 100% Completed
+                    </span>
+                  ) : (
+                    <span className="text-gold-400/80 text-xs font-semibold mt-1">
+                      Complete all steps to get verified badge.
+                    </span>
+                  )}
+                </div>
               </div>
+              
+              {missingFields && missingFields.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gold-500/20 text-left relative z-10">
+                  <p className="text-xs font-bold text-gold-400 uppercase tracking-wider mb-3">Remaining tasks to reach 100%:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {missingFields.map((field) => {
+                      const isRequired = field.percentage > 0;
+                      return (
+                        <div 
+                          key={field.name} 
+                          className={`flex items-center justify-between rounded-xl px-4 py-3 transition-all duration-300 ${
+                            isRequired 
+                              ? 'bg-amber-950/60 border border-amber-500/45 shadow-[0_0_15px_rgba(245,158,11,0.1)] hover:border-amber-400' 
+                              : 'bg-crimson-950/30 border border-gold-500/10 opacity-75'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isRequired && (
+                              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+                            )}
+                            <span className={`text-xs font-bold ${isRequired ? 'text-amber-100' : 'text-slate-300'}`}>
+                              {field.name}
+                            </span>
+                          </div>
+                          <span className={`text-xs font-black ${isRequired ? 'text-amber-400' : 'text-gold-500/60'}`}>
+                            {isRequired ? `+${field.percentage}%` : 'Optional'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
 
         {/* ONBOARDING QUICK CARDS (Conditional Rows) */}
         {completeness < 100 && (
@@ -187,15 +202,16 @@ const Dashboard = () => {
                       <FaPhoneAlt className="text-sm" />
                     </div>
                     <h3 className="text-slate-900 font-extrabold text-sm mb-1.5">Add Chaperone / Wali Contact</h3>
+                    <span className="inline-block bg-slate-100 text-slate-600 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2">Optional</span>
                     <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-4">
-                      Build trust by adding your family chaperone contact. Required for premium matching.
+                      Build trust by adding your family chaperone contact. This is optional but highly recommended.
                     </p>
                   </div>
                   <button 
                     onClick={() => setShowWaliModal(true)} 
                     className="bg-crimson-950 text-gold-400 px-5 py-2.5 rounded-2xl text-xs font-bold shadow-md hover:bg-crimson-900 transition-all w-full uppercase tracking-wider"
                   >
-                    Add Wali Details (+25%)
+                    Add Wali Details
                   </button>
                 </div>
               )}
@@ -216,13 +232,14 @@ const Dashboard = () => {
                     onClick={() => setShowFamilyModal(true)} 
                     className="bg-crimson-950 text-gold-400 px-5 py-2.5 rounded-2xl text-xs font-bold shadow-md hover:bg-crimson-900 transition-all w-full uppercase tracking-wider"
                   >
-                    Add Family details (+25%)
+                    Add Family details (+40%)
                   </button>
                 </div>
               )}
 
               {/* Card 3: Career Details */}
-              {(profile.profession === 'Business' && profile.education === 'Graduate') && (
+              {(!profile.profession || profile.profession === 'Not Specified' ||
+                !profile.education || profile.education === 'Not Specified') && (
                 <div className="glass-card p-6 rounded-3xl shadow-sm border border-crimson-900/10 flex flex-col justify-between hover:border-gold-500/40 transition-colors group">
                   <div>
                     <div className="w-10 h-10 rounded-2xl bg-crimson-50 text-crimson-800 flex items-center justify-center mb-4 group-hover:bg-[#4f080e] group-hover:text-gold-400 transition-colors">
@@ -237,7 +254,7 @@ const Dashboard = () => {
                     onClick={() => setShowCareerModal(true)} 
                     className="bg-crimson-950 text-gold-400 px-5 py-2.5 rounded-2xl text-xs font-bold shadow-md hover:bg-crimson-900 transition-all w-full uppercase tracking-wider"
                   >
-                    Update Career (+30%)
+                    Update Career (+40%)
                   </button>
                 </div>
               )}

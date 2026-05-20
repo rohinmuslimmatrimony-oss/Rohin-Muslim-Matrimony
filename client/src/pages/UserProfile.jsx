@@ -13,10 +13,12 @@ import LogoLoader from '../components/LogoLoader';
 const UserProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, getCompleteness } = useContext(AuthContext);
   
   const [profile, setProfile] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  const [isReceived, setIsReceived] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reportText, setReportText] = useState('');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -30,8 +32,29 @@ const UserProfile = () => {
       setLoading(true);
       const res = await api.get(`/profiles/${id}`);
       if (res.data.success) {
-        setProfile(res.data.data);
+        const profData = res.data.data;
+        setProfile(profData);
         setIsConnected(res.data.isConnected);
+
+        // Fetch interest request status
+        try {
+          const reqRes = await api.get('/requests');
+          if (reqRes.data.success) {
+            const targetUserId = profData.user?._id || profData.user;
+            
+            const sent = (reqRes.data.sent || []).some(
+              r => (r.receiver?._id || r.receiver) === targetUserId
+            );
+            setIsSent(sent);
+
+            const received = (reqRes.data.received || []).some(
+              r => (r.sender?._id || r.sender) === targetUserId
+            );
+            setIsReceived(received);
+          }
+        } catch (reqError) {
+          console.error('Failed to fetch request status', reqError);
+        }
       }
     } catch (error) {
       if (error.response?.data?.limitExceeded) {
@@ -43,6 +66,30 @@ const UserProfile = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendInterest = async () => {
+    if (user?.role !== 'admin') {
+      const completeness = getCompleteness().score;
+      if (completeness < 100) {
+        toast.error('Please complete your profile details to 100% on the Dashboard before sending interest requests!', {
+          duration: 5000,
+          icon: '🔒',
+        });
+        return;
+      }
+    }
+
+    try {
+      const targetUserId = profile.user?._id || profile.user;
+      const res = await api.post(`/requests/send/${targetUserId}`);
+      if (res.data.success) {
+        toast.success('Interest sent successfully!');
+        setIsSent(true);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to send interest');
     }
   };
 
@@ -150,11 +197,22 @@ const UserProfile = () => {
                   {!isOwnProfile && (
                     <div className="flex flex-col gap-2">
                       {isConnected ? (
-                        <span className="bg-crimson-100 text-crimson-800 px-4 py-2 rounded-full font-bold text-sm shadow-sm border border-crimson-200">
+                        <span className="bg-crimson-100 text-crimson-800 px-4 py-2 rounded-full font-bold text-sm shadow-sm border border-crimson-200 text-center">
                           Mutual Connection ✓
                         </span>
+                      ) : isSent ? (
+                        <span className="bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-bold text-sm border border-slate-300 text-center">
+                          Interest Sent
+                        </span>
+                      ) : isReceived ? (
+                        <span className="bg-crimson-50 text-crimson-900 px-4 py-2 rounded-full font-bold text-sm border border-crimson-200 text-center">
+                          Interest Received
+                        </span>
                       ) : (
-                        <button className="bg-gold-gradient text-crimson-950 px-6 py-2.5 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform flex items-center gap-2">
+                        <button 
+                          onClick={handleSendInterest}
+                          className="bg-gold-gradient text-crimson-950 px-6 py-2.5 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform flex items-center gap-2"
+                        >
                           <FaHeart /> Send Interest
                         </button>
                       )}
@@ -222,12 +280,24 @@ const UserProfile = () => {
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-crimson-100 text-crimson-700 flex items-center justify-center"><FaPhoneAlt className="text-xs" /></div>
                       <div className="flex flex-col">
-                        <span className="text-xs text-slate-500 uppercase tracking-wider">Phone / Wali Contact</span>
+                        <span className="text-xs text-slate-500 uppercase tracking-wider">Candidate Contact</span>
                         <span className={`text-sm font-bold ${profile.phoneNumber?.includes('🔒') ? 'text-slate-400 italic' : 'text-slate-800'}`}>
-                          {profile.phoneNumber || profile.waliContact || 'Not provided'}
+                          {profile.phoneNumber || 'Not provided'}
                         </span>
                       </div>
                     </div>
+                    
+                    {profile.waliContact && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-crimson-100 text-crimson-700 flex items-center justify-center"><FaPhoneAlt className="text-xs" /></div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-slate-500 uppercase tracking-wider">Chaperone / Wali Contact</span>
+                          <span className={`text-sm font-bold ${profile.waliContact?.includes('🔒') ? 'text-slate-400 italic' : 'text-slate-800'}`}>
+                            {profile.waliContact}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-crimson-100 text-crimson-700 flex items-center justify-center"><FaEnvelope className="text-xs" /></div>

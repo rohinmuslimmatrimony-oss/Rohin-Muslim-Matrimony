@@ -50,24 +50,14 @@ const AdminRoute = ({ children }) => {
 };
 
 function AppContent() {
-  const { user, profile, loading } = useContext(AuthContext);
+  const { user, profile, loading, getCompleteness } = useContext(AuthContext);
   const location = useLocation();
 
   if (loading) {
     return <LogoLoader fullScreen text="Loading Blessings..." />;
   }
 
-  // Calculate completeness to determine if banner is shown
-  const getCompleteness = () => {
-    if (!profile) return 0;
-    let score = 20;
-    if (profile.waliContact && profile.waliContact.trim() !== '') score += 25;
-    if (profile.familyDetails && (profile.familyDetails.fatherOccupation || profile.familyDetails.motherOccupation || profile.familyDetails.siblingsCount !== undefined)) score += 25;
-    if (profile.customCareerDetails && (profile.customCareerDetails.degree || profile.customCareerDetails.occupation)) score += 30;
-    return score;
-  };
-
-  const completeness = getCompleteness();
+  const completeness = getCompleteness().score;
   const showBanner = user && user.role !== 'admin' && completeness < 100 && !['/login', '/register', '/edit-profile', '/admin'].includes(location.pathname);
 
   return (
