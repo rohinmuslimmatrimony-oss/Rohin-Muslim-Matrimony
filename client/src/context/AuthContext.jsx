@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
+import io from 'socket.io-client';
 
 export const AuthContext = createContext();
 
@@ -37,6 +38,87 @@ export const AuthProvider = ({ children }) => {
 
     initAuth();
   }, []);
+
+  useEffect(() => {
+    let socket;
+    if (user?._id) {
+      socket = io(SOCKET_BASE_URL);
+      
+      socket.emit('join_room', user._id);
+      
+      socket.on('receive_interest_notification', (data) => {
+        toast((t) => (
+          <div 
+            onClick={() => { 
+              toast.dismiss(t.id); 
+              window.location.href = '/interests'; 
+            }} 
+            className="cursor-pointer py-1"
+          >
+            <div className="font-bold text-white flex items-center gap-2">
+              <span>💖</span> New Interest Received!
+            </div>
+            <div className="text-xs text-slate-200 mt-1">
+              <strong>{data.senderName}</strong> is interested in your profile.
+            </div>
+            <div className="text-[10px] text-gold-400 font-bold underline mt-1.5 hover:text-white transition-colors">
+              Click to view requests & accept/decline
+            </div>
+          </div>
+        ), {
+          duration: 7000,
+          position: 'top-right',
+          style: {
+            background: '#4f080e',
+            color: '#fff',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '16px',
+            padding: '12px 16px',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          }
+        });
+      });
+
+      socket.on('receive_interest_accept', (data) => {
+        toast((t) => (
+          <div 
+            onClick={() => { 
+              toast.dismiss(t.id); 
+              window.location.href = '/interests'; 
+            }} 
+            className="cursor-pointer py-1"
+          >
+            <div className="font-bold text-white flex items-center gap-2">
+              <span>🎉</span> Request Accepted!
+            </div>
+            <div className="text-xs text-slate-200 mt-1">
+              <strong>{data.receiverName}</strong> accepted your interest request!
+            </div>
+            <div className="text-[10px] text-gold-400 font-bold underline mt-1.5 hover:text-white transition-colors">
+              Click to start chatting & view contact details
+            </div>
+          </div>
+        ), {
+          duration: 7000,
+          position: 'top-right',
+          style: {
+            background: '#0f5132',
+            color: '#fff',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '16px',
+            padding: '12px 16px',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          }
+        });
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [user]);
 
   // Login handler
   const login = async (email, password) => {

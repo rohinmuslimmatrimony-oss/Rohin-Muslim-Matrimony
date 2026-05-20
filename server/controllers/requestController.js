@@ -51,6 +51,15 @@ exports.sendInterest = async (req, res) => {
     const senderProfile = await Profile.findOne({ user: senderId });
     const receiverProfile = await Profile.findOne({ user: receiverId });
 
+    // Emit real-time notification via Socket.io
+    if (req.io) {
+      req.io.to(receiverId).emit('receive_interest_notification', {
+        senderId,
+        senderName: senderProfile?.name || 'Someone',
+        message: `${senderProfile?.name || 'A user'} is interested in your profile! 💖`
+      });
+    }
+
     sendEmail({
       email: receiverUser.email,
       subject: 'New Interest Received! 💖 - Rohin Muslim Matrimony',
@@ -124,6 +133,15 @@ exports.acceptInterest = async (req, res) => {
     const senderUser = await User.findById(request.sender);
     const senderProfile = await Profile.findOne({ user: request.sender });
     const receiverProfile = await Profile.findOne({ user: request.receiver });
+
+    // Emit real-time notification via Socket.io
+    if (req.io) {
+      req.io.to(request.sender.toString()).emit('receive_interest_accept', {
+        receiverId: userId,
+        receiverName: receiverProfile?.name || 'Someone',
+        message: `${receiverProfile?.name || 'A user'} accepted your interest request! 🎉`
+      });
+    }
 
     if (senderUser) {
       sendEmail({

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
@@ -144,15 +145,15 @@ const InterestsPage = () => {
 
           return (
             <div key={req._id} className="glass-card p-4 rounded-2xl flex justify-between items-center border border-crimson-900/10">
-              <div className="flex items-center gap-4">
+              <Link to={`/profile/${profile.user}`} className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
                 <div className="w-12 h-12 rounded-full bg-crimson-100 flex items-center justify-center font-bold text-crimson-900">
                   {profile.name[0]}
                 </div>
                 <div>
-                  <h4 className="font-bold text-crimson-950">{profile.name}</h4>
+                  <h4 className="font-bold text-crimson-950 hover:underline">{profile.name}</h4>
                   <p className="text-xs text-slate-500">{profile.profession} • {profile.city}</p>
                 </div>
-              </div>
+              </Link>
               
               {isReceived ? (
                 <div className="flex gap-2">
@@ -247,13 +248,21 @@ const InterestsPage = () => {
             {activeTab === 'matches' && activeChat && (
               <div className="flex flex-col h-[600px] glass-card rounded-3xl border border-crimson-900/10 overflow-hidden shadow-lg animate-fadeIn">
                 {/* Chat Header */}
-                <div className="bg-crimson-950 px-6 py-4 flex items-center gap-4 text-white">
-                  <button onClick={() => setActiveChat(null)} className="text-gold-400 hover:text-white">&larr;</button>
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold">{activeChat.name[0]}</div>
-                  <div>
-                    <h3 className="font-bold font-serif">{activeChat.name}</h3>
-                    <p className="text-[10px] text-crimson-300">Connected Match</p>
+                <div className="bg-crimson-950 px-6 py-4 flex items-center justify-between text-white">
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setActiveChat(null)} className="text-gold-400 hover:text-white">&larr;</button>
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold">{activeChat.name[0]}</div>
+                    <div>
+                      <h3 className="font-bold font-serif">{activeChat.name}</h3>
+                      <p className="text-[10px] text-crimson-300">Connected Match</p>
+                    </div>
                   </div>
+                  <Link 
+                    to={`/profile/${activeChat.user?._id || activeChat.user}`} 
+                    className="text-xs font-bold bg-gold-gradient text-crimson-950 px-3.5 py-1.5 rounded-full hover:scale-105 transition-transform"
+                  >
+                    View Profile
+                  </Link>
                 </div>
 
                 {/* Chat Messages */}
