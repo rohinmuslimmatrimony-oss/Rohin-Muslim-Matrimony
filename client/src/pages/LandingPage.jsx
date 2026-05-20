@@ -143,17 +143,35 @@ const LandingPage = () => {
             </div>
 
             {/* Center Column Banner Image styled as Mihrab Islamic Archway */}
-            <div className="lg:col-span-6 flex justify-center items-center relative px-2 -mt-6 md:-mt-10 lg:-mt-14">
+            <div className="lg:col-span-6 flex flex-col justify-center items-center relative px-2 mt-3.5 md:-mt-10 lg:-mt-14">
               {/* Starry Outer Aura Glow */}
               <div className="absolute inset-0 bg-gold-500/5 rounded-2xl blur-xl pointer-events-none"></div>
 
-              <div className="relative max-w-[230px] sm:max-w-[280px] md:max-w-[620px] w-full mx-auto filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.55)] transform hover:scale-[1.02] transition-transform duration-500">
+              <div className="relative max-w-[310px] sm:max-w-[360px] md:max-w-[620px] w-full mx-auto filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.55)] transform hover:scale-[1.02] transition-transform duration-500">
                 <img
                   src={homeBanner}
                   alt="Muslim Marriage Consultancy Banner"
-                  className="max-h-[185px] sm:max-h-[220px] md:max-h-[580px] w-full h-auto object-contain block mx-auto"
+                  className="max-h-[240px] sm:max-h-[280px] md:max-h-[580px] w-full h-auto object-contain block mx-auto"
                 />
               </div>
+
+              {/* Grand Mobile Auth Action Buttons */}
+              {!user && (
+                <div className="lg:hidden flex items-center justify-center gap-3 w-full max-w-[260px] sm:max-w-[310px] mt-3.5 z-20">
+                  <Link
+                    to="/login"
+                    className="flex-1 text-center py-1.5 px-3.5 bg-gradient-to-r from-[#3b060a] via-[#5c0b11] to-[#3b060a] text-white font-extrabold rounded-full border border-[#d4af37]/45 shadow-[0_3px_12px_rgba(79,8,14,0.3)] text-[10px] uppercase tracking-widest active:scale-95 transition-all"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex-1 text-center py-1.5 px-3.5 bg-gradient-to-r from-[#e5c060] via-[#c59b27] to-[#e5c060] text-[#3b060a] font-extrabold rounded-full border border-[#ffd700]/30 shadow-[0_3px_12px_rgba(197,155,39,0.3)] text-[10px] uppercase tracking-widest active:scale-95 transition-all"
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Right Column Features (Visible on Desktop) */}
@@ -212,55 +230,119 @@ const LandingPage = () => {
       </section>
 
       {/* Feature Value Props */}
-      <section className="py-6 md:py-20 px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-2 md:gap-4 mb-6 md:mb-16">
-          {/* Heading Plaque Box */}
-          <div className="p-0.5 rounded-xl md:rounded-2xl bg-gradient-to-r from-gold-500/40 via-gold-400/20 to-gold-500/40 border border-gold-500/30 shadow-xl relative overflow-hidden">
-            <div className="bg-[#4f080e] rounded-lg md:rounded-xl px-3.5 py-2 md:px-5 md:py-4 border border-gold-500/20 relative">
-              {/* Corner Stars */}
-              <div className="absolute top-1.5 left-1.5 text-gold-500/25 text-[9px] md:text-[10px]">✨</div>
-              <div className="absolute top-1.5 right-1.5 text-gold-500/25 text-[9px] md:text-[10px]">✨</div>
+      <section className="relative overflow-hidden py-10 md:py-20 px-4 md:px-8 max-w-7xl mx-auto rounded-2xl bg-gradient-to-b from-[#fffefc] via-[#faf6ee] to-[#fffefc] border border-gold-500/20 shadow-md mt-4 z-10">
+        
+        {/* Top Hanging Ornaments Underlay */}
+        <div className="absolute top-0 left-0 right-0 h-36 opacity-[0.95] pointer-events-none select-none z-0">
+          <svg className="w-full h-full text-[#d4af37]" fill="currentColor" viewBox="0 0 1000 100" preserveAspectRatio="none">
+            <path d="M 0 0 Q 125 70 250 0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4,4" />
+            <path d="M 250 0 Q 375 70 500 0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4,4" />
+            <path d="M 500 0 Q 625 70 750 0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4,4" />
+            <path d="M 750 0 Q 875 70 1000 0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4,4" />
 
-              <span className="text-gold-400 text-[9px] md:text-xs font-bold tracking-widest uppercase mb-0.5 block">Our Core Principles</span>
-              <h2 className="text-white text-sm md:text-3xl font-serif font-extrabold leading-tight">
-                Designed for <span className="text-gold-400 text-gold-gradient font-extrabold font-serif">Meaningful, Halal</span> Connections
-              </h2>
-            </div>
-          </div>
+            <line x1="125" y1="35" x2="125" y2="70" stroke="currentColor" strokeWidth="2" />
+            <polygon points="125,70 129,76 125,82 121,76" fill="#4f080e" className="text-[#4f080e]" />
+            <line x1="375" y1="35" x2="375" y2="70" stroke="currentColor" strokeWidth="2" />
+            <polygon points="375,70 379,76 375,82 371,76" fill="#4f080e" className="text-[#4f080e]" />
+            <line x1="625" y1="35" x2="625" y2="70" stroke="currentColor" strokeWidth="2" />
+            <polygon points="625,70 629,76 625,82 621,76" fill="#4f080e" className="text-[#4f080e]" />
+            <line x1="875" y1="35" x2="875" y2="70" stroke="currentColor" strokeWidth="2" />
+            <polygon points="875,70 879,76 875,82 871,76" fill="#4f080e" className="text-[#4f080e]" />
+
+            <line x1="250" y1="0" x2="250" y2="55" stroke="currentColor" strokeWidth="2.5" />
+            <path d="M 244 55 L 256 55 L 258 68 L 253 84 L 247 84 L 242 68 Z" fill="#4f080e" className="text-[#4f080e]" stroke="#d4af37" strokeWidth="1" />
+            <circle cx="250" cy="52" r="3.5" fill="#d4af37" stroke="currentColor" strokeWidth="1" />
+
+            <line x1="500" y1="0" x2="500" y2="55" stroke="currentColor" strokeWidth="2.5" />
+            <path d="M 494 55 L 506 55 L 508 68 L 503 84 L 497 84 L 492 68 Z" fill="#4f080e" className="text-[#4f080e]" stroke="#d4af37" strokeWidth="1" />
+            <circle cx="500" cy="52" r="3.5" fill="#d4af37" stroke="currentColor" strokeWidth="1" />
+
+            <line x1="750" y1="0" x2="750" y2="55" stroke="currentColor" strokeWidth="2.5" />
+            <path d="M 744 55 L 756 55 L 758 68 L 753 84 L 747 84 L 742 68 Z" fill="#4f080e" className="text-[#4f080e]" stroke="#d4af37" strokeWidth="1" />
+            <circle cx="750" cy="52" r="3.5" fill="#d4af37" stroke="currentColor" strokeWidth="1" />
+          </svg>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
-          {/* Card 1 */}
-          <div className="bg-gold-gradient p-2.5 sm:p-4 md:p-8 rounded-xl md:rounded-2xl border border-gold-500/20 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-1.5 sm:gap-2 md:gap-4 group col-span-1">
-            <div className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full bg-white border border-gold-500/10 flex items-center justify-center text-xs sm:text-lg md:text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
-              <FaShieldAlt className="text-[#4f080e] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)]" />
+        {/* Center Islamic Mandala Pattern Watermark */}
+        <div className="absolute top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72%] max-w-[440px] aspect-square opacity-[0.35] pointer-events-none select-none z-0">
+          <svg viewBox="0 0 200 200" fill="none" stroke="#d4af37" className="w-full h-full">
+            <circle cx="100" cy="100" r="92" strokeDasharray="3,3" strokeWidth="1.2" />
+            <circle cx="100" cy="100" r="78" strokeWidth="1.2" />
+            <circle cx="100" cy="100" r="62" strokeWidth="1.2" />
+            <path d="M100 8 L100 192 M8 100 L192 100 M35 35 L165 165 M35 165 L165 35" strokeWidth="0.8" strokeDasharray="2,2" stroke="#d4af37" />
+            <path d="M100 22 L155 77 L178 100 L155 123 L100 178 L45 123 L22 100 L45 77 Z" strokeWidth="2.2" />
+            <path d="M100 38 L144 100 L100 162 L56 100 Z" strokeWidth="1.5" />
+            <circle cx="100" cy="100" r="48" strokeWidth="1.5" strokeDasharray="4,2" />
+            <path d="M100 52 C122 52 148 74 148 100 C148 126 122 148 100 148 C78 148 52 126 52 100 C52 74 78 52 100 52 Z" strokeWidth="1.2" />
+            <path d="M100 52 C78 52 52 74 52 100 C52 126 78 148 100 148 C122 148 148 126 148 100 C148 74 122 52 100 52 Z" strokeWidth="1.2" />
+          </svg>
+        </div>
+
+        {/* Bottom Left Mosque Silhouette Underlay */}
+        <div className="absolute bottom-0 left-0 w-[24%] max-w-[190px] opacity-[0.55] pointer-events-none select-none z-0">
+          <svg viewBox="0 0 100 120" fill="#4f080e" stroke="#d4af37" strokeWidth="1" className="w-full h-auto">
+            <path d="M0 120 L0 60 Q10 50 12 60 L12 120 M12 120 L12 25 L15 10 L18 25 L18 120 M18 120 L18 70 Q30 55 42 70 L42 120 M42 120 L42 20 L45 5 L48 20 L48 120 M48 120 Q65 85 82 120 Z" />
+          </svg>
+        </div>
+
+        {/* Bottom Right Mosque Silhouette Underlay */}
+        <div className="absolute bottom-0 right-0 w-[24%] max-w-[190px] opacity-[0.55] pointer-events-none select-none z-0 scale-x-[-1]">
+          <svg viewBox="0 0 100 120" fill="#4f080e" stroke="#d4af37" strokeWidth="1" className="w-full h-auto">
+            <path d="M0 120 L0 60 Q10 50 12 60 L12 120 M12 120 L12 25 L15 10 L18 25 L18 120 M18 120 L18 70 Q30 55 42 70 L42 120 M42 120 L42 20 L45 5 L48 20 L48 120 M48 120 Q65 85 82 120 Z" />
+          </svg>
+        </div>
+
+        {/* Content Container to sit on top of underlays */}
+        <div className="relative z-10 w-full h-full">
+          <div className="text-center max-w-2xl mx-auto flex flex-col gap-2 md:gap-4 mb-6 md:mb-16">
+            {/* Heading Plaque Box */}
+            <div className="p-0.5 rounded-xl md:rounded-2xl bg-gradient-to-r from-gold-500/40 via-gold-400/20 to-gold-500/40 border border-gold-500/30 shadow-xl relative overflow-hidden">
+              <div className="bg-[#4f080e] rounded-lg md:rounded-xl px-3.5 py-2 md:px-5 md:py-4 border border-gold-500/20 relative">
+                {/* Corner Stars */}
+                <div className="absolute top-1.5 left-1.5 text-gold-500/25 text-[9px] md:text-[10px]">✨</div>
+                <div className="absolute top-1.5 right-1.5 text-gold-500/25 text-[9px] md:text-[10px]">✨</div>
+
+                <span className="text-gold-400 text-[9px] md:text-xs font-bold tracking-widest uppercase mb-0.5 block">Our Core Principles</span>
+                <h2 className="text-white text-sm md:text-3xl font-serif font-extrabold leading-tight">
+                  Designed for <span className="text-gold-400 text-gold-gradient font-extrabold font-serif">Meaningful, Halal</span> Connections
+                </h2>
+              </div>
             </div>
-            <h3 className="text-crimson-950 text-[10px] sm:text-sm md:text-xl font-bold font-serif">100% Privacy Lock</h3>
-            <p className="text-crimson-950/85 text-[8px] sm:text-[11px] md:text-sm font-semibold leading-normal">
-              Your contact details (phone, email) are kept securely locked. They are only shared when you mutually accept connection requests.
-            </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="bg-gold-gradient p-2.5 sm:p-4 md:p-8 rounded-xl md:rounded-2xl border border-gold-500/20 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-1.5 sm:gap-2 md:gap-4 group col-span-1">
-            <div className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full bg-white border border-gold-500/10 flex items-center justify-center text-xs sm:text-lg md:text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
-              <FaHeart className="text-[#4f080e] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)] animate-pulse" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
+            {/* Card 1 */}
+            <div className="bg-gold-gradient p-2.5 sm:p-4 md:p-8 rounded-xl md:rounded-2xl border border-gold-500/20 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-1.5 sm:gap-2 md:gap-4 group col-span-1">
+              <div className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full bg-white border border-gold-500/10 flex items-center justify-center text-xs sm:text-lg md:text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+                <FaShieldAlt className="text-[#4f080e] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)]" />
+              </div>
+              <h3 className="text-crimson-950 text-[10px] sm:text-sm md:text-xl font-bold font-serif">100% Privacy Lock</h3>
+              <p className="text-crimson-950/85 text-[8px] sm:text-[11px] md:text-sm font-semibold leading-normal">
+                Your contact details (phone, email) are kept securely locked. They are only shared when you mutually accept connection requests.
+              </p>
             </div>
-            <h3 className="text-crimson-950 text-[10px] sm:text-sm md:text-xl font-bold font-serif">Halal Matchmaking</h3>
-            <p className="text-crimson-950/85 text-[8px] sm:text-[11px] md:text-sm font-semibold leading-normal">
-              We structure our profiles around Islamic principles, allowing users to search by Sect, religious dedication, and moral criteria.
-            </p>
-          </div>
 
-          {/* Card 3 */}
-          <div className="bg-gold-gradient p-2.5 sm:p-4 md:p-8 rounded-xl md:rounded-2xl border border-gold-500/20 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-1.5 sm:gap-2 md:gap-4 group col-span-2 md:col-span-1">
-            <div className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full bg-white border border-gold-500/10 flex items-center justify-center text-xs sm:text-lg md:text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
-              <FaCrown className="text-[#4f080e] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)]" />
+            {/* Card 2 */}
+            <div className="bg-gold-gradient p-2.5 sm:p-4 md:p-8 rounded-xl md:rounded-2xl border border-gold-500/20 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-1.5 sm:gap-2 md:gap-4 group col-span-1">
+              <div className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full bg-white border border-gold-500/10 flex items-center justify-center text-xs sm:text-lg md:text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+                <FaHeart className="text-[#4f080e] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)] animate-pulse" />
+              </div>
+              <h3 className="text-crimson-950 text-[10px] sm:text-sm md:text-xl font-bold font-serif">Halal Matchmaking</h3>
+              <p className="text-crimson-950/85 text-[8px] sm:text-[11px] md:text-sm font-semibold leading-normal">
+                We structure our profiles around Islamic principles, allowing users to search by Sect, religious dedication, and moral criteria.
+              </p>
             </div>
-            <h3 className="text-crimson-950 text-[10px] sm:text-sm md:text-xl font-bold font-serif">Premium Tier Controls</h3>
-            <p className="text-crimson-950/85 text-[8px] sm:text-[11px] md:text-sm font-semibold leading-normal">
-              Enforce customizable limit gates. Free tier profiles views are gated, while Premium/Elite tiers enjoy full details and messaging.
-            </p>
+
+            {/* Card 3 */}
+            <div className="bg-gold-gradient p-2.5 sm:p-4 md:p-8 rounded-xl md:rounded-2xl border border-gold-500/20 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-1.5 sm:gap-2 md:gap-4 group col-span-2 md:col-span-1">
+              <div className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full bg-white border border-gold-500/10 flex items-center justify-center text-xs sm:text-lg md:text-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+                <FaCrown className="text-[#4f080e] filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)]" />
+              </div>
+              <h3 className="text-crimson-950 text-[10px] sm:text-sm md:text-xl font-bold font-serif">Premium Tier Controls</h3>
+              <p className="text-crimson-950/85 text-[8px] sm:text-[11px] md:text-sm font-semibold leading-normal">
+                Enforce customizable limit gates. Free tier profiles views are gated, while Premium/Elite tiers enjoy full details and messaging.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -325,6 +407,74 @@ const LandingPage = () => {
       <section className="w-full bg-gradient-to-br from-[#f8ebc4] via-[#eed182] to-[#dfb347] py-6 md:py-12 px-4 md:px-8 border-y border-[#d3aa3b]/60 relative overflow-visible shadow-inner">
         {/* Background decorative glows */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(79,8,14,0.03)_0%,transparent_70%)] pointer-events-none"></div>
+        {/* Top Gold Swirls & Leaves Underlay */}
+        <div className="absolute top-0 left-0 right-0 h-32 opacity-[0.8] pointer-events-none select-none z-0 overflow-hidden">
+          <svg className="w-full h-full text-[#4f080e]" fill="currentColor" viewBox="0 0 1000 120" preserveAspectRatio="none">
+            {/* Ornate Vines in Gold */}
+            <path d="M 0 0 C 150 80, 200 -20, 350 40 C 450 70, 550 70, 650 40 C 800 -20, 850 80, 1000 0" fill="none" stroke="#d4af37" strokeWidth="2.5" />
+            <path d="M 100 0 C 250 100, 300 20, 450 60" fill="none" stroke="#d4af37" strokeWidth="1.5" strokeDasharray="4,4" />
+            <path d="M 900 0 C 750 100, 700 20, 550 60" fill="none" stroke="#d4af37" strokeWidth="1.5" strokeDasharray="4,4" />
+            
+            {/* Hanging Leaf clusters */}
+            {/* Cluster 1 */}
+            <path d="M 200 25 C 190 45, 170 45, 200 65 C 230 45, 210 45, 200 25 Z" fill="#d4af37" />
+            <circle cx="200" cy="65" r="3" fill="#4f080e" />
+            <path d="M 180 30 C 170 40, 160 30, 180 50 Z" fill="#d4af37" opacity="0.8" />
+            <path d="M 220 30 C 230 40, 240 30, 220 50 Z" fill="#d4af37" opacity="0.8" />
+
+            {/* Cluster 2 (Center-ish) */}
+            <path d="M 500 45 C 490 65, 470 65, 500 85 C 530 65, 510 65, 500 45 Z" fill="#d4af37" />
+            <circle cx="500" cy="85" r="4.5" fill="#4f080e" />
+            <path d="M 475 50 C 465 60, 455 50, 475 70 Z" fill="#d4af37" opacity="0.8" />
+            <path d="M 525 50 C 535 60, 545 50, 525 70 Z" fill="#d4af37" opacity="0.8" />
+
+            {/* Cluster 3 */}
+            <path d="M 800 25 C 790 45, 770 45, 800 65 C 830 45, 810 45, 800 25 Z" fill="#d4af37" />
+            <circle cx="800" cy="65" r="3" fill="#4f080e" />
+            <path d="M 780 30 C 770 40, 760 30, 780 50 Z" fill="#d4af37" opacity="0.8" />
+            <path d="M 820 30 C 830 40, 840 30, 820 50 Z" fill="#d4af37" opacity="0.8" />
+          </svg>
+        </div>
+
+        {/* Bottom Left Gold Floral Swirls Underlay */}
+        <div className="absolute bottom-0 left-0 w-[95px] sm:w-[150px] h-[95px] sm:h-[150px] opacity-[0.8] pointer-events-none select-none z-0">
+          <svg className="w-full h-full text-[#4f080e]" fill="currentColor" viewBox="0 0 100 100">
+            <path d="M0 100 C 35 100, 55 70, 35 50 C 20 35, 15 40, 0 30" fill="none" stroke="#d4af37" strokeWidth="2.5" />
+            {/* Flower 1 */}
+            <circle cx="30" cy="65" r="10" fill="#d4af37" stroke="#4f080e" strokeWidth="1" />
+            <circle cx="30" cy="65" r="3" fill="#4f080e" />
+            {/* Leaves */}
+            <path d="M 45 80 C 52 70, 65 77, 58 87 Z" fill="#d4af37" />
+            <path d="M 18 48 C 10 38, 25 30, 32 40 Z" fill="#d4af37" />
+          </svg>
+        </div>
+
+        {/* Holy Quran Book Underlay */}
+        <div className="absolute bottom-1 right-2 w-[90px] sm:w-[130px] h-[80px] sm:h-[110px] opacity-[0.95] pointer-events-none select-none z-0">
+          <svg className="w-full h-full text-[#4f080e]" fill="currentColor" viewBox="0 0 120 100">
+            {/* Stand / Rehal base in maroon */}
+            <polygon points="10,90 110,90 95,70 25,70" fill="#4f080e" stroke="#d4af37" strokeWidth="1" />
+            <polygon points="25,70 95,70 105,40 15,40" fill="#3d060a" stroke="#d4af37" strokeWidth="1" />
+            
+            {/* Quran pages (thick white/cream pages with gold edges) */}
+            {/* Left Page */}
+            <path d="M17 40 Q 40 33 60 41 L 60 67 Q 40 59 17 66 Z" fill="#fffdf5" stroke="#d4af37" strokeWidth="1.5" />
+            {/* Right Page */}
+            <path d="M103 40 Q 80 33 60 41 L 60 67 Q 80 59 103 66 Z" fill="#fffdf5" stroke="#d4af37" strokeWidth="1.5" />
+            
+            {/* Page text lines */}
+            <line x1="25" y1="46" x2="52" y2="48" stroke="#d4af37" strokeWidth="1" />
+            <line x1="24" y1="51" x2="51" y2="53" stroke="#4f080e" strokeWidth="1" />
+            <line x1="25" y1="56" x2="52" y2="58" stroke="#d4af37" strokeWidth="1" />
+
+            <line x1="95" y1="46" x2="68" y2="48" stroke="#d4af37" strokeWidth="1" />
+            <line x1="96" y1="51" x2="69" y2="53" stroke="#4f080e" strokeWidth="1" />
+            <line x1="95" y1="56" x2="68" y2="58" stroke="#d4af37" strokeWidth="1" />
+            
+            {/* Gold Ribbon bookmark */}
+            <path d="M 60 41 Q 63 68 55 82 Q 53 88 56 95" fill="none" stroke="#d4af37" strokeWidth="2.5" />
+          </svg>
+        </div>
         
         <div className="max-w-6xl mx-auto relative z-10">
           {/* Heading Section */}
@@ -367,7 +517,7 @@ const LandingPage = () => {
                 return (
                   <div 
                     key={storyItem._id || idx} 
-                    className="bg-[#fffdfa] border border-gold-400/30 md:border-2 shadow-[0_15px_45px_rgba(79,8,14,0.12)] flex flex-row items-stretch overflow-hidden max-w-4xl mx-auto min-h-[135px] md:min-h-[280px] transition-all duration-700 animate-[fadeIn_0.5s_ease-in-out] relative card-leaf-shape"
+                    className="bg-[#fffdfa] border border-gold-400/30 md:border-2 shadow-[0_15px_45px_rgba(79,8,14,0.12)] flex flex-row items-stretch overflow-hidden max-w-4xl mx-auto min-h-[160px] sm:min-h-[180px] md:min-h-[280px] transition-all duration-700 animate-[fadeIn_0.5s_ease-in-out] relative card-leaf-shape"
                   >
                     {/* Inner luxury gold border frame */}
                     <div className="absolute inset-1.5 md:inset-2.5 border border-gold-300/20 pointer-events-none card-inner-leaf-shape"></div>
@@ -378,15 +528,15 @@ const LandingPage = () => {
 
                     {/* Left Column: Text and Details (58% width on desktop) */}
                     <div className="w-[58%] md:w-[58%] p-2.5 pb-3.5 md:p-9 flex flex-col justify-between md:justify-center text-left relative z-10">
-                      <h3 className="font-serif font-extrabold text-[#4f080e] text-[10px] sm:text-base md:text-xl mb-1 md:mb-3 flex items-center gap-1 md:gap-2">
+                      <h3 className="font-serif font-extrabold text-[#4f080e] text-[12px] sm:text-base md:text-xl mb-1 md:mb-3 flex items-center gap-1 md:gap-2">
                         <span className="text-gold-500 font-sans text-[8px] md:text-xs">⚜</span>
                         {storyItem.partnerOne} & {storyItem.partnerTwo}
                       </h3>
-                      <p className="text-slate-700 font-sans text-[8px] sm:text-xs md:text-[13px] leading-relaxed mb-1 md:mb-4 font-medium italic pl-1.5 border-l border-gold-400/40 md:border-l-2">
+                      <p className="text-slate-700 font-sans text-[10px] sm:text-xs md:text-[13px] leading-relaxed mb-1 md:mb-4 font-medium italic pl-1.5 border-l border-gold-400/40 md:border-l-2">
                         "{storyItem.story}"
                       </p>
                       <div className="mt-auto pt-1 md:pt-2.5 border-t border-gold-500/10 flex items-center justify-between pl-4 sm:pl-0">
-                        <span className="text-[6px] sm:text-[8px] md:text-[10px] text-gold-600 font-bold uppercase tracking-widest block">
+                        <span className="text-[8px] sm:text-[10px] text-gold-600 font-bold uppercase tracking-widest block">
                           Connected in {storyItem.location}
                         </span>
                         <span className="text-gold-500/30 text-lg md:text-3xl font-serif select-none pointer-events-none hidden sm:inline">”</span>
@@ -395,7 +545,7 @@ const LandingPage = () => {
 
                     {/* Right Column: Mosque-Arch (Mehrab) Framed Image (42% width on desktop) */}
                     <div className="w-[42%] md:w-[42%] p-2 md:p-6 flex items-center justify-center flex-shrink-0 relative z-10 bg-gradient-to-br from-gold-50/20 to-transparent">
-                      <div className="relative w-full h-[95px] md:h-full overflow-hidden border border-gold-400/40 md:border-2 shadow-md transition-transform duration-500 image-arch-shape">
+                      <div className="relative w-full h-[120px] sm:h-[135px] md:h-full overflow-hidden border border-gold-400/40 md:border-2 shadow-md transition-transform duration-500 image-arch-shape">
                         {/* Inner gold image border */}
                         <div className="absolute inset-0.5 md:inset-1 border border-gold-300/30 pointer-events-none z-10 image-inner-arch-shape"></div>
                         

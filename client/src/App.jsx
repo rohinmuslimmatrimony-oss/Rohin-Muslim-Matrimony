@@ -5,6 +5,7 @@ import { AuthContext, AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProfileCompletenessBanner from './components/ProfileCompletenessBanner';
+import BottomNavigation from './components/BottomNavigation';
 import LogoLoader from './components/LogoLoader';
 
 // Page Imports
@@ -59,6 +60,17 @@ function AppContent() {
 
   const completeness = getCompleteness().score;
   const showBanner = user && user.role !== 'admin' && completeness < 100 && !['/login', '/register', '/edit-profile', '/admin'].includes(location.pathname);
+  const showBottomNav = user && user.role !== 'admin' && !['/login', '/register', '/admin'].includes(location.pathname);
+
+  // Dynamic bottom padding for main container to prevent overlap of sticky bottom components
+  let pbClass = 'pb-0';
+  if (showBottomNav && showBanner) {
+    pbClass = 'pb-24 lg:pb-10'; // Both mobile bottom nav and banner active
+  } else if (showBottomNav) {
+    pbClass = 'pb-14 lg:pb-0';  // Only mobile bottom nav active
+  } else if (showBanner) {
+    pbClass = 'pb-10';          // Only banner active
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-cream-50 text-slate-800">
@@ -82,16 +94,13 @@ function AppContent() {
         }}
       />
       
-      {/* Sticky Header Wrapper (Navbar + Completeness Banner) */}
+      {/* Sticky Header Wrapper (Navbar) */}
       <header className="sticky top-0 z-50 w-full">
         <Navbar />
-        <div className="absolute w-full top-full left-0 -z-10">
-          <ProfileCompletenessBanner />
-        </div>
       </header>
 
-      {/* Main Routed Views - Pushed down when the completeness banner is active */}
-      <main className={`flex-grow transition-all duration-500 ${showBanner ? 'pt-[68px] sm:pt-[36px]' : 'pt-0'}`}>
+      {/* Main Routed Views - padded dynamically based on active floating bottom panels */}
+      <main className={`flex-grow transition-all duration-300 ${pbClass}`}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -112,6 +121,12 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      {/* Profile Completeness Floating Banner (sticky bottom) */}
+      <ProfileCompletenessBanner />
+
+      {/* Bottom Sticky Navigation for Mobile devices */}
+      <BottomNavigation />
 
       {/* Footer */}
       <Footer />
