@@ -160,15 +160,7 @@ const LogoLoader = ({ fullScreen = false, text = 'Loading Blessings...' }) => {
         </div>
       </div>
 
-      {/* Loading message with beautiful brand typography */}
-      {text && (
-        <div className="mt-8 flex flex-col items-center gap-1.5 min-h-[40px]">
-          <p className={`${fontSize} font-serif tracking-widest text-[#4f080e] uppercase flex items-center`}>
-            <span>{displayedText}</span>
-            <span className="cursor-blink text-gold-500 font-sans ml-1 text-base md:text-xl font-normal">|</span>
-          </p>
-        </div>
-      )}
+      {/* Loading message removed as per user request */}
     </div>
   );
 

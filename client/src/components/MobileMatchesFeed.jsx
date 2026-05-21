@@ -42,7 +42,7 @@ const MobileMatchesFeed = () => {
   return (
     <div className="w-full flex flex-col min-h-screen bg-white pb-24">
       {/* Pills Navigation */}
-      <div className="flex items-center justify-center gap-3 py-4 px-2">
+      <div className="sticky top-[72px] z-40 bg-white flex items-center justify-center gap-3 py-4 px-2">
         <button onClick={() => navigate('/search')} className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors">
           <FaSearch /> Search
         </button>
