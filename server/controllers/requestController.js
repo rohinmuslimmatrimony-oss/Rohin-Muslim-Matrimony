@@ -147,6 +147,13 @@ exports.acceptInterest = async (req, res) => {
     request.status = 'accepted';
     await request.save();
 
+    // Auto-mark the old interest_sent notification as read for the receiver (acceptor)
+    // so old stale "New Interest Received" notifications don't keep showing
+    await Notification.updateMany(
+      { recipient: userId, sender: request.sender, type: 'interest_sent', isRead: false },
+      { $set: { isRead: true } }
+    );
+
     // Establish dynamic connection between both profiles
     await Profile.findOneAndUpdate(
       { user: request.sender },
@@ -302,8 +309,8 @@ exports.getRequests = async (req, res) => {
       })
     );
 
-    // Sent requests (along with receiver profile details)
-    const sent = await InterestRequest.find({ sender: userId })
+    // Sent requests (only PENDING ones - accepted ones appear under Connections)
+    const sent = await InterestRequest.find({ sender: userId, status: 'pending' })
       .populate({
         path: 'receiver',
         select: 'email isVerified',
