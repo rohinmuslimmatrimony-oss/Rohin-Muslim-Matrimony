@@ -8,7 +8,7 @@ import { FaCheckCircle, FaTimesCircle, FaCommentDots, FaPaperPlane } from 'react
 import MobileActivityPage from '../components/MobileActivityPage';
 
 const InterestsPage = () => {
-  const { user } = useContext(AuthContext);
+  const { user, markNotificationsReadFromSender, fetchNotifications } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('received');
   
   const [receivedRequests, setReceivedRequests] = useState([]);
@@ -22,6 +22,22 @@ const InterestsPage = () => {
   
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const activeChatRef = useRef(null);
+
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
+
+  useEffect(() => {
+    const handleInterestsUpdate = () => {
+      fetchRequests();
+      fetchConnections();
+    };
+    window.addEventListener('interests_updated', handleInterestsUpdate);
+    return () => {
+      window.removeEventListener('interests_updated', handleInterestsUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     fetchRequests();
@@ -35,7 +51,16 @@ const InterestsPage = () => {
 
     // Listen for incoming messages
     socketRef.current.on('receive_message', (msg) => {
-      setMessages((prev) => [...prev, msg]);
+      const activePartnerId = activeChatRef.current?.user?._id || activeChatRef.current?.user;
+      if (activePartnerId && (msg.sender === activePartnerId || msg.receiver === activePartnerId)) {
+        setMessages((prev) => {
+          if (prev.some(m => m._id === msg._id)) return prev;
+          return [...prev, msg];
+        });
+        // Auto-read on backend
+        api.put(`/notifications/mark-read-sender/${activePartnerId}`).catch(() => {});
+      }
+      fetchNotifications();
     });
 
     return () => {
@@ -125,8 +150,10 @@ const InterestsPage = () => {
       return;
     }
     setActiveChat(partnerProfile);
+    const partnerId = partnerProfile.user?._id || partnerProfile.user;
+    markNotificationsReadFromSender(partnerId);
     try {
-      const res = await api.get(`/messages/${partnerProfile.user._id}`);
+      const res = await api.get(`/messages/${partnerId}`);
       if (res.data.success) {
         setMessages(res.data.data);
       }

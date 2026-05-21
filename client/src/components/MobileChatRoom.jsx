@@ -8,7 +8,7 @@ import { FaChevronLeft, FaPaperPlane, FaUser } from 'react-icons/fa';
 
 const MobileChatRoom = () => {
   const { id } = useParams(); // Chat partner's User ID
-  const { user } = useContext(AuthContext);
+  const { user, markNotificationsReadFromSender } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [partnerProfile, setPartnerProfile] = useState(null);
@@ -22,10 +22,13 @@ const MobileChatRoom = () => {
   // Suppress global message toasts for this user while in this room
   useEffect(() => {
     localStorage.setItem('activeChatPartnerId', id);
+    if (id) {
+      markNotificationsReadFromSender(id);
+    }
     return () => {
       localStorage.removeItem('activeChatPartnerId');
     };
-  }, [id]);
+  }, [id, markNotificationsReadFromSender]);
 
   useEffect(() => {
     // 1. Fetch Partner's Profile Details
@@ -76,7 +79,12 @@ const MobileChatRoom = () => {
     socketRef.current.on('receive_message', (msg) => {
       // Append if the message belongs to this specific chat session
       if (msg.sender === id || msg.receiver === id) {
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev) => {
+          if (prev.some(m => m._id === msg._id)) return prev;
+          return [...prev, msg];
+        });
+        // Auto-read on backend
+        api.put(`/notifications/mark-read-sender/${id}`).catch(() => {});
       }
     });
 

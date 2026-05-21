@@ -2,6 +2,7 @@ const InterestRequest = require('../models/InterestRequest');
 const Profile = require('../models/Profile');
 const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
+const Notification = require('../models/Notification');
 
 // @desc    Send an interest request to a profile
 // @route   POST /api/requests/send/:id
@@ -51,6 +52,22 @@ exports.sendInterest = async (req, res) => {
     const senderProfile = await Profile.findOne({ user: senderId });
     const receiverProfile = await Profile.findOne({ user: receiverId });
 
+    // Create notification in DB
+    const notification = await Notification.create({
+      recipient: receiverId,
+      sender: senderId,
+      type: 'interest_sent',
+      title: 'New Interest Received! 💖',
+      message: `${senderProfile?.name || 'Someone'} is interested in your profile.`,
+      url: '/interests'
+    });
+
+    const populatedNotification = {
+      ...notification.toObject(),
+      senderName: senderProfile ? senderProfile.name : 'Matrimony Member',
+      senderPhoto: senderProfile ? senderProfile.profilePhoto : '/uploads/default-avatar.png'
+    };
+
     // Emit real-time notification via Socket.io
     if (req.io) {
       req.io.to(receiverId).emit('receive_interest_notification', {
@@ -58,6 +75,9 @@ exports.sendInterest = async (req, res) => {
         senderName: senderProfile?.name || 'Someone',
         message: `${senderProfile?.name || 'A user'} is interested in your profile! 💖`
       });
+      req.io.to(receiverId).emit('new_notification', populatedNotification);
+      req.io.to(senderId).emit('interests_updated');
+      req.io.to(receiverId).emit('interests_updated');
     }
 
     // Trigger Web Push notification
@@ -143,6 +163,22 @@ exports.acceptInterest = async (req, res) => {
     const senderProfile = await Profile.findOne({ user: request.sender });
     const receiverProfile = await Profile.findOne({ user: request.receiver });
 
+    // Create notification in DB
+    const notification = await Notification.create({
+      recipient: request.sender,
+      sender: userId,
+      type: 'interest_accepted',
+      title: 'Interest Accepted! 🎉',
+      message: `${receiverProfile?.name || 'Someone'} accepted your interest request!`,
+      url: '/interests'
+    });
+
+    const populatedNotification = {
+      ...notification.toObject(),
+      senderName: receiverProfile ? receiverProfile.name : 'Matrimony Member',
+      senderPhoto: receiverProfile ? receiverProfile.profilePhoto : '/uploads/default-avatar.png'
+    };
+
     // Emit real-time notification via Socket.io
     if (req.io) {
       req.io.to(request.sender.toString()).emit('receive_interest_accept', {
@@ -150,6 +186,9 @@ exports.acceptInterest = async (req, res) => {
         receiverName: receiverProfile?.name || 'Someone',
         message: `${receiverProfile?.name || 'A user'} accepted your interest request! 🎉`
       });
+      req.io.to(request.sender.toString()).emit('new_notification', populatedNotification);
+      req.io.to(request.sender.toString()).emit('interests_updated');
+      req.io.to(userId).emit('interests_updated');
     }
 
     // Trigger Web Push notification
@@ -220,6 +259,11 @@ exports.rejectInterest = async (req, res) => {
     // Update status to rejected
     request.status = 'rejected';
     await request.save();
+
+    if (req.io) {
+      req.io.to(request.sender.toString()).emit('interests_updated');
+      req.io.to(userId).emit('interests_updated');
+    }
 
     return res.status(200).json({
       success: true,
@@ -338,6 +382,11 @@ exports.cancelInterest = async (req, res) => {
     }
 
     await InterestRequest.deleteOne({ _id: request._id });
+
+    if (req.io) {
+      req.io.to(senderId).emit('interests_updated');
+      req.io.to(receiverId).emit('interests_updated');
+    }
 
     return res.status(200).json({
       success: true,

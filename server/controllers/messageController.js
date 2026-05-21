@@ -2,6 +2,7 @@ const Message = require('../models/Message');
 const Profile = require('../models/Profile');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
+const Notification = require('../models/Notification');
 
 const getPlanFeatures = async (plan) => {
   let settings = await Settings.findOne();
@@ -58,6 +59,27 @@ exports.sendMessage = async (req, res) => {
       receiver: receiverId,
       content: content.trim(),
     });
+
+    // Create Notification in DB
+    const notification = await Notification.create({
+      recipient: receiverId,
+      sender: senderId,
+      type: 'message_received',
+      title: 'New Message 💬',
+      message: `You have received a new message from ${senderProfile?.name || 'a member'}.`,
+      url: `/chat/${senderId}`
+    });
+
+    const populatedNotification = {
+      ...notification.toObject(),
+      senderName: senderProfile ? senderProfile.name : 'Matrimony Member',
+      senderPhoto: senderProfile ? senderProfile.profilePhoto : '/uploads/default-avatar.png'
+    };
+
+    // Emit socket event to the receiver
+    if (req.io) {
+      req.io.to(receiverId).emit('new_notification', populatedNotification);
+    }
 
     // Handle offline notifications (Web Push & Email) safely in the background
     (async () => {

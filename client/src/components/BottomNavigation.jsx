@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { FaHome, FaHeart, FaComments, FaUser } from 'react-icons/fa';
 
 const BottomNavigation = () => {
-  const { user } = useContext(AuthContext);
+  const { user, pendingRequestsCount, notifications } = useContext(AuthContext);
   const location = useLocation();
 
   // Show only if logged in and not admin
@@ -14,10 +14,12 @@ const BottomNavigation = () => {
   const hiddenPaths = ['/login', '/register', '/admin'];
   if (hiddenPaths.includes(location.pathname)) return null;
 
+  const unreadMessagesCount = notifications.filter(n => n.type === 'message_received' && !n.isRead).length;
+
   const navItems = [
     { label: 'Home', icon: FaHome, path: '/dashboard' },
-    { label: 'Activity', icon: FaHeart, path: '/interests' },
-    { label: 'Chat', icon: FaComments, path: '/chat' },
+    { label: 'Activity', icon: FaHeart, path: '/interests', badge: pendingRequestsCount },
+    { label: 'Chat', icon: FaComments, path: '/chat', badge: unreadMessagesCount },
     { label: 'Profile', icon: FaUser, path: '/edit-profile' }
   ];
 
@@ -41,11 +43,18 @@ const BottomNavigation = () => {
                 : 'opacity-70 hover:opacity-100'
             }`}
           >
-            <IconComponent 
-              className={`text-lg mb-0.5 transition-colors duration-200 ${
-                active ? 'text-[#c59b27] drop-shadow-[0_1px_2px_rgba(197,155,39,0.2)]' : 'text-[#4f080e]/50'
-              }`} 
-            />
+            <div className="relative">
+              <IconComponent 
+                className={`text-lg mb-0.5 transition-colors duration-200 ${
+                  active ? 'text-[#c59b27] drop-shadow-[0_1px_2px_rgba(197,155,39,0.2)]' : 'text-[#4f080e]/50'
+                }`} 
+              />
+              {item.badge > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 bg-red-600 text-white text-[8px] font-extrabold h-3.5 w-3.5 rounded-full flex items-center justify-center border border-white">
+                  {item.badge}
+                </span>
+              )}
+            </div>
             <span 
               className={`text-[9px] uppercase tracking-wider leading-none transition-colors duration-200 ${
                 active ? 'text-[#4f080e] font-extrabold' : 'text-[#4f080e]/60 font-medium'

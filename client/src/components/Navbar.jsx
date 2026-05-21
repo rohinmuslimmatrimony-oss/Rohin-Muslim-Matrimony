@@ -7,11 +7,50 @@ import { SOCKET_BASE_URL } from '../services/api';
 import logo3 from '../assets/logo3.png';
 
 const Navbar = () => {
-  const { user, profile, logout } = useContext(AuthContext);
+  const { 
+    user, 
+    profile, 
+    logout, 
+    notifications, 
+    unreadCount, 
+    pendingRequestsCount, 
+    markAsRead, 
+    markAllAsRead 
+  } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [showMobileUserMenu, setShowMobileUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
+  const handleNotificationClick = (n) => {
+    markAsRead(n._id);
+    setShowNotifications(false);
+    if (n.type === 'message_received') {
+      if (window.innerWidth < 1024) {
+        navigate(`/chat/${n.sender}`);
+      } else {
+        navigate('/interests');
+      }
+    } else {
+      navigate('/interests');
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -69,7 +108,14 @@ const Navbar = () => {
             <>
               <Link to="/dashboard" className={isActive('/dashboard')}>Dashboard</Link>
               <Link to="/search" className={isActive('/search')}>Search Matches</Link>
-              <Link to="/interests" className={isActive('/interests')}>Interests</Link>
+              <Link to="/interests" className={`${isActive('/interests')} flex items-center gap-1.5`}>
+                Interests
+                {pendingRequestsCount > 0 && (
+                  <span className="bg-gold-500 text-crimson-950 text-[10px] font-extrabold h-4 px-1.5 rounded-full flex items-center justify-center animate-pulse border border-crimson-900/10 shadow-sm">
+                    {pendingRequestsCount}
+                  </span>
+                )}
+              </Link>
             </>
           )}
           
@@ -95,6 +141,76 @@ const Navbar = () => {
                   <FaUser className="text-slate-300 text-sm" />
                 )}
               </Link>
+              
+              {/* Notification Bell Desktop */}
+              <div className="relative">
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className={`w-9 h-9 rounded-full bg-crimson-900/10 text-crimson-950 flex items-center justify-center hover:bg-crimson-900/20 active:scale-95 transition-all relative ${unreadCount > 0 ? 'animate-pulse bg-crimson-900/20' : ''}`}
+                  title="Notifications"
+                >
+                  <FaBell className={`text-sm ${unreadCount > 0 ? 'text-crimson-600' : ''}`} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-extrabold h-4 w-4 rounded-full flex items-center justify-center border border-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification Dropdown Desktop */}
+                {showNotifications && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
+                    <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-crimson-900/10 py-3 z-50 animate-fadeIn max-h-[400px] flex flex-col">
+                      <div className="flex items-center justify-between px-4 pb-2.5 border-b border-slate-100">
+                        <span className="text-xs font-bold text-slate-800">Notifications ({unreadCount})</span>
+                        {unreadCount > 0 && (
+                          <button 
+                            onClick={() => {
+                              markAllAsRead();
+                            }}
+                            className="text-[10px] font-extrabold text-crimson-600 hover:text-crimson-700 transition-colors uppercase tracking-wider"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
+                      <div className="overflow-y-auto max-h-[300px] divide-y divide-slate-100 flex-grow">
+                        {notifications.length === 0 ? (
+                          <div className="py-8 text-center text-slate-400 text-xs font-semibold">
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifications.map((n) => (
+                            <div 
+                              key={n._id}
+                              onClick={() => handleNotificationClick(n)}
+                              className={`flex items-start gap-3 p-3 hover:bg-slate-50 transition-colors cursor-pointer ${!n.isRead ? 'bg-crimson-50/40 border-l-2 border-crimson-600' : ''}`}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-crimson-100 flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-crimson-900 text-xs border border-crimson-900/10">
+                                {n.senderPhoto && n.senderPhoto !== '/uploads/default-avatar.png' && n.senderPhoto !== '/uploads/blurred-avatar.png' ? (
+                                  <img src={`${SOCKET_BASE_URL}${n.senderPhoto}`} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  n.senderName ? n.senderName[0].toUpperCase() : 'M'
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-[11px] leading-snug text-slate-700 ${!n.isRead ? 'font-bold' : 'font-medium'}`}>
+                                  {n.content}
+                                </p>
+                                <span className="text-[9px] font-semibold text-slate-400 mt-1 block">
+                                  {formatTimeAgo(n.createdAt)}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <button onClick={handleLogout} className="text-slate-500 hover:text-red-600 p-2 transition-colors" title="Logout">
                 <FaSignOutAlt className="text-lg" />
               </button>
@@ -115,10 +231,77 @@ const Navbar = () => {
         <div className="flex items-center gap-3 lg:hidden">
           {user && (
             <>
-              {/* Notification Bell */}
-              <button className="w-8 h-8 rounded-full bg-crimson-900/10 text-crimson-950 flex items-center justify-center hover:bg-crimson-900/20 transition-colors">
-                <FaBell className="text-sm" />
-              </button>
+              {/* Notification Bell Mobile */}
+              <div className="relative">
+                <button 
+                  onClick={() => {
+                    setShowNotifications(!showNotifications);
+                    setShowMobileUserMenu(false);
+                    setIsOpen(false);
+                  }}
+                  className={`w-8 h-8 rounded-full bg-crimson-900/10 text-crimson-950 flex items-center justify-center hover:bg-crimson-900/20 transition-colors relative ${unreadCount > 0 ? 'animate-pulse bg-crimson-900/20' : ''}`}
+                >
+                  <FaBell className={`text-xs ${unreadCount > 0 ? 'text-crimson-600' : ''}`} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-extrabold h-3.5 w-3.5 rounded-full flex items-center justify-center border border-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification Dropdown Mobile */}
+                {showNotifications && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
+                    <div className="absolute right-[-40px] mt-2.5 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 py-2.5 z-50 animate-fadeIn max-h-[350px] flex flex-col">
+                      <div className="flex items-center justify-between px-3 pb-2 border-b border-slate-100">
+                        <span className="text-[10px] font-extrabold text-slate-800">Notifications ({unreadCount})</span>
+                        {unreadCount > 0 && (
+                          <button 
+                            onClick={() => {
+                              markAllAsRead();
+                            }}
+                            className="text-[9px] font-extrabold text-crimson-600 hover:text-crimson-700 transition-colors uppercase tracking-wider"
+                          >
+                            Mark all
+                          </button>
+                        )}
+                      </div>
+                      <div className="overflow-y-auto max-h-[250px] divide-y divide-slate-100 flex-grow">
+                        {notifications.length === 0 ? (
+                          <div className="py-6 text-center text-slate-400 text-[10px] font-semibold">
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifications.map((n) => (
+                            <div 
+                              key={n._id}
+                              onClick={() => handleNotificationClick(n)}
+                              className={`flex items-start gap-2.5 p-2.5 hover:bg-slate-50 transition-colors cursor-pointer ${!n.isRead ? 'bg-crimson-50/40 border-l-2 border-crimson-600' : ''}`}
+                            >
+                              <div className="w-7 h-7 rounded-full bg-crimson-100 flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-crimson-900 text-[10px] border border-crimson-900/10">
+                                {n.senderPhoto && n.senderPhoto !== '/uploads/default-avatar.png' && n.senderPhoto !== '/uploads/blurred-avatar.png' ? (
+                                  <img src={`${SOCKET_BASE_URL}${n.senderPhoto}`} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  n.senderName ? n.senderName[0].toUpperCase() : 'M'
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-[10px] leading-snug text-slate-700 ${!n.isRead ? 'font-bold' : 'font-medium'}`}>
+                                  {n.content}
+                                </p>
+                                <span className="text-[8px] font-semibold text-slate-400 mt-0.5 block">
+                                  {formatTimeAgo(n.createdAt)}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* User Avatar */}
               <div className="relative">

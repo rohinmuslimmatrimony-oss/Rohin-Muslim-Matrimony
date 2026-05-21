@@ -9,6 +9,46 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+
+  const fetchNotifications = async () => {
+    if (!localStorage.getItem('token')) return;
+    try {
+      const res = await api.get('/notifications');
+      if (res.data.success) {
+        setNotifications(res.data.data);
+        const unread = res.data.data.filter(n => !n.isRead).length;
+        setUnreadCount(unread);
+      }
+    } catch (error) {
+      console.error('Fetch Notifications Error:', error);
+    }
+  };
+
+  const fetchPendingRequestsCount = async () => {
+    if (!localStorage.getItem('token')) return;
+    try {
+      const res = await api.get('/requests');
+      if (res.data.success) {
+        setPendingRequestsCount(res.data.received.length);
+      }
+    } catch (error) {
+      console.error('Fetch Pending Requests Count Error:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?._id) {
+      fetchNotifications();
+      fetchPendingRequestsCount();
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+      setPendingRequestsCount(0);
+    }
+  }, [user]);
 
   // Validate token and fetch currently logged-in user details on load
   useEffect(() => {
@@ -47,6 +87,8 @@ export const AuthProvider = ({ children }) => {
       socket.emit('join_room', user._id);
       
       socket.on('receive_interest_notification', (data) => {
+        fetchNotifications();
+        fetchPendingRequestsCount();
         toast((t) => (
           <div 
             onClick={() => { 
@@ -80,6 +122,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       socket.on('receive_interest_accept', (data) => {
+        fetchNotifications();
+        fetchPendingRequestsCount();
         toast((t) => (
           <div 
             onClick={() => { 
@@ -113,6 +157,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       socket.on('receive_message', (data) => {
+        fetchNotifications();
         const activePartnerId = localStorage.getItem('activeChatPartnerId');
         const isCurrentlyChatting = (window.location.pathname === '/interests' || window.location.pathname.startsWith('/chat/')) && activePartnerId === data.sender;
         
@@ -147,7 +192,25 @@ export const AuthProvider = ({ children }) => {
               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
             }
           });
+        } else {
+          // Since the user is chatting, mark the notification as read immediately
+          api.put(`/notifications/mark-read-sender/${data.sender}`).catch(() => {});
         }
+      });
+
+      socket.on('new_notification', (data) => {
+        fetchNotifications();
+        fetchPendingRequestsCount();
+      });
+
+      socket.on('notifications_updated', () => {
+        fetchNotifications();
+        fetchPendingRequestsCount();
+      });
+
+      socket.on('interests_updated', () => {
+        fetchPendingRequestsCount();
+        window.dispatchEvent(new Event('interests_updated'));
       });
     }
 
@@ -330,6 +393,39 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
+  const markAsRead = async (id) => {
+    try {
+      const res = await api.put(`/notifications/mark-read/${id}`);
+      if (res.data.success) {
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error('Mark Notification Read Error:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const res = await api.put('/notifications/mark-all-read');
+      if (res.data.success) {
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error('Mark All Notifications Read Error:', error);
+    }
+  };
+
+  const markNotificationsReadFromSender = async (senderId) => {
+    try {
+      const res = await api.put(`/notifications/mark-read-sender/${senderId}`);
+      if (res.data.success) {
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error('Mark Notifications From Sender Read Error:', error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -342,6 +438,14 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         refreshUser,
         getCompleteness,
+        notifications,
+        unreadCount,
+        fetchNotifications,
+        pendingRequestsCount,
+        fetchPendingRequestsCount,
+        markAsRead,
+        markAllAsRead,
+        markNotificationsReadFromSender,
       }}
     >
       {children}

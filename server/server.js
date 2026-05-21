@@ -48,6 +48,7 @@ app.use('/api/requests', require('./routes/requestRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Public Platform Settings (Pricing)
 app.get('/api/settings', require('./controllers/adminController').getSettings);
@@ -83,6 +84,10 @@ io.on('connection', (socket) => {
     // data contains { receiverId, messageObj }
     // We emit to the receiver's room instantly
     io.to(data.receiverId).emit('receive_message', data.messageObj);
+    // Emit to sender's other active tabs (room is the sender's user ID)
+    if (data.messageObj && data.messageObj.sender) {
+      socket.to(data.messageObj.sender).emit('receive_message', data.messageObj);
+    }
   });
 
   socket.on('disconnect', () => {
