@@ -3,6 +3,11 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
 const Notification = require('../models/Notification');
+const sendEmail = require('../utils/sendEmail');
+
+// Simple in-memory map to rate-limit message emails per receiver (15 min cooldown)
+const lastMessageEmailSent = {};
+const MESSAGE_EMAIL_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 
 const getPlanFeatures = async (plan) => {
   let settings = await Settings.findOne();
@@ -104,33 +109,40 @@ exports.sendMessage = async (req, res) => {
               '/interests'
             );
 
-            // 2. Send Email
-            const emailHtml = `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f2e8db; border-radius: 12px; background-color: #faf8f5;">
-                <h2 style="color: #4f080e; text-align: center; font-family: Georgia, serif;">Assalamu Alaikum!</h2>
-                <p style="font-size: 14px; color: #333333; line-height: 1.6;">
-                  You have received a new message from <strong>${senderName}</strong> on <strong>Rohin Muslim Matrimony</strong>.
-                </p>
-                <p style="font-size: 14px; color: #333333; line-height: 1.6;">
-                  Please log in to your dashboard to read and reply.
-                </p>
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="https://rohin-muslim-matrimony.onrender.com/interests" style="background-color: #4f080e; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block;">
-                    View Message & Reply
-                  </a>
+            // 2. Send Email - but rate-limit to 1 per 15 minutes per receiver
+            const now = Date.now();
+            const lastSent = lastMessageEmailSent[receiverId] || 0;
+            if (now - lastSent > MESSAGE_EMAIL_COOLDOWN_MS) {
+              lastMessageEmailSent[receiverId] = now;
+              const emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f2e8db; border-radius: 12px; background-color: #faf8f5;">
+                  <h2 style="color: #4f080e; text-align: center; font-family: Georgia, serif;">Assalamu Alaikum!</h2>
+                  <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+                    You have received a new message from <strong>${senderName}</strong> on <strong>Rohin Muslim Matrimony</strong>.
+                  </p>
+                  <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+                    Please log in to your dashboard to read and reply.
+                  </p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="https://rohin-muslim-matrimony.onrender.com/interests" style="background-color: #4f080e; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block;">
+                      View Message &amp; Reply
+                    </a>
+                  </div>
+                  <p style="font-size: 12px; color: #666666; text-align: center; margin-top: 30px; border-top: 1px solid #e6dccf; padding-top: 15px;">
+                    <strong>Rohin Muslim Matrimony Office Address:</strong><br>
+                    D.No.12-13-86, Abdulkhader Street, Islampet, Vijayawada-1<br>
+                    Contact: 7386083446, 7075900448 | Email: shaikhabeebiti@gmail.com
+                  </p>
                 </div>
-                <p style="font-size: 12px; color: #666666; text-align: center; margin-top: 30px; border-top: 1px solid #e6dccf; padding-top: 15px;">
-                  <strong>Rohin Muslim Matrimony Office Address:</strong><br>
-                  D.No.12-13-86, Abdulkhader Street, Islampet, Vijayawada-1<br>
-                  Contact: 7386083446, 7075900448 | Email: shaikhabeebiti@gmail.com
-                </p>
-              </div>
-            `;
-            await sendEmail({
-              email: receiverUser.email,
-              subject: 'New Message Received 💬 - Rohin Muslim Matrimony',
-              html: emailHtml
-            });
+              `;
+              await sendEmail({
+                email: receiverUser.email,
+                subject: 'New Message Received 💬 - Rohin Muslim Matrimony',
+                html: emailHtml
+              });
+            } else {
+              console.log(`Skipping message email to ${receiverId} - last sent ${Math.round((now - lastSent)/60000)}m ago (cooldown active)`);
+            }
           }
         }
       } catch (err) {

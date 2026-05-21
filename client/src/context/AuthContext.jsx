@@ -157,6 +157,9 @@ export const AuthProvider = ({ children }) => {
       });
 
       socket.on('receive_message', (data) => {
+        // If this is my own sent message echoed back to my other tabs, skip toast & notification
+        if (data.sender === user._id) return;
+
         fetchNotifications();
         const activePartnerId = localStorage.getItem('activeChatPartnerId');
         const isCurrentlyChatting = (window.location.pathname === '/interests' || window.location.pathname.startsWith('/chat/')) && activePartnerId === data.sender;
@@ -193,7 +196,7 @@ export const AuthProvider = ({ children }) => {
             }
           });
         } else {
-          // Since the user is chatting, mark the notification as read immediately
+          // Since the user is actively chatting with this person, mark as read immediately
           api.put(`/notifications/mark-read-sender/${data.sender}`).catch(() => {});
         }
       });
