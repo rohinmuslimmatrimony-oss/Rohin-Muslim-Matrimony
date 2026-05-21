@@ -114,14 +114,14 @@ export const AuthProvider = ({ children }) => {
 
       socket.on('receive_message', (data) => {
         const activePartnerId = localStorage.getItem('activeChatPartnerId');
-        const isCurrentlyChatting = window.location.pathname === '/interests' && activePartnerId === data.sender;
+        const isCurrentlyChatting = (window.location.pathname === '/interests' || window.location.pathname.startsWith('/chat/')) && activePartnerId === data.sender;
         
         if (!isCurrentlyChatting) {
           toast((t) => (
             <div 
               onClick={() => { 
                 toast.dismiss(t.id); 
-                window.location.href = '/interests'; 
+                window.location.href = window.innerWidth < 1024 ? `/chat/${data.sender}` : '/interests'; 
               }} 
               className="cursor-pointer py-1"
             >

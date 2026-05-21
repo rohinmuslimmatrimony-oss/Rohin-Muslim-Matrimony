@@ -113,7 +113,7 @@ const Navbar = () => {
 
         {/* Mobile Control Icons */}
         <div className="flex items-center gap-3 lg:hidden">
-          {user ? (
+          {user && (
             <>
               {/* Notification Bell */}
               <button className="w-8 h-8 rounded-full bg-crimson-900/10 text-crimson-950 flex items-center justify-center hover:bg-crimson-900/20 transition-colors">
@@ -137,15 +137,24 @@ const Navbar = () => {
                   )}
                 </button>
 
-                {/* Mobile User Menu Dropdown (Logout) */}
+                {/* Mobile User Menu Dropdown (Upgrade & Logout) */}
                 {showMobileUserMenu && (
-                  <div className="absolute right-0 mt-2.5 w-32 bg-white rounded-lg shadow-xl border border-slate-100 py-1.5 z-50 animate-fadeIn">
+                  <div className="absolute right-0 mt-2.5 w-36 bg-white rounded-lg shadow-xl border border-slate-100 py-1.5 z-50 animate-fadeIn">
+                    <button 
+                      onClick={() => {
+                        navigate('/plans');
+                        setShowMobileUserMenu(false);
+                      }} 
+                      className="w-full text-left px-4 py-2 text-xs font-serif font-extrabold text-gold-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
+                    >
+                      <FaCrown className="text-xs text-gold-600" /> Upgrade Plan
+                    </button>
                     <button 
                       onClick={() => {
                         handleLogout();
                         setShowMobileUserMenu(false);
                       }} 
-                      className="w-full text-left px-4 py-2 text-xs font-serif font-extrabold text-red-600 hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
+                      className="w-full text-left px-4 py-2 text-xs font-serif font-extrabold text-red-600 hover:bg-slate-50 flex items-center gap-1.5 transition-colors border-t border-slate-100 mt-1 pt-1.5"
                     >
                       <FaSignOutAlt className="text-xs" /> Logout
                     </button>
@@ -153,19 +162,18 @@ const Navbar = () => {
                 )}
               </div>
             </>
-          ) : (
-            /* Mobile menu toggle (hamburger) for logged out users */
-            location.pathname !== '/login' && location.pathname !== '/register' && (
-              <button 
-                onClick={() => {
-                  setIsOpen(!isOpen);
-                  setShowMobileUserMenu(false);
-                }} 
-                className="text-slate-700 hover:text-slate-900 text-2xl focus:outline-none p-1.5"
-              >
-                {isOpen ? <FaTimes /> : <FaBars />}
-              </button>
-            )
+          )}
+
+          {location.pathname !== '/login' && location.pathname !== '/register' && (
+            <button 
+              onClick={() => {
+                setIsOpen(!isOpen);
+                setShowMobileUserMenu(false);
+              }} 
+              className="text-slate-700 hover:text-slate-900 text-2xl focus:outline-none p-1.5"
+            >
+              {isOpen ? <FaTimes /> : <FaBars />}
+            </button>
           )}
         </div>
       </div>

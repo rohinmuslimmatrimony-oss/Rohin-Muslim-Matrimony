@@ -12,6 +12,7 @@ const SearchProfiles = () => {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sentRequests, setSentRequests] = useState([]);
+  const [receivedRequests, setReceivedRequests] = useState([]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,7 +71,9 @@ const SearchProfiles = () => {
       const res = await api.get('/requests');
       if (res.data.success) {
         const sent = res.data.sent.map(r => r.receiver?._id || r.receiver);
+        const received = res.data.received.map(r => r.sender?._id || r.sender);
         setSentRequests(sent);
+        setReceivedRequests(received);
       }
     } catch (error) {
       console.error('Failed to fetch requests:', error);
@@ -123,6 +126,18 @@ const SearchProfiles = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to send interest');
+    }
+  };
+
+  const handleCancelInterest = async (receiverId) => {
+    try {
+      const res = await api.delete(`/requests/cancel/${receiverId}`);
+      if (res.data.success) {
+        toast.success("Interest request withdrawn successfully.");
+        setSentRequests(sentRequests.filter(id => id !== receiverId));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to withdraw interest');
     }
   };
 
@@ -239,7 +254,9 @@ const SearchProfiles = () => {
                     profile={profile} 
                     currentPlan={user?.plan} 
                     onSendInterest={handleSendInterest}
+                    onCancelInterest={handleCancelInterest}
                     isSent={sentRequests.includes(profile.user?._id || profile.user)}
+                    isReceived={receivedRequests.includes(profile.user?._id || profile.user)}
                   />
                 ))}
               </div>

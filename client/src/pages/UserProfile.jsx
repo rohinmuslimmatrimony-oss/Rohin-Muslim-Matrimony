@@ -22,6 +22,8 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [reportText, setReportText] = useState('');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   useEffect(() => {
     fetchProfileData();
@@ -93,6 +95,19 @@ const UserProfile = () => {
     }
   };
 
+  const handleCancelInterest = async () => {
+    try {
+      const targetUserId = profile.user?._id || profile.user;
+      const res = await api.delete(`/requests/cancel/${targetUserId}`);
+      if (res.data.success) {
+        toast.success("Interest request withdrawn successfully.");
+        setIsSent(false);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to withdraw interest');
+    }
+  };
+
   const handleReport = async (e) => {
     e.preventDefault();
     if (!reportText.trim()) return;
@@ -118,7 +133,22 @@ const UserProfile = () => {
         fetchProfileData();
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Action failed');
+      if (error.response?.status === 403 && error.response?.data?.message?.includes('upgrade')) {
+        toast.error(
+          <div className="flex items-center justify-between gap-2.5">
+            <span>{error.response.data.message}</span>
+            <button 
+              onClick={() => navigate('/plans')}
+              className="bg-gold-gradient text-crimson-950 text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow hover:scale-105 transition-all whitespace-nowrap"
+            >
+              Upgrade
+            </button>
+          </div>,
+          { duration: 6000 }
+        );
+      } else {
+        toast.error(error.response?.data?.message || 'Action failed');
+      }
     }
   };
 
@@ -255,10 +285,35 @@ const UserProfile = () => {
                         <span className="bg-crimson-100 text-crimson-800 px-4 py-2 rounded-full font-bold text-sm shadow-sm border border-crimson-200 text-center">
                           Mutual Connection ✓
                         </span>
+                      ) : showCancelConfirm ? (
+                        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-3 py-1.5 shadow-sm transition-all duration-300">
+                          <span className="text-xs font-bold text-red-700 px-1">Withdraw?</span>
+                          <button
+                            onClick={() => {
+                              handleCancelInterest();
+                              setShowCancelConfirm(false);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm cursor-pointer"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => setShowCancelConfirm(false)}
+                            className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-full cursor-pointer"
+                          >
+                            No
+                          </button>
+                        </div>
                       ) : isSent ? (
-                        <span className="bg-slate-100 text-slate-500 px-4 py-2 rounded-full font-bold text-sm border border-slate-300 text-center">
-                          Interest Sent
-                        </span>
+                        <button 
+                          onClick={() => setShowCancelConfirm(true)}
+                          onMouseEnter={() => setHovered(true)}
+                          onMouseLeave={() => setHovered(false)}
+                          className="bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 px-4 py-2.5 rounded-full font-bold text-sm border border-slate-300 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <FaHeart className={`text-[12px] text-red-500 ${hovered ? 'animate-pulse' : ''}`} /> 
+                          {hovered ? 'Withdraw Interest' : 'Interest Sent'}
+                        </button>
                       ) : isReceived ? (
                         <span className="bg-crimson-50 text-crimson-900 px-4 py-2 rounded-full font-bold text-sm border border-crimson-200 text-center">
                           Interest Received

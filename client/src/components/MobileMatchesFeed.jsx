@@ -7,14 +7,18 @@ import LogoLoader from './LogoLoader';
 import { useNavigate } from 'react-router-dom';
 
 const MobileMatchesFeed = () => {
-  const { user } = useContext(AuthContext);
+  const { user, getCompleteness } = useContext(AuthContext);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Matches'); // 'Matches' or 'Online'
+  const [sentRequests, setSentRequests] = useState([]);
+  const [receivedRequests, setReceivedRequests] = useState([]);
+  const [confirmCancelProfileId, setConfirmCancelProfileId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfiles();
+    fetchMyRequests();
   }, []);
 
   const fetchProfiles = async () => {
@@ -31,11 +35,99 @@ const MobileMatchesFeed = () => {
     }
   };
 
-  const handleAction = (action, profileId) => {
+  const fetchMyRequests = async () => {
+    try {
+      const res = await api.get('/requests');
+      if (res.data.success) {
+        setSentRequests((res.data.sent || []).map(r => r.receiver?._id || r.receiver));
+        setReceivedRequests((res.data.received || []).map(r => r.sender?._id || r.sender));
+      }
+    } catch (error) {
+      console.error('Failed to fetch requests:', error);
+    }
+  };
+
+  const handleAction = async (action, profileId) => {
     if (action === 'message') {
       navigate('/chat');
-    } else {
-      toast.success(`${action} triggered for this profile!`);
+      return;
+    }
+
+    if (action === 'Interest') {
+      if (user?.role !== 'admin') {
+        const completeness = getCompleteness().score;
+        if (completeness < 100) {
+          toast.error('Please complete your profile details to 100% on the Dashboard before sending interest requests!', {
+            duration: 5000,
+            icon: '🔒',
+          });
+          return;
+        }
+      }
+
+      try {
+        const res = await api.post(`/requests/send/${profileId}`);
+        if (res.data.success) {
+          toast.success('Interest sent successfully!');
+          setSentRequests(prev => [...prev, profileId]);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to send interest');
+      }
+      return;
+    }
+
+    if (action === 'Shortlist') {
+      try {
+        const res = await api.post(`/profiles/shortlist/${profileId}`);
+        if (res.data.success) {
+          toast.success(res.data.message);
+          // Update the shortlisted status in the profiles list
+          setProfiles(prevProfiles =>
+            prevProfiles.map(p => {
+              const pUserId = p.user?._id || p.user;
+              if (pUserId === profileId) {
+                const isShortlisted = p.shortlistedBy?.includes(user?._id);
+                const updatedShortlistedBy = isShortlisted
+                  ? p.shortlistedBy.filter(uid => uid !== user?._id)
+                  : [...(p.shortlistedBy || []), user?._id];
+                return { ...p, shortlistedBy: updatedShortlistedBy };
+              }
+              return p;
+            })
+          );
+        }
+      } catch (error) {
+        if (error.response?.status === 403 && error.response?.data?.message?.includes('upgrade')) {
+          toast.error(
+            <div className="flex items-center justify-between gap-2.5">
+              <span>{error.response.data.message}</span>
+              <button 
+                onClick={() => navigate('/plans')}
+                className="bg-gold-gradient text-crimson-950 text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow hover:scale-105 transition-all whitespace-nowrap"
+              >
+                Upgrade
+              </button>
+            </div>,
+            { duration: 6000 }
+          );
+        } else {
+          toast.error(error.response?.data?.message || 'Action failed');
+        }
+      }
+      return;
+    }
+  };
+
+  const handleCancelInterest = async (profileId) => {
+    try {
+      const res = await api.delete(`/requests/cancel/${profileId}`);
+      if (res.data.success) {
+        toast.success('Interest request withdrawn successfully.');
+        setSentRequests(prev => prev.filter(id => id !== profileId));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to withdraw interest');
     }
   };
 
@@ -126,28 +218,94 @@ const MobileMatchesFeed = () => {
                   </p>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-between px-3 gap-4 pb-2">
-                    <div className="flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform" onClick={() => handleAction('Shortlist', p._id)}>
-                      <button className="w-12 h-12 rounded-full bg-[#111111] flex items-center justify-center text-white shadow-lg border border-white/5">
-                        <FaBookmark className="text-sm" />
-                      </button>
-                      <span className="text-white text-[10px] font-semibold tracking-wider">Shortlist</span>
-                    </div>
+                  {(() => {
+                    const targetUserId = p.user?._id || p.user;
+                    const isShortlisted = p.shortlistedBy?.includes(user?._id);
+                    const isSent = sentRequests.includes(targetUserId);
+                    const isReceived = receivedRequests.includes(targetUserId);
 
-                    <div className="flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform" onClick={() => handleAction('message', p._id)}>
-                      <button className="w-14 h-14 rounded-full bg-[#5c7cfa] flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                        <FaComment className="text-xl" />
-                      </button>
-                      <span className="text-white text-[10px] font-semibold tracking-wider">Message</span>
-                    </div>
+                    return (
+                      <div className="flex items-center justify-between px-3 gap-4 pb-2">
+                        <div 
+                          className="flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform" 
+                          onClick={() => handleAction('Shortlist', targetUserId)}
+                        >
+                          <button className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg border border-white/5 transition-all ${
+                            isShortlisted ? 'bg-amber-500 shadow-amber-500/30' : 'bg-[#111111]'
+                          }`}>
+                            <FaBookmark className="text-sm" />
+                          </button>
+                          <span className="text-white text-[10px] font-semibold tracking-wider">
+                            {isShortlisted ? 'Shortlisted' : 'Shortlist'}
+                          </span>
+                        </div>
 
-                    <div className="flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform" onClick={() => handleAction('Interest', p._id)}>
-                      <button className="w-12 h-12 rounded-full bg-[#fa5252] flex items-center justify-center text-white shadow-lg shadow-red-500/30">
-                        <FaHeart className="text-sm" />
-                      </button>
-                      <span className="text-white text-[10px] font-semibold tracking-wider">Interest</span>
-                    </div>
-                  </div>
+                        <div 
+                          className="flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform" 
+                          onClick={() => handleAction('message', targetUserId)}
+                        >
+                          <button className="w-14 h-14 rounded-full bg-[#5c7cfa] flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                            <FaComment className="text-xl" />
+                          </button>
+                          <span className="text-white text-[10px] font-semibold tracking-wider">Message</span>
+                        </div>
+
+                        {confirmCancelProfileId === targetUserId ? (
+                          <div className="flex flex-col items-center gap-1.5 bg-[#111111]/80 backdrop-blur-sm border border-red-500/30 rounded-2xl p-1.5 shadow-lg transition-all duration-300">
+                            <span className="text-white text-[9px] font-bold tracking-tight">Withdraw?</span>
+                            <div className="flex gap-1">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelInterest(targetUserId);
+                                  setConfirmCancelProfileId(null);
+                                }}
+                                className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm cursor-pointer"
+                              >
+                                Yes
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConfirmCancelProfileId(null);
+                                }}
+                                className="bg-slate-600 hover:bg-slate-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div 
+                            className={`flex flex-col items-center gap-1.5 cursor-pointer hover:scale-105 transition-transform ${
+                              isReceived ? 'opacity-80 pointer-events-none' : ''
+                            }`} 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isSent) {
+                                setConfirmCancelProfileId(targetUserId);
+                              } else if (!isReceived) {
+                                handleAction('Interest', targetUserId);
+                              }
+                            }}
+                          >
+                            <button className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all ${
+                              isSent 
+                                ? 'bg-slate-500 hover:bg-red-600 shadow-none' 
+                                : isReceived 
+                                ? 'bg-emerald-600 shadow-emerald-500/30' 
+                                : 'bg-[#fa5252] shadow-red-500/30'
+                            }`}>
+                              <FaHeart className="text-sm" />
+                            </button>
+                            <span className="text-white text-[10px] font-semibold tracking-wider">
+                              {isSent ? 'Sent' : isReceived ? 'Received' : 'Interest'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             );

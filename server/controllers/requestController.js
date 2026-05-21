@@ -314,3 +314,38 @@ exports.getConnections = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Cancel / Withdraw a sent interest request
+// @route   DELETE /api/requests/cancel/:id
+// @access  Private
+exports.cancelInterest = async (req, res) => {
+  try {
+    const receiverId = req.params.id;
+    const senderId = req.user.id;
+
+    // Find the pending request
+    const request = await InterestRequest.findOne({
+      sender: senderId,
+      receiver: receiverId,
+      status: 'pending'
+    });
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pending interest request not found'
+      });
+    }
+
+    await InterestRequest.deleteOne({ _id: request._id });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Interest request withdrawn successfully.'
+    });
+  } catch (error) {
+    console.error('CancelInterest Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+

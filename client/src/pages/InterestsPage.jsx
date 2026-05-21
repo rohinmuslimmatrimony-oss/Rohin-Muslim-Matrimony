@@ -14,6 +14,7 @@ const InterestsPage = () => {
   const [receivedRequests, setReceivedRequests] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
   const [connections, setConnections] = useState([]);
+  const [confirmCancelReqId, setConfirmCancelReqId] = useState(null);
   
   const [activeChat, setActiveChat] = useState(null); // The user object we are chatting with
   const [messages, setMessages] = useState([]);
@@ -106,6 +107,18 @@ const InterestsPage = () => {
     }
   };
 
+  const handleCancelSentRequest = async (receiverUserId) => {
+    try {
+      const res = await api.delete(`/requests/cancel/${receiverUserId}`);
+      if (res.data.success) {
+        toast.success("Interest request withdrawn successfully.");
+        fetchRequests();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to withdraw interest');
+    }
+  };
+
   const openChat = async (partnerProfile) => {
     if (user.plan === 'free') {
       toast.error('You need a Premium or Elite plan to use Chat.');
@@ -176,8 +189,36 @@ const InterestsPage = () => {
                     <FaTimesCircle className="text-xl" />
                   </button>
                 </div>
+              ) : confirmCancelReqId === req._id ? (
+                <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-2.5 py-1 shadow-sm transition-all duration-300">
+                  <span className="text-[10px] font-bold text-red-700 px-1">Withdraw?</span>
+                  <button
+                    onClick={() => {
+                      handleCancelSentRequest(profile.user);
+                      setConfirmCancelReqId(null);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm cursor-pointer"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setConfirmCancelReqId(null)}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer"
+                  >
+                    No
+                  </button>
+                </div>
               ) : (
-                <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Pending</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Pending</span>
+                  <button 
+                    onClick={() => setConfirmCancelReqId(req._id)} 
+                    className="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full border border-red-200 hover:border-red-300 transition-all cursor-pointer"
+                    title="Withdraw Interest"
+                  >
+                    Withdraw
+                  </button>
+                </div>
               )}
             </div>
           );
@@ -193,6 +234,11 @@ const InterestsPage = () => {
         <MobileActivityPage 
           receivedRequests={receivedRequests}
           sentRequests={sentRequests}
+          connections={connections}
+          handleAccept={handleAccept}
+          handleReject={handleReject}
+          onCancelInterest={handleCancelSentRequest}
+          user={user}
         />
       </div>
 

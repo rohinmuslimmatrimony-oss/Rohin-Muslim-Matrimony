@@ -1,41 +1,326 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FaCheck, FaTimes, FaComment, FaEye, FaHeart } from 'react-icons/fa';
 
-const MobileActivityPage = ({ receivedRequests, sentRequests }) => {
-  const [activeTab, setActiveTab] = useState('All');
+const MobileActivityPage = ({ receivedRequests = [], sentRequests = [], connections = [], handleAccept, handleReject, onCancelInterest, user }) => {
+  const [activeTab, setActiveTab] = useState('Received');
+  const [confirmCancelReqId, setConfirmCancelReqId] = useState(null);
+  const tabs = ['Received', 'Sent', 'Connections'];
 
-  const tabs = ['All', 'Interest', 'Profile Visits', 'Gallery Requests', 'Connections'];
+  const renderEmptyState = (tabName) => {
+    let title = "No activity yet";
+    let desc = "Keep exploring to get responses.";
+
+    if (tabName === 'Received') {
+      title = "No received interests";
+      desc = "Evaru inka interest pampaledu. Me profile ni active ga unchandi to get responses!";
+    } else if (tabName === 'Sent') {
+      title = "No sent interests";
+      desc = "Meeru inka evariki interest pampaledu. Start browsing profiles to send interests!";
+    } else if (tabName === 'Connections') {
+      title = "No connections yet";
+      desc = "Once interest request accept aithe, connected profiles ikkada kanipisthayi. Start chatting!";
+    }
+
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center mt-12 py-10">
+        <div className="w-16 h-16 rounded-full bg-crimson-50 flex items-center justify-center mb-4 border border-crimson-900/10 text-crimson-900">
+          <FaHeart className="text-2xl text-[#4f080e]/40 animate-pulse" />
+        </div>
+        <h2 className="text-lg font-bold text-[#111111] mb-2">{title}</h2>
+        <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-[280px]">
+          {desc}
+        </p>
+      </div>
+    );
+  };
+
+  const renderProfileDetails = (profile) => (
+    <div className="flex flex-wrap gap-1.5 mt-2.5">
+      {profile.age && (
+        <span className="text-[10px] font-bold bg-[#4f080e]/5 text-[#4f080e] px-2.5 py-0.5 rounded-full">
+          {profile.age} yrs
+        </span>
+      )}
+      {profile.height && (
+        <span className="text-[10px] font-bold bg-[#4f080e]/5 text-[#4f080e] px-2.5 py-0.5 rounded-full">
+          {profile.height}
+        </span>
+      )}
+      {profile.sect && (
+        <span className="text-[10px] font-bold bg-[#4f080e]/5 text-[#4f080e] px-2.5 py-0.5 rounded-full">
+          {profile.sect}
+        </span>
+      )}
+      {profile.motherTongue && (
+        <span className="text-[10px] font-bold bg-[#4f080e]/5 text-[#4f080e] px-2.5 py-0.5 rounded-full">
+          {profile.motherTongue}
+        </span>
+      )}
+      {profile.namazFrequency && (
+        <span className="text-[10px] font-bold bg-[#4f080e]/5 text-[#4f080e] px-2.5 py-0.5 rounded-full">
+          {profile.namazFrequency}
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-[calc(100vh-60px)] bg-[#faf8f5] flex flex-col font-outfit pb-20">
       {/* Header */}
-      <div className="pt-8 pb-4 px-6 bg-[#faf8f5]">
-        <h1 className="text-[28px] font-extrabold text-[#111111] tracking-tight">Activity</h1>
+      <div className="pt-6 pb-4 px-6 bg-[#faf8f5]">
+        <h1 className="text-[26px] font-extrabold text-[#111111] tracking-tight font-serif">Activity Center</h1>
+        <p className="text-xs text-slate-500 font-medium">Manage your match requests & connections</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex overflow-x-auto hide-scrollbar px-6 gap-6 border-b border-slate-200">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap pb-3 text-sm font-semibold transition-colors relative ${
-              activeTab === tab ? 'text-[#111111]' : 'text-slate-400'
-            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#111111] rounded-t-full"></span>
-            )}
-          </button>
-        ))}
+      <div className="flex px-6 border-b border-slate-200 bg-[#faf8f5]">
+        {tabs.map((tab) => {
+          let count = 0;
+          if (tab === 'Received') count = receivedRequests.length;
+          if (tab === 'Sent') count = sentRequests.length;
+          if (tab === 'Connections') count = connections.length;
+
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 pb-3 text-sm font-bold transition-all relative ${
+                activeTab === tab ? 'text-[#4f080e]' : 'text-slate-400'
+              }`}
+            >
+              <span className="inline-flex items-center gap-1.5 justify-center w-full">
+                {tab}
+                {count > 0 && (
+                  <span className="bg-[#4f080e] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">
+                    {count}
+                  </span>
+                )}
+              </span>
+              {activeTab === tab && (
+                <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#4f080e] rounded-t-full"></span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Empty State (Matches image-5) */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center mt-20">
-        <h2 className="text-xl font-bold text-[#111111] mb-3">No activity yet</h2>
-        <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-[260px]">
-          No one's reached out yet. Keep exploring to get responses.
-        </p>
+      {/* Content Area */}
+      <div className="flex-1 px-4 py-4 space-y-4">
+        {activeTab === 'Received' && (
+          receivedRequests.length === 0 ? renderEmptyState('Received') : (
+            <div className="space-y-4">
+              {receivedRequests.map((req) => {
+                const profile = req.senderProfile;
+                if (!profile) return null;
+
+                const profileId = profile.user?._id || profile.user;
+
+                return (
+                  <div key={req._id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div className="flex gap-4">
+                      {/* Avatar */}
+                      <Link to={`/profile/${profileId}`} className="flex-shrink-0">
+                        {profile.profilePhoto && profile.profilePhoto !== '/uploads/blurred-avatar.png' ? (
+                          <img 
+                            src={profile.profilePhoto} 
+                            alt={profile.name} 
+                            className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4f080e] to-[#7f181e] flex items-center justify-center font-bold text-white shadow-sm text-lg">
+                            {profile.name ? profile.name[0].toUpperCase() : 'M'}
+                          </div>
+                        )}
+                      </Link>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <Link to={`/profile/${profileId}`} className="block">
+                          <h3 className="font-extrabold text-[15px] text-[#4f080e] hover:underline truncate">
+                            {profile.name}
+                          </h3>
+                        </Link>
+                        <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
+                          {profile.profession || 'Not Specified'} • {profile.city}
+                        </p>
+                        {renderProfileDetails(profile)}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2.5 mt-4 pt-3 border-t border-slate-50">
+                      <button 
+                        onClick={() => handleAccept(req._id)}
+                        className="flex-1 bg-gradient-to-r from-[#4f080e] to-[#700c12] text-white py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+                      >
+                        <FaCheck className="text-[10px]" /> Accept
+                      </button>
+                      <button 
+                        onClick={() => handleReject(req._id)}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                      >
+                        <FaTimes className="text-[10px]" /> Decline
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+        {activeTab === 'Sent' && (
+          sentRequests.length === 0 ? renderEmptyState('Sent') : (
+            <div className="space-y-4">
+              {sentRequests.map((req) => {
+                const profile = req.receiverProfile;
+                if (!profile) return null;
+
+                const profileId = profile.user?._id || profile.user;
+
+                return (
+                  <div key={req._id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <div className="flex gap-4">
+                      {/* Avatar */}
+                      <Link to={`/profile/${profileId}`} className="flex-shrink-0">
+                        {profile.profilePhoto && profile.profilePhoto !== '/uploads/blurred-avatar.png' ? (
+                          <img 
+                            src={profile.profilePhoto} 
+                            alt={profile.name} 
+                            className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4f080e] to-[#7f181e] flex items-center justify-center font-bold text-white shadow-sm text-lg">
+                            {profile.name ? profile.name[0].toUpperCase() : 'M'}
+                          </div>
+                        )}
+                      </Link>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <Link to={`/profile/${profileId}`} className="block truncate">
+                            <h3 className="font-extrabold text-[15px] text-[#4f080e] hover:underline truncate">
+                              {profile.name}
+                            </h3>
+                          </Link>
+                          <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${
+                            req.status === 'accepted' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                              : req.status === 'rejected'
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}>
+                            {req.status.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
+                          {profile.profession || 'Not Specified'} • {profile.city}
+                        </p>
+                        {renderProfileDetails(profile)}
+                      </div>
+                    </div>
+
+                    {req.status === 'pending' && (
+                      <div className="flex gap-2.5 mt-4 pt-3 border-t border-slate-50">
+                        {confirmCancelReqId === req._id ? (
+                          <div className="flex-1 flex items-center justify-between bg-red-50 border border-red-200 rounded-xl p-2.5 shadow-sm transition-all duration-300">
+                            <span className="text-xs font-bold text-red-700 pl-1">Withdraw Interest?</span>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  onCancelInterest && onCancelInterest(profileId);
+                                  setConfirmCancelReqId(null);
+                                }}
+                                className="bg-red-600 hover:bg-red-700 text-white py-1.5 px-4 rounded-full font-bold text-xs shadow-sm cursor-pointer"
+                              >
+                                Yes
+                              </button>
+                              <button
+                                onClick={() => setConfirmCancelReqId(null)}
+                                className="bg-slate-200 hover:bg-slate-300 text-slate-700 py-1.5 px-4 rounded-full font-bold text-xs cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => setConfirmCancelReqId(req._id)}
+                            className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform cursor-pointer"
+                          >
+                            <FaTimes className="text-[10px]" /> Withdraw Interest
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+        {activeTab === 'Connections' && (
+          connections.length === 0 ? renderEmptyState('Connections') : (
+            <div className="space-y-4">
+              {connections.map((conn) => {
+                const partnerId = conn.user?._id || conn.user;
+
+                return (
+                  <div key={conn._id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div className="flex gap-4">
+                      {/* Avatar */}
+                      <Link to={`/profile/${partnerId}`} className="flex-shrink-0">
+                        {conn.profilePhoto && conn.profilePhoto !== '/uploads/blurred-avatar.png' ? (
+                          <img 
+                            src={conn.profilePhoto} 
+                            alt={conn.name} 
+                            className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4f080e] to-[#7f181e] flex items-center justify-center font-bold text-white shadow-sm text-lg">
+                            {conn.name ? conn.name[0].toUpperCase() : 'M'}
+                          </div>
+                        )}
+                      </Link>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <Link to={`/profile/${partnerId}`} className="block">
+                          <h3 className="font-extrabold text-[15px] text-[#4f080e] hover:underline truncate">
+                            {conn.name}
+                          </h3>
+                        </Link>
+                        <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
+                          {conn.profession || 'Not Specified'} • {conn.city}
+                        </p>
+                        {renderProfileDetails(conn)}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2.5 mt-4 pt-3 border-t border-slate-50">
+                      <Link 
+                        to={`/chat/${partnerId}`}
+                        className="flex-1 bg-gradient-to-r from-[#4f080e] to-[#700c12] text-white py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+                      >
+                        <FaComment className="text-[10px]" /> Chat Now
+                      </Link>
+                      <Link 
+                        to={`/profile/${partnerId}`}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                      >
+                        <FaEye className="text-[10px]" /> View Profile
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
       </div>
     </div>
   );

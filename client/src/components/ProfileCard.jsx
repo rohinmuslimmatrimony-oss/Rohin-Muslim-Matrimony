@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaUserLock, FaLock, FaHeart } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 
-const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived }) => {
+const ProfileCard = ({ profile, currentPlan, onSendInterest, onCancelInterest, isSent, isReceived }) => {
   const isFreePlan = currentPlan === 'free';
+  const [hovered, setHovered] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   return (
     <div className="glass-card hover:-translate-y-1.5 transition-all duration-300 rounded-2xl overflow-hidden shadow-md flex flex-col group border border-crimson-950/5">
@@ -94,20 +96,55 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, isSent, isReceived 
           </Link>
 
           {onSendInterest && (
-            <button
-              onClick={() => onSendInterest(profile.user?._id || profile.user)}
-              disabled={isSent || isReceived}
-              className={`px-4.5 py-2.5 rounded-full text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 ${
-                isSent
-                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
-                  : isReceived
-                  ? 'bg-crimson-900/10 text-crimson-900 cursor-not-allowed shadow-none'
-                  : 'bg-gold-gradient text-crimson-950 hover:shadow-gold-500/20 hover:scale-[1.02]'
-              }`}
-            >
-              <FaHeart className="text-[10px]" />
-              {isSent ? 'Sent' : isReceived ? 'Received' : 'Interest'}
-            </button>
+            showCancelConfirm ? (
+              <div className="flex-1 flex items-center justify-between gap-1.5 bg-red-50 border border-red-200 rounded-full px-2 py-1 shadow-sm transition-all duration-300">
+                <span className="text-[10px] font-bold text-red-700 pl-1.5 whitespace-nowrap">Withdraw?</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onCancelInterest && onCancelInterest(profile.user?._id || profile.user);
+                      setShowCancelConfirm(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm transition-all cursor-pointer"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowCancelConfirm(false);
+                    }}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full transition-all cursor-pointer"
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  if (isSent) {
+                    setShowCancelConfirm(true);
+                  } else if (!isReceived) {
+                    onSendInterest(profile.user?._id || profile.user);
+                  }
+                }}
+                onMouseEnter={() => isSent && setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                disabled={isReceived}
+                className={`flex-1 py-2.5 rounded-full text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 ${
+                  isSent
+                    ? 'bg-slate-200 text-slate-600 hover:bg-red-100 hover:text-red-700 cursor-pointer hover:shadow-red-500/10'
+                    : isReceived
+                    ? 'bg-crimson-900/10 text-crimson-900 cursor-not-allowed shadow-none'
+                    : 'bg-gold-gradient text-crimson-950 hover:shadow-gold-500/20 hover:scale-[1.02]'
+                }`}
+              >
+                <FaHeart className={`text-[10px] ${isSent && hovered ? 'text-red-600 animate-pulse' : ''}`} />
+                {isSent ? (hovered ? 'Withdraw' : 'Sent') : isReceived ? 'Received' : 'Interest'}
+              </button>
+            )
           )}
         </div>
       </div>
