@@ -717,26 +717,26 @@ const LandingPage = () => {
     </div>
 
     {/* Mobile Landing Splash Screen View */}
-    <div className="block lg:hidden min-h-screen relative overflow-hidden bg-black font-sans text-white">
+    <div className="block lg:hidden h-[100dvh] relative overflow-hidden bg-black font-sans text-white">
       {/* Background Image Container */}
       <div className="absolute inset-0 z-0 select-none pointer-events-none">
         <img
           src={mobileLandingImage}
           alt="Mobile Landing Background"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-[55%_center]"
         />
         {/* Gradient Overlay: Dark at top/bottom, clear in the middle to highlight couple faces */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/95"></div>
       </div>
 
       {/* Foreground Content Container */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pt-8 pb-10 px-6">
+      <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pt-6 pb-8 px-6">
         {/* Logo Section - Small, clean, positioned high up */}
         <div className="w-full flex justify-center mt-3">
           <img
             src={logo3}
             alt="Rohin Muslim Matrimony Logo"
-            className="h-11 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+            className="h-[50px] w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
           />
         </div>
 
