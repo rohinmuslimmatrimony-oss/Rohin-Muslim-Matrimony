@@ -97,7 +97,7 @@ function AppContent() {
       />
       
       {/* Sticky Header Wrapper (Navbar) */}
-      <header className="sticky top-0 z-50 w-full">
+      <header className={`sticky top-0 z-50 w-full ${location.pathname === '/' ? 'hidden lg:block' : ''}`}>
         <Navbar />
       </header>
 

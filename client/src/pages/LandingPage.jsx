@@ -1,8 +1,9 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaHeart, FaShieldAlt, FaComments, FaCrown, FaUsers, FaArrowRight, FaMoon, FaLock, FaPhoneAlt, FaMosque, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import logo3 from '../assets/logo3.png';
+import mobileLandingImage from '../assets/mobile -landing-image.png';
 import homeBanner from '../assets/home-banner.png';
 import couple1 from '../assets/couple1.png';
 import couple2 from '../assets/couple2.png';
@@ -12,7 +13,15 @@ import api, { SOCKET_BASE_URL } from '../services/api';
 
 const LandingPage = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [successStories, setSuccessStories] = useState([]);
+
+  useEffect(() => {
+    // Redirect authenticated users to dashboard if they are on mobile viewport
+    if (user && window.innerWidth < 1024) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
 
   const staticTestimonials = [
@@ -82,7 +91,8 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="bg-cream-50 overflow-hidden">
+    <>
+      <div className="hidden lg:block bg-cream-50 overflow-hidden">
       {/* Premium Hero Section */}
       <section
         className="relative py-4 md:py-6 px-4 md:px-8 border-b-2 border-gold-500/30 overflow-hidden flex flex-col items-center justify-center text-center lg:h-[calc(100vh-80px)] lg:max-h-[800px] min-h-[220px] md:min-h-[560px]"
@@ -705,6 +715,66 @@ const LandingPage = () => {
         </div>
       </section>
     </div>
+
+    {/* Mobile Landing Splash Screen View */}
+    <div className="block lg:hidden min-h-screen relative overflow-hidden bg-black font-sans text-white">
+      {/* Background Image Container */}
+      <div className="absolute inset-0 z-0 select-none pointer-events-none">
+        <img
+          src={mobileLandingImage}
+          alt="Mobile Landing Background"
+          className="w-full h-full object-cover"
+        />
+        {/* Gradient Overlay: Dark at top/bottom, clear in the middle to highlight couple faces */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/95"></div>
+      </div>
+
+      {/* Foreground Content Container */}
+      <div className="absolute inset-0 z-10 flex flex-col justify-between items-center pt-8 pb-10 px-6">
+        {/* Logo Section - Small, clean, positioned high up */}
+        <div className="w-full flex justify-center mt-3">
+          <img
+            src={logo3}
+            alt="Rohin Muslim Matrimony Logo"
+            className="h-11 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+          />
+        </div>
+
+        {/* Bottom Panel containing tagline, button, and disclaimer */}
+        <div className="w-full flex flex-col items-center mt-auto max-w-[290px] px-2 gap-4">
+          {/* Tagline text positioned right above the button */}
+          <div className="text-center">
+            <h1 className="text-white text-xl sm:text-2xl font-extrabold font-sans tracking-wide leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+              Where NIKAH <br />
+              <span className="block mt-0.5">
+                Begins with Trust
+              </span>
+            </h1>
+          </div>
+
+          {/* Action Button */}
+          <Link
+            to="/login"
+            className="w-full py-2.5 bg-[#e21b5a] hover:bg-[#c1144a] text-white font-extrabold rounded-full shadow-[0_4px_16px_rgba(226,27,90,0.35)] text-center text-xs uppercase tracking-widest active:scale-95 transition-all duration-200"
+          >
+            Continue
+          </Link>
+
+          {/* Disclaimer text */}
+          <p className="text-[9px] sm:text-[10px] text-gray-300/80 text-center font-medium leading-relaxed max-w-full tracking-tight whitespace-nowrap drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+            By continuing, you agree to our{' '}
+            <a href="#" className="underline hover:text-white transition-colors duration-200">
+              Privacy Policy
+            </a>{' '}
+            &{' '}
+            <a href="#" className="underline hover:text-white transition-colors duration-200">
+              Terms & Conditions
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+    </>
   );
 };
 
