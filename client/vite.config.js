@@ -44,6 +44,7 @@ export default defineConfig({
       workbox: {
         // Cache the main assets
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB (to allow caching larger images like the 2.37MB mobile landing page image)
         // Don't cache API calls
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
