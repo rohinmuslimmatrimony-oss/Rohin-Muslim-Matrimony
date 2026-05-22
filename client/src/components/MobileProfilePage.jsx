@@ -1,14 +1,16 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
-  FaCheckCircle, FaChevronRight, FaPen, FaShieldAlt, 
-  FaCreditCard, FaCrown, FaBan, FaInfoCircle, FaShareAlt, FaCog
+  FaCheckCircle, FaChevronRight, FaPen, 
+  FaCreditCard, FaCrown, FaBan, FaInfoCircle
 } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
+import toast from 'react-hot-toast';
 
-const MobileProfilePage = () => {
+const MobileProfilePage = ({ onEditClick }) => {
   const { user, profile, getCompleteness } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const completeness = getCompleteness ? getCompleteness().score : 70; // fallback to 70
   const photoUrl = profile?.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png'
@@ -19,14 +21,11 @@ const MobileProfilePage = () => {
   const memberId = user?._id ? `B${user._id.substring(0, 11).toUpperCase()}` : 'B60542744118';
 
   const menuItems = [
-    { icon: <FaPen className="text-slate-600 text-[15px]" />, label: 'Edit Profile' },
-    { icon: <FaShieldAlt className="text-slate-600 text-[15px]" />, label: 'Profile Privacy' },
-    { icon: <FaCreditCard className="text-slate-600 text-[15px]" />, label: 'Payment Info' },
-    { icon: <FaCrown className="text-slate-600 text-[15px]" />, label: 'Explore Plans' },
-    { icon: <FaBan className="text-slate-600 text-[15px]" />, label: 'Blocked Users' },
-    { icon: <FaInfoCircle className="text-slate-600 text-[15px]" />, label: 'Help & Support' },
-    { icon: <FaShareAlt className="text-slate-600 text-[15px]" />, label: 'Share Nikah Forever App' },
-    { icon: <FaCog className="text-slate-600 text-[15px]" />, label: 'Settings' },
+    { icon: <FaPen className="text-slate-600 text-[15px]" />, label: 'Edit Profile', action: onEditClick },
+    { icon: <FaCreditCard className="text-slate-600 text-[15px]" />, label: 'Payment Info', action: () => navigate('/plans') },
+    { icon: <FaCrown className="text-slate-600 text-[15px]" />, label: 'Explore Plans', action: () => navigate('/plans') },
+    { icon: <FaBan className="text-slate-600 text-[15px]" />, label: 'Blocked Users', action: () => toast('No blocked users.') },
+    { icon: <FaInfoCircle className="text-slate-600 text-[15px]" />, label: 'Help & Support', action: () => toast('Contact support@rohinmatrimony.com') }
   ];
 
   const premiumPlans = [
@@ -36,10 +35,10 @@ const MobileProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-[calc(100vh-60px)] bg-[#faf8f5] flex flex-col font-outfit pb-24">
+    <div className="min-h-[calc(100vh-60px)] bg-[#faf8f5] flex flex-col font-outfit pb-32">
       
       {/* Top Bar */}
-      <div className="flex justify-between items-center px-5 pt-8 pb-2 sticky top-0 bg-[#faf8f5] z-10">
+      <div className="flex justify-between items-center px-5 pt-8 pb-4 bg-[#faf8f5]">
         <h1 className="text-xl font-extrabold text-[#111111]">Profile</h1>
         <span className="text-[13px] font-medium text-slate-500">Member ID: {memberId}</span>
       </div>
@@ -86,7 +85,7 @@ const MobileProfilePage = () => {
             </div>
           ) : (
             <div className="border border-green-200 bg-green-50 text-green-600 text-[13px] font-semibold px-4 py-1.5 rounded-full mb-3 shadow-sm">
-              Complete Profile
+              100% Completed
             </div>
           )}
 
@@ -103,16 +102,17 @@ const MobileProfilePage = () => {
 
           {/* Complete Profile CTA */}
           {completeness < 100 && (
-            <button className="w-full max-w-sm bg-[#e61a52] text-white font-bold py-3.5 px-6 rounded-2xl flex justify-between items-center mt-6 shadow-lg shadow-red-500/20 hover:scale-[1.02] transition-transform">
+            <button onClick={onEditClick} className="w-full max-w-sm bg-[#e61a52] text-white font-bold py-3.5 px-6 rounded-2xl flex justify-between items-center mt-6 shadow-lg shadow-red-500/20 hover:scale-[1.02] transition-transform">
               <span className="text-[15px]">Complete your profile</span>
               <FaChevronRight className="text-sm" />
             </button>
           )}
         </div>
 
-        {/* Premium Plans Section */}
-        <div className="mb-8">
-          <h3 className="text-[15px] font-bold text-[#111111] mb-4">Premium Plans</h3>
+        {/* Premium Plans Section - Only show for free members */}
+        {(!user?.plan || user.plan === 'free') && (
+          <div className="mb-8">
+            <h3 className="text-[15px] font-bold text-[#111111] mb-4">Premium Plans</h3>
           
           <div className="flex overflow-x-auto gap-4 snap-x hide-scrollbar pb-2 -mx-5 px-5">
             {premiumPlans.map((plan, idx) => (
@@ -136,12 +136,14 @@ const MobileProfilePage = () => {
             ))}
           </div>
         </div>
+        )}
 
         {/* Settings Menu List */}
         <div className="bg-transparent border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm mb-6">
           {menuItems.map((item, index) => (
             <div 
-              key={index} 
+              key={index}
+              onClick={item.action}
               className={`flex items-center justify-between p-5 cursor-pointer hover:bg-slate-50 transition-colors ${
                 index !== menuItems.length - 1 ? 'border-b border-slate-100' : ''
               }`}

@@ -44,3 +44,8 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// A fetch handler is strictly required for Chrome to trigger the PWA 'beforeinstallprompt' event.
+self.addEventListener('fetch', (event) => {
+  // Empty fetch handler is sufficient for the PWA heuristic.
+});

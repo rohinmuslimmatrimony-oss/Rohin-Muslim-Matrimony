@@ -8,10 +8,31 @@ const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showBanner, setShowBanner] = useState(false);
 
+  const [isIOS, setIsIOS] = useState(false);
+
   useEffect(() => {
+    // 0. Only show on mobile devices (hide on desktop web)
+    const isMobile = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i.test(window.navigator.userAgent);
+    if (!isMobile) {
+      return;
+    }
+
     // 1. Check if the app is already running in standalone mode (already installed)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     if (isStandalone) {
+      return;
+    }
+
+    // Check if device is iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    setIsIOS(isIosDevice);
+
+    if (isIosDevice) {
+      // iOS doesn't support beforeinstallprompt, so we manually show the banner
+      if (!sessionStorage.getItem('pwa_dismissed')) {
+        setTimeout(() => setShowBanner(true), 2000);
+      }
       return;
     }
 
@@ -26,12 +47,32 @@ const PWAInstallPrompt = () => {
     };
 
     window.addEventListener('beforeinstallprompt', handler);
+    
+    // Fallback: If beforeinstallprompt doesn't fire within 3s on Android, show our manual banner anyway
+    const fallbackTimer = setTimeout(() => {
+      if (!sessionStorage.getItem('pwa_dismissed')) {
+        setShowBanner(true);
+      }
+    }, 3000);
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (isIOS) {
+      alert("To install on iOS: Tap the 'Share' icon at the bottom of your screen, then select 'Add to Home Screen'.");
+      setShowBanner(false);
+      return;
+    }
+
+    if (!deferredPrompt) {
+      alert("To install: Tap your browser menu (⋮) and select 'Install App' or 'Add to Home Screen'.");
+      setShowBanner(false);
+      return;
+    }
     
     // Show the native browser install prompt directly
     deferredPrompt.prompt();
@@ -49,8 +90,8 @@ const PWAInstallPrompt = () => {
     sessionStorage.setItem('pwa_dismissed', 'true');
   };
 
-  // Don't show if banner is off, already dismissed, or deferredPrompt is not available
-  if (!showBanner || !deferredPrompt || sessionStorage.getItem('pwa_dismissed')) return null;
+  // Don't show if banner is off
+  if (!showBanner || sessionStorage.getItem('pwa_dismissed')) return null;
 
   return (
     <div

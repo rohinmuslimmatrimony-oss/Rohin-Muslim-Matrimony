@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FaMoon, FaUser, FaSignOutAlt, FaCrown, FaBars, FaTimes, FaSearch, FaHeart, FaShieldAlt, FaBell } from 'react-icons/fa';
+import { FaMoon, FaUser, FaSignOutAlt, FaCrown, FaBars, FaTimes, FaSearch, FaHeart, FaShieldAlt, FaBell, FaDownload } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 
 import logo3 from '../assets/logo3.png';
@@ -20,8 +20,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showMobileUserMenu, setShowMobileUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+  }, []);
 
   const formatTimeAgo = (dateString) => {
     if (!dateString) return '';
@@ -393,6 +398,18 @@ const Navbar = () => {
              <Link to="/admin" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-slate-900 font-semibold py-1 flex items-center gap-1.5 transition-colors">
                <FaShieldAlt /> Admin Dashboard
              </Link>
+          )}
+
+          {!isStandalone && (
+            <button 
+              onClick={() => {
+                alert("To install: Tap your browser menu (⋮) or the 'Share' icon and select 'Install App' or 'Add to Home Screen'.");
+                setIsOpen(false);
+              }} 
+              className="text-left text-crimson-600 hover:text-crimson-700 font-bold py-1 flex items-center gap-1.5 transition-colors border-t border-slate-100 mt-1 pt-3"
+            >
+              <FaDownload /> Install App
+            </button>
           )}
 
           {user ? (

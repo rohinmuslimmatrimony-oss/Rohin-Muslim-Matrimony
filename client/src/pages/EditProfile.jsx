@@ -10,6 +10,7 @@ const EditProfile = () => {
   const { user, profile, refreshUser, getCompleteness } = useContext(AuthContext);
   const navigate = useNavigate();
   
+  const [showMobileForm, setShowMobileForm] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -199,14 +200,24 @@ const EditProfile = () => {
 
   return (
     <>
-      {/* MOBILE VIEW */}
-      <div className="block lg:hidden">
-        <MobileProfilePage />
-      </div>
+      {/* MOBILE VIEW DASHBOARD */}
+      {!showMobileForm && (
+        <div className="block lg:hidden">
+          <MobileProfilePage onEditClick={() => setShowMobileForm(true)} />
+        </div>
+      )}
 
-      {/* DESKTOP VIEW */}
-      <div className="hidden lg:block min-h-screen bg-cream-50 pt-24 pb-12 px-4 md:px-8">
+      {/* DESKTOP VIEW & MOBILE FORM VIEW */}
+      <div className={`${!showMobileForm ? 'hidden lg:block' : 'block'} min-h-screen bg-cream-50 pt-24 pb-12 px-4 md:px-8`}>
         <div className="max-w-4xl mx-auto">
+          {showMobileForm && (
+            <button 
+              onClick={() => setShowMobileForm(false)} 
+              className="lg:hidden mb-6 text-crimson-600 font-bold flex items-center gap-2 bg-crimson-50 px-4 py-2 rounded-full border border-crimson-100"
+            >
+              ← Back to Profile
+            </button>
+          )}
           <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-2">Edit Your Profile</h1>
           <p className="text-slate-600 mb-6">Update your biodata, preferences, and privacy settings.</p>
 
