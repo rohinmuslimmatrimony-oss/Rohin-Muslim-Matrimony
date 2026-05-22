@@ -49,6 +49,7 @@ app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/kyc', require('./routes/kycRoutes'));
 
 // Public Platform Settings (Pricing)
 app.get('/api/settings', require('./controllers/adminController').getSettings);

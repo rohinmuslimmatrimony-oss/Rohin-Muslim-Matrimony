@@ -3,6 +3,8 @@ const Profile = require('../models/Profile');
 const InterestRequest = require('../models/InterestRequest');
 const Message = require('../models/Message');
 const Settings = require('../models/Settings');
+const KycRequest = require('../models/KycRequest');
+const Notification = require('../models/Notification');
 
 // @desc    Get Admin dashboard analytics metrics
 // @route   GET /api/admin/metrics
@@ -322,6 +324,13 @@ exports.updateSettings = async (req, res) => {
     if (req.body.premiumPlanFeatures !== undefined) settings.premiumPlanFeatures = req.body.premiumPlanFeatures;
     if (req.body.elitePlanFeatures !== undefined) settings.elitePlanFeatures = req.body.elitePlanFeatures;
 
+    // Support contact configurations
+    if (req.body.supportPhone !== undefined) settings.supportPhone = req.body.supportPhone;
+    if (req.body.supportWhatsApp !== undefined) settings.supportWhatsApp = req.body.supportWhatsApp;
+    if (req.body.supportEmail !== undefined) settings.supportEmail = req.body.supportEmail;
+    if (req.body.eliteManagerName !== undefined) settings.eliteManagerName = req.body.eliteManagerName;
+    if (req.body.eliteManagerPhone !== undefined) settings.eliteManagerPhone = req.body.eliteManagerPhone;
+
     await settings.save();
     return res.status(200).json({ success: true, data: settings, message: 'Settings updated successfully' });
   } catch (error) {
@@ -520,6 +529,261 @@ exports.createOfflineUser = async (req, res) => {
     });
   } catch (error) {
     console.error('CreateOfflineUser Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get all pending interest requests sent by free-tier users
+// @route   GET /api/admin/free-interests
+// @access  Private/Admin
+exports.getFreeTierInterests = async (req, res) => {
+  try {
+    // Get all pending interest requests
+    const allPending = await InterestRequest.find({ status: 'pending' })
+      .populate('sender', 'email plan')
+      .populate('receiver', 'email plan')
+      .sort({ createdAt: -1 });
+
+    // Filter those where the sender is on the free plan
+    const freeTierInterests = allPending.filter(
+      (req) => req.sender && req.sender.plan === 'free'
+    );
+
+    // Enrich with profile details
+    const enriched = await Promise.all(
+      freeTierInterests.map(async (item) => {
+        const senderProfile = await Profile.findOne({ user: item.sender._id }).select('name city profession age profilePhoto');
+        const receiverProfile = await Profile.findOne({ user: item.receiver?._id }).select('name city profession age');
+        return {
+          _id: item._id,
+          createdAt: item.createdAt,
+          sender: {
+            _id: item.sender._id,
+            email: item.sender.email,
+            plan: item.sender.plan,
+            profile: senderProfile,
+          },
+          receiver: {
+            _id: item.receiver?._id,
+            email: item.receiver?.email,
+            profile: receiverProfile,
+          },
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: enriched.length,
+      data: enriched,
+    });
+  } catch (error) {
+    console.error('GetFreeTierInterests Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Dismiss / delete a free-tier interest request
+// @route   DELETE /api/admin/free-interests/:id
+// @access  Private/Admin
+exports.deleteFreeInterest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const request = await InterestRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'Interest request not found.' });
+    }
+
+    await InterestRequest.findByIdAndDelete(requestId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Free-tier interest request dismissed successfully.',
+    });
+  } catch (error) {
+    console.error('DeleteFreeInterest Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get all KYC verification requests
+// @route   GET /api/admin/kyc
+// @access  Private/Admin
+exports.getKycRequests = async (req, res) => {
+  try {
+    const { status = 'pending' } = req.query;
+    const filter = status === 'all' ? {} : { status };
+
+    const requests = await KycRequest.find(filter)
+      .populate('user', 'email plan isManuallyVerified')
+      .sort({ createdAt: -1 });
+
+    const enriched = await Promise.all(
+      requests.map(async (item) => {
+        const profile = await Profile.findOne({ user: item.user?._id }).select('name city profession age profilePhoto');
+        return {
+          _id: item._id,
+          status: item.status,
+          idType: item.idType,
+          idNumber: item.idNumber,
+          fullNameOnId: item.fullNameOnId,
+          documentImage: item.documentImage,
+          adminNote: item.adminNote,
+          createdAt: item.createdAt,
+          reviewedAt: item.reviewedAt,
+          user: {
+            _id: item.user?._id,
+            email: item.user?.email,
+            plan: item.user?.plan,
+            isManuallyVerified: item.user?.isManuallyVerified,
+          },
+          profile,
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: enriched.length,
+      data: enriched,
+    });
+  } catch (error) {
+    console.error('GetKycRequests Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Review (approve or reject) a KYC request
+// @route   PUT /api/admin/kyc/:id
+// @access  Private/Admin
+exports.reviewKycRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, adminNote } = req.body; // action: 'approve' | 'reject'
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Invalid action. Use approve or reject.' });
+    }
+
+    const kycRequest = await KycRequest.findById(id).populate('user', 'email');
+    if (!kycRequest) {
+      return res.status(404).json({ success: false, message: 'KYC request not found.' });
+    }
+
+    kycRequest.status = action === 'approve' ? 'approved' : 'rejected';
+    kycRequest.adminNote = adminNote || '';
+    kycRequest.reviewedAt = new Date();
+    await kycRequest.save();
+
+    // If approved, set isManuallyVerified on user
+    if (action === 'approve') {
+      await User.findByIdAndUpdate(kycRequest.user._id, { isManuallyVerified: true });
+    } else {
+      // If rejected, unset verification
+      await User.findByIdAndUpdate(kycRequest.user._id, { isManuallyVerified: false });
+    }
+
+    // Send in-app notification to user
+    const profile = await Profile.findOne({ user: kycRequest.user._id }).select('name');
+    await Notification.create({
+      recipient: kycRequest.user._id,
+      sender: req.user.id,
+      type: 'kyc_review',
+      title: action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Review Update',
+      message: action === 'approve'
+        ? 'Congratulations! Your identity has been verified. Your profile now shows a verified badge.'
+        : `Your KYC submission was not approved. Reason: ${adminNote || 'Please resubmit with a clearer document.'}`,
+      url: '/edit-profile'
+    });
+
+    // Send push notification
+    const sendPushNotification = require('../utils/pushNotifier');
+    sendPushNotification(
+      kycRequest.user._id.toString(),
+      action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Not Approved',
+      action === 'approve' ? 'Your profile is now verified!' : `Reason: ${adminNote || 'Please resubmit.'}`,
+      '/edit-profile'
+    ).catch(err => console.error('KYC push notification error:', err));
+
+    // Emit socket notification
+    if (req.io) {
+      req.io.to(kycRequest.user._id.toString()).emit('new_notification', {
+        title: action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Review Update',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `KYC request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+    });
+  } catch (error) {
+    console.error('ReviewKycRequest Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Admin suggests a match between two users
+// @route   POST /api/admin/suggest-match
+// @access  Private/Admin
+exports.suggestMatch = async (req, res) => {
+  try {
+    const { userAId, userBId, message } = req.body;
+
+    if (!userAId || !userBId) {
+      return res.status(400).json({ success: false, message: 'Both user IDs are required.' });
+    }
+
+    if (userAId === userBId) {
+      return res.status(400).json({ success: false, message: 'Cannot suggest a match between the same user.' });
+    }
+
+    const profileA = await Profile.findOne({ user: userAId }).select('name');
+    const profileB = await Profile.findOne({ user: userBId }).select('name');
+
+    if (!profileA || !profileB) {
+      return res.status(404).json({ success: false, message: 'One or both user profiles not found.' });
+    }
+
+    const adminMessage = message || 'Our team thinks you could be a great match!';
+
+    // Notify User A about User B
+    await Notification.create({
+      recipient: userAId,
+      sender: req.user.id,
+      type: 'admin_match_suggestion',
+      title: '💌 Admin Match Suggestion',
+      message: `Our team suggests you check out ${profileB.name}'s profile. ${adminMessage}`,
+      url: `/profile/${userBId}`
+    });
+
+    // Notify User B about User A
+    await Notification.create({
+      recipient: userBId,
+      sender: req.user.id,
+      type: 'admin_match_suggestion',
+      title: '💌 Admin Match Suggestion',
+      message: `Our team suggests you check out ${profileA.name}'s profile. ${adminMessage}`,
+      url: `/profile/${userAId}`
+    });
+
+    // Push notifications
+    const sendPushNotification = require('../utils/pushNotifier');
+    sendPushNotification(userAId, '💌 Admin Match Suggestion', `Check out ${profileB.name}'s profile!`, `/profile/${userBId}`).catch(() => {});
+    sendPushNotification(userBId, '💌 Admin Match Suggestion', `Check out ${profileA.name}'s profile!`, `/profile/${userAId}`).catch(() => {});
+
+    // Socket notifications
+    if (req.io) {
+      req.io.to(userAId).emit('new_notification', { title: '💌 Admin Match Suggestion', message: `Check out ${profileB.name}'s profile!` });
+      req.io.to(userBId).emit('new_notification', { title: '💌 Admin Match Suggestion', message: `Check out ${profileA.name}'s profile!` });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Match suggested between ${profileA.name} and ${profileB.name} successfully!`,
+    });
+  } catch (error) {
+    console.error('SuggestMatch Error:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

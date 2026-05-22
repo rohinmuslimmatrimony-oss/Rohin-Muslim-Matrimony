@@ -43,10 +43,18 @@ exports.sendMessage = async (req, res) => {
 
     const planFeatures = await getPlanFeatures(senderUser.plan);
     if (!planFeatures.chat) {
-      return res.status(403).json({
-        success: false,
-        message: 'Messaging is not enabled for your subscription plan. Please upgrade your plan!'
+      // Allow if replying to an existing conversation initiated by the other person
+      const priorMessagesFromReceiver = await Message.countDocuments({
+        sender: receiverId,
+        receiver: senderId
       });
+
+      if (priorMessagesFromReceiver === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Messaging is not enabled for your subscription plan. You can only reply to Premium members who message you first. Please upgrade your plan to start a new chat!'
+        });
+      }
     }
 
     // 2. Enforce that they are mutually connected

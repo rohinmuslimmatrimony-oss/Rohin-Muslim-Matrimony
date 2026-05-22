@@ -40,6 +40,18 @@ const UserSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    interestsSentToday: [
+      {
+        targetUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        sentAt: { type: Date, default: Date.now }
+      }
+    ],
+    viewedContacts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     isManuallyVerified: {
       type: Boolean,
       default: false,

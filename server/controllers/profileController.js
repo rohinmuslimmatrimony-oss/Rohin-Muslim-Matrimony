@@ -26,47 +26,102 @@ exports.getProfiles = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Please create a profile first' });
     }
 
-    const defaultOppositeGender = myProfile.gender === 'male' ? 'female' : 'male';
+    const { gender, city, profession, ageMin, ageMax, sect, maritalStatus, page = 1, limit = 6, shortlisted } = req.query;
+
+    const isShortlistedQuery = shortlisted === 'true';
+
     const query = { user: { $ne: req.user.id } };
-    const { gender, city, profession, ageMin, ageMax, sect, maritalStatus, page = 1, limit = 6 } = req.query;
 
-    if (gender) query.gender = gender;
-    else query.gender = defaultOppositeGender;
+    if (isShortlistedQuery) {
+      // Show all shortlisted profiles regardless of gender
+      query.shortlistedBy = req.user.id;
+    } else {
+      const defaultOppositeGender = myProfile.gender === 'male' ? 'female' : 'male';
+      if (gender) query.gender = gender;
+      else query.gender = defaultOppositeGender;
 
-    if (city && city.trim() !== '') query.city = { $regex: city.trim(), $options: 'i' };
-    if (profession && profession.trim() !== '') query.profession = { $regex: profession.trim(), $options: 'i' };
-    if (sect && sect.trim() !== '' && sect !== 'All') query.sect = sect;
-    if (maritalStatus && maritalStatus.trim() !== '') query.maritalStatus = maritalStatus;
+      const currentUser = await User.findById(req.user.id);
+      const planFeatures = await getPlanFeatures(currentUser ? currentUser.plan : 'free');
 
-    if (ageMin || ageMax) {
-      query.age = {};
-      if (ageMin) query.age.$gte = parseInt(ageMin);
-      if (ageMax) query.age.$lte = parseInt(ageMax);
+      if (planFeatures.advancedFilters) {
+        if (city && city.trim() !== '') query.city = { $regex: city.trim(), $options: 'i' };
+        if (profession && profession.trim() !== '') query.profession = { $regex: profession.trim(), $options: 'i' };
+        if (sect && sect.trim() !== '' && sect !== 'All') query.sect = sect;
+        if (maritalStatus && maritalStatus.trim() !== '') query.maritalStatus = maritalStatus;
+      }
+
+      if (ageMin || ageMax) {
+        query.age = {};
+        if (ageMin) query.age.$gte = parseInt(ageMin);
+        if (ageMax) query.age.$lte = parseInt(ageMax);
+      }
     }
 
     const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.max(1, parseInt(limit));
+    const limitNum = isShortlistedQuery ? 100 : Math.max(1, parseInt(limit));
     const skip = (pageNum - 1) * limitNum;
 
     // Get total matching count
     const totalCount = await Profile.countDocuments(query);
 
-    // Retrieve profiles with skip and limit
-    let profiles = await Profile.find(query)
-      .populate('user', 'email role plan isManuallyVerified')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum);
+    // Retrieve profiles with Profile Boost sorting (Elite > Premium > Free)
+    let profiles = await Profile.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $addFields: {
+          planWeight: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$user.plan', 'elite'] }, then: 3 },
+                { case: { $eq: ['$user.plan', 'premium'] }, then: 2 },
+                { case: { $eq: ['$user.plan', 'free'] }, then: 1 }
+              ],
+              default: 0
+            }
+          }
+        }
+      },
+      { $sort: { planWeight: -1, createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limitNum },
+      {
+        $project: {
+          planWeight: 0,
+          'user.password': 0,
+          'user.viewedProfiles': 0,
+          'user.pushSubscriptions': 0,
+          'user.interestsSentToday': 0,
+          'user.viewedContacts': 0
+        }
+      }
+    ]);
+
+    // Map _id to ObjectId since aggregate returns plain objects
+    profiles = profiles.map(p => {
+      p.id = p._id.toString();
+      if (p.user) {
+        p.user.id = p.user._id.toString();
+      }
+      return p;
+    });
 
     // Apply photo privacy rules
     profiles = profiles.map(profile => {
-      const pData = profile.toObject();
-      const isConnected = profile.connections.includes(req.user.id);
-      if (!pData.isPhotoPublic && !isConnected && req.user.role !== 'admin') {
-        pData.profilePhoto = '/uploads/blurred-avatar.png'; // Mock a blurred image response
-        pData.gallery = [];
+      const isConnected = profile.connections && profile.connections.some(c => c.toString() === req.user.id);
+      if (!profile.isPhotoPublic && !isConnected && req.user.role !== 'admin') {
+        profile.profilePhoto = '/uploads/blurred-avatar.png';
+        profile.gallery = [];
       }
-      return pData;
+      return profile;
     });
 
     return res.status(200).json({
@@ -157,6 +212,19 @@ exports.getProfileById = async (req, res) => {
         profileData.waliContact = '🔒 Wali Contact locked (requires Premium & Connection)';
         if (profileData.user) {
           profileData.user.email = '🔒 Email locked';
+        }
+      } else {
+        // They are allowed by plan and connection. Now check contactViewLimit.
+        const hasViewedContactBefore = viewer.viewedContacts.includes(targetUserId);
+        if (!hasViewedContactBefore) {
+          if (viewer.viewedContacts.length >= planFeatures.contactViewLimit) {
+            profileData.phoneNumber = `🔒 Contact Limit Reached (${planFeatures.contactViewLimit} views). Upgrade to Elite!`;
+            profileData.waliContact = `🔒 Contact Limit Reached`;
+            if (profileData.user) profileData.user.email = `🔒 Contact Limit Reached`;
+          } else {
+            viewer.viewedContacts.push(targetUserId);
+            await viewer.save();
+          }
         }
       }
     } else {

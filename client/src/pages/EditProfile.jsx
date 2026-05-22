@@ -2,11 +2,14 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { FaCamera, FaSave, FaUserShield, FaRegImage, FaLock, FaGlobe } from 'react-icons/fa';
 import MobileProfilePage from '../components/MobileProfilePage';
 
 const EditProfile = () => {
   const { user, profile, refreshUser, getCompleteness } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
   
   const [formData, setFormData] = useState({
     name: '',
@@ -292,9 +295,36 @@ const EditProfile = () => {
                          <input type="text" name="waliContact" value={formData.waliContact} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-white/70 border border-slate-200 focus:border-gold-500 focus:outline-none transition-all text-sm" />
                          <p className="text-[10px] text-slate-400 pl-1">Optional (Wali details are not required to reach 100% completeness).</p>
                       </div>
-                    </div>
-                 </div>
-               </div>
+                     </div>
+                  </div>
+                </div>
+            </div>
+
+            {/* Identity Verification Section */}
+            <div className="glass-card p-6 md:p-8 rounded-3xl border border-crimson-900/10 shadow-sm relative overflow-hidden bg-gradient-to-r from-cream-50 to-white">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/5 rounded-full blur-[60px]"></div>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                <div>
+                  <h2 className="text-xl font-serif font-bold text-crimson-950 mb-2 flex items-center gap-2">
+                    🛡️ Profile Verification Status
+                  </h2>
+                  <p className="text-sm text-slate-600 max-w-xl">
+                    Get the green verified badge ✅ on your profile by uploading government ID proof (Aadhaar, Passport, driving license). This will build instant trust with other users and get you more matches.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/verify-identity')}
+                  className={`px-6 py-3 rounded-full font-bold shadow-md hover:scale-105 transition-all text-xs uppercase tracking-wider ${
+                    user?.isManuallyVerified
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800 cursor-default shadow-none hover:scale-100'
+                      : 'bg-crimson-950 hover:bg-crimson-900 text-gold-400'
+                  }`}
+                  disabled={user?.isManuallyVerified}
+                >
+                  {user?.isManuallyVerified ? '✓ Verified Member' : 'Manage Verification'}
+                </button>
+              </div>
             </div>
 
             {/* Section 2: Core Biodata */}

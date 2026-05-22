@@ -93,7 +93,7 @@ const MobileProfilePage = () => {
           {/* Name and Badge */}
           <div className="flex items-center gap-1.5 mb-1">
             <h2 className="text-[22px] font-extrabold text-[#111111] tracking-tight">{profile?.name || 'Member'}</h2>
-            <FaCheckCircle className="text-blue-500 text-[15px]" />
+            {user?.isManuallyVerified && <FaCheckCircle className="text-emerald-500 text-[15px]" />}
           </div>
 
           {/* Plan Type */}
@@ -156,15 +156,19 @@ const MobileProfilePage = () => {
         </div>
 
         {/* Verification Card */}
-        <div className="bg-indigo-50/50 border border-indigo-100 rounded-3xl p-5 flex items-center justify-between shadow-sm cursor-pointer hover:bg-indigo-50 transition-colors">
-          <div className="flex items-start gap-3">
-            <FaCheckCircle className="text-[#3b82f6] text-xl mt-1 flex-shrink-0" />
-            <span className="text-[15px] font-bold text-slate-800 leading-snug pr-4">
-              Build trust on your profile with document verification
-            </span>
+        <Link to="/verify-identity" className="block mb-6">
+          <div className="bg-indigo-50/50 border border-indigo-100 rounded-3xl p-5 flex items-center justify-between shadow-sm cursor-pointer hover:bg-indigo-50 transition-colors">
+            <div className="flex items-start gap-3">
+              <FaCheckCircle className="text-[#3b82f6] text-xl mt-1 flex-shrink-0" />
+              <span className="text-[15px] font-bold text-slate-800 leading-snug pr-4">
+                {user?.isManuallyVerified 
+                  ? 'Your profile is identity-verified. Tap to view document details.' 
+                  : 'Build trust on your profile with document verification'}
+              </span>
+            </div>
+            <FaChevronRight className="text-slate-400 text-[11px] flex-shrink-0" />
           </div>
-          <FaChevronRight className="text-slate-400 text-[11px] flex-shrink-0" />
-        </div>
+        </Link>
       </div>
     </div>
   );

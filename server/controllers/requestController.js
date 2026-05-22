@@ -3,6 +3,7 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
 const Notification = require('../models/Notification');
+const Settings = require('../models/Settings');
 
 // @desc    Send an interest request to a profile
 // @route   POST /api/requests/send/:id
@@ -21,6 +22,31 @@ exports.sendInterest = async (req, res) => {
     const receiverUser = await User.findById(receiverId);
     if (!receiverUser) {
       return res.status(404).json({ success: false, message: 'Receiver profile not found' });
+    }
+
+    const senderUser = await User.findById(senderId);
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = {
+        freePlanFeatures: { dailyInterestLimit: 3 },
+        premiumPlanFeatures: { dailyInterestLimit: 30 },
+        elitePlanFeatures: { dailyInterestLimit: 99999 }
+      };
+    }
+    
+    let planLimit = settings.freePlanFeatures.dailyInterestLimit;
+    if (senderUser.plan === 'premium') planLimit = settings.premiumPlanFeatures.dailyInterestLimit;
+    if (senderUser.plan === 'elite') planLimit = settings.elitePlanFeatures.dailyInterestLimit;
+
+    // Filter out interests sent older than 24 hours
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    senderUser.interestsSentToday = senderUser.interestsSentToday.filter(i => i.sentAt > oneDayAgo);
+    
+    if (senderUser.interestsSentToday.length >= planLimit) {
+      return res.status(403).json({
+        success: false,
+        message: `Daily interest limit reached (${planLimit}). Upgrade your plan to send more interests!`
+      });
     }
 
     // Check if a request already exists in either direction
@@ -48,10 +74,52 @@ exports.sendInterest = async (req, res) => {
       status: 'pending'
     });
 
-    // Send email notification to the recipient asynchronously
+    // Record the interest sent today
+    senderUser.interestsSentToday.push({ targetUser: receiverId });
+    await senderUser.save();
+
     const senderProfile = await Profile.findOne({ user: senderId });
     const receiverProfile = await Profile.findOne({ user: receiverId });
 
+    // Routing based on sender plan: Free vs Paid
+    if (req.user.plan === 'free') {
+      // Find all admins to email them
+      const admins = await User.find({ role: 'admin' });
+      const adminEmails = admins.map(admin => admin.email);
+
+      if (adminEmails.length > 0) {
+        sendEmail({
+          email: adminEmails.join(','),
+          subject: '⚠️ New Free-Tier Interest Expressed - Action Required',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #f2e8db; border-radius: 12px; background-color: #faf8f5;">
+              <h2 style="color: #4f080e; text-align: center; font-family: Georgia, serif;">New Free-Tier Interest</h2>
+              <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+                A free member, <strong>${senderProfile?.name || 'Someone'}</strong> (${req.user.email}), has clicked interest in <strong>${receiverProfile?.name || 'Someone'}</strong> (${receiverUser.email}).
+              </p>
+              <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+                Because the sender is on the <strong>Free Plan</strong>, this request has <strong>not</strong> been shown or notified to the receiver.
+              </p>
+              <p style="font-size: 14px; color: #333333; line-height: 1.6;">
+                Please review this request in the Admin Dashboard and consider contacting the user to upgrade them.
+              </p>
+            </div>
+          `
+        }).catch(err => console.error('Failed to trigger free-tier interest email to admin:', err));
+      }
+
+      if (req.io) {
+        req.io.to(senderId).emit('interests_updated');
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Interest request sent successfully! (Review by admin pending)',
+        data: request
+      });
+    }
+
+    // For paid/premium users, proceed with recipient notifications
     // Create notification in DB
     const notification = await Notification.create({
       recipient: receiverId,
@@ -294,13 +362,15 @@ exports.getRequests = async (req, res) => {
     const received = await InterestRequest.find({ receiver: userId, status: 'pending' })
       .populate({
         path: 'sender',
-        select: 'email isVerified',
+        select: 'email isVerified plan',
       });
 
     // We also need the profile details of the sender. Let's map over them or populate manually
     const receivedWithProfiles = await Promise.all(
       received.map(async (reqItem) => {
         if (!reqItem.sender) return null;
+        // If sender is free tier, hide this request from the receiver
+        if (reqItem.sender.plan === 'free') return null;
         const profile = await Profile.findOne({ user: reqItem.sender._id });
         return {
           ...reqItem.toObject(),

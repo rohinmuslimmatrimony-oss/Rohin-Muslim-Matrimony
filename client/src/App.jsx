@@ -22,6 +22,7 @@ import EditProfile from './pages/EditProfile';
 import InterestsPage from './pages/InterestsPage';
 import PlansPage from './pages/PlansPage';
 import AdminDashboard from './pages/AdminDashboard';
+import KycVerificationPage from './pages/KycVerificationPage';
 
 // Protected Route Guard (Must be logged in)
 const ProtectedRoute = ({ children }) => {
@@ -121,6 +122,7 @@ function AppContent() {
           <Route path="/interests" element={<ProtectedRoute><InterestsPage /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><div className="block lg:hidden"><MobileChatPage /></div><div className="hidden lg:block text-center mt-20 font-bold">Please use the Interests tab for desktop chat.</div></ProtectedRoute>} />
           <Route path="/chat/:id" element={<ProtectedRoute><div className="block lg:hidden"><MobileChatRoom /></div></ProtectedRoute>} />
+          <Route path="/verify-identity" element={<ProtectedRoute><KycVerificationPage /></ProtectedRoute>} />
 
           {/* Admin Management Views */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

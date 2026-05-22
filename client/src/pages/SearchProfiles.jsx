@@ -1,18 +1,61 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import ProfileCard from '../components/ProfileCard';
-import { FaFilter, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaFilter, FaSearch, FaTimes, FaCrown, FaLock } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import LogoLoader from '../components/LogoLoader';
 import MobileSearchPage from '../components/MobileSearchPage';
 
+const PremiumWarningModal = ({ isOpen, onClose, featureName, navigate }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-5 animate-fadeIn" onClick={onClose}>
+      <div className="w-full max-w-sm bg-white rounded-[2rem] p-6 shadow-2xl text-center transform scale-100 animate-zoomIn border border-slate-100" onClick={e => e.stopPropagation()}>
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f8e9de] to-[#e8d2c0] flex items-center justify-center mx-auto mb-5 shadow-inner">
+          <FaCrown className="text-3xl text-[#c28b1e]" />
+        </div>
+        <h3 className="text-lg font-extrabold text-slate-800 mb-2">Premium Feature</h3>
+        <p className="text-sm text-slate-500 font-medium mb-6 leading-relaxed">
+          <span className="text-[#e61a52] font-bold">{featureName}</span> is locked. Upgrade your membership plan to unlock advanced filters and find your perfect match faster!
+        </p>
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={() => { onClose(); navigate('/plans'); }} 
+            className="w-full bg-gradient-to-r from-[#9b664d] to-[#80503a] text-white font-bold py-3.5 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+          >
+            Upgrade Now
+          </button>
+          <button 
+            onClick={onClose} 
+            className="w-full text-slate-500 font-semibold py-3 rounded-2xl hover:bg-slate-50 transition-colors"
+          >
+            Maybe Later
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SearchProfiles = () => {
   const { user, profile, getCompleteness } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sentRequests, setSentRequests] = useState([]);
   const [receivedRequests, setReceivedRequests] = useState([]);
+  const [premiumModalFeature, setPremiumModalFeature] = useState(null);
+
+  const isPremium = user?.plan === 'premium' || user?.plan === 'elite';
+
+  const handlePremiumClick = (e, featureName) => {
+    if (!isPremium) {
+      e.preventDefault();
+      setPremiumModalFeature(featureName);
+    }
+  };
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -192,15 +235,20 @@ const SearchProfiles = () => {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sect</label>
-                <select name="sect" value={filters.sect} onChange={handleFilterChange} className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm">
-                  <option value="All">All Sects</option>
-                  <option value="Sunni">Sunni</option>
-                  <option value="Shia">Shia</option>
-                  <option value="Sufi">Sufi</option>
-                  <option value="No Preference">No Preference</option>
-                </select>
+              <div className="space-y-1.5 relative">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  Sect {!isPremium && <FaLock className="text-[#e61a52] text-[10px]" />}
+                </label>
+                <div className="relative">
+                  <select disabled={!isPremium} name="sect" value={filters.sect} onChange={handleFilterChange} className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm disabled:opacity-50">
+                    <option value="All">All Sects</option>
+                    <option value="Sunni">Sunni</option>
+                    <option value="Shia">Shia</option>
+                    <option value="Sufi">Sufi</option>
+                    <option value="No Preference">No Preference</option>
+                  </select>
+                  {!isPremium && <div className="absolute inset-0 cursor-pointer" onClick={(e) => handlePremiumClick(e, 'Sect Filter')}></div>}
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -213,14 +261,24 @@ const SearchProfiles = () => {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">City</label>
-                <input type="text" name="city" value={filters.city} onChange={handleFilterChange} placeholder="e.g. Hyderabad" className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm" />
+              <div className="space-y-1.5 relative">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  City {!isPremium && <FaLock className="text-[#e61a52] text-[10px]" />}
+                </label>
+                <div className="relative">
+                  <input disabled={!isPremium} type="text" name="city" value={filters.city} onChange={handleFilterChange} placeholder="e.g. Hyderabad" className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm disabled:opacity-50" />
+                  {!isPremium && <div className="absolute inset-0 cursor-pointer" onClick={(e) => handlePremiumClick(e, 'City Filter')}></div>}
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Profession</label>
-                <input type="text" name="profession" value={filters.profession} onChange={handleFilterChange} placeholder="e.g. Doctor" className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm" />
+              <div className="space-y-1.5 relative">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                  Profession {!isPremium && <FaLock className="text-[#e61a52] text-[10px]" />}
+                </label>
+                <div className="relative">
+                  <input disabled={!isPremium} type="text" name="profession" value={filters.profession} onChange={handleFilterChange} placeholder="e.g. Doctor" className="w-full px-3 py-2 bg-white/70 border border-slate-200 rounded-lg text-sm disabled:opacity-50" />
+                  {!isPremium && <div className="absolute inset-0 cursor-pointer" onClick={(e) => handlePremiumClick(e, 'Profession Filter')}></div>}
+                </div>
               </div>
 
               <button type="submit" className="w-full bg-crimson-950 text-gold-400 font-bold py-3 rounded-xl hover:bg-crimson-900 transition-colors flex items-center justify-center gap-2">
@@ -297,6 +355,13 @@ const SearchProfiles = () => {
 
       </div>
     </div>
+    
+    <PremiumWarningModal 
+      isOpen={!!premiumModalFeature} 
+      onClose={() => setPremiumModalFeature(null)} 
+      featureName={premiumModalFeature} 
+      navigate={navigate} 
+    />
     </>
   );
 };

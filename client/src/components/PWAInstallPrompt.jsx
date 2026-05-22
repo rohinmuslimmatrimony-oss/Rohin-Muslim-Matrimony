@@ -100,9 +100,6 @@ const PWAInstallPrompt = () => {
           <p style={{ margin: 0, color: '#ffffff', fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>
             Rohin Muslim Matrimony
           </p>
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 2 }}>
-            Install app for quick access & chat notifications!
-          </p>
         </div>
       </div>
 

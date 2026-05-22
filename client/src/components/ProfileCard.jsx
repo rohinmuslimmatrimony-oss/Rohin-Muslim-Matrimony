@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaUserLock, FaLock, FaHeart } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaUserLock, FaLock, FaHeart, FaCheckCircle } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 
 const ProfileCard = ({ profile, currentPlan, onSendInterest, onCancelInterest, isSent, isReceived }) => {
@@ -46,8 +46,12 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, onCancelInterest, i
       <div className="p-5 flex-1 flex flex-col gap-3.5">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-slate-900 text-xl font-bold font-serif group-hover:text-crimson-850 transition-colors">
-              {profile.name}, <span className="font-sans font-light text-lg text-slate-500">{profile.age}</span>
+            <h3 className="text-slate-900 text-xl font-bold font-serif group-hover:text-crimson-850 transition-colors flex items-center gap-1.5 flex-wrap">
+              <span>{profile.name}</span>
+              {profile.user?.isManuallyVerified && (
+                <FaCheckCircle className="text-emerald-500 text-sm" title="Identity Verified" />
+              )}
+              <span className="font-sans font-light text-lg text-slate-500">, {profile.age}</span>
             </h3>
             <span className="text-xs text-slate-400 font-medium tracking-wider uppercase">{profile.religion || 'Islam'}</span>
           </div>

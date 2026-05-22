@@ -6,7 +6,8 @@ import toast from 'react-hot-toast';
 import { 
   FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaLock, 
   FaUserLock, FaHeart, FaExclamationTriangle, FaStar, 
-  FaPhoneAlt, FaEnvelope, FaMosque, FaUsers, FaRulerVertical, FaLanguage
+  FaPhoneAlt, FaEnvelope, FaMosque, FaUsers, FaRulerVertical, FaLanguage,
+  FaCheckCircle
 } from 'react-icons/fa';
 import LogoLoader from '../components/LogoLoader';
 
@@ -263,7 +264,7 @@ const UserProfile = () => {
                 )}
                 
                 {profile.user?.isManuallyVerified && (
-                  <div className="absolute bottom-2 right-2 bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center border-2 border-white" title="Admin Verified">
+                  <div className="absolute bottom-2 right-2 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center border-2 border-white" title="Admin Verified">
                     ✓
                   </div>
                 )}
@@ -273,8 +274,12 @@ const UserProfile = () => {
               <div className="pt-2 md:pt-16 flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-1 flex items-center justify-center md:justify-start gap-2">
-                      {profile.name} <span className="font-sans font-light text-xl text-slate-500">{profile.age}</span>
+                    <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-1 flex items-center justify-center md:justify-start gap-2 flex-wrap">
+                      <span>{profile.name}</span>
+                      {profile.user?.isManuallyVerified && (
+                        <FaCheckCircle className="text-emerald-500 text-xl" title="Identity Verified" />
+                      )}
+                      <span className="font-sans font-light text-xl text-slate-500">, {profile.age}</span>
                     </h1>
                     <p className="text-slate-500 font-medium">{profile.profileCreatedBy === 'Self' ? 'Profile created by Self' : `Profile created by ${profile.profileCreatedBy}`}</p>
                   </div>

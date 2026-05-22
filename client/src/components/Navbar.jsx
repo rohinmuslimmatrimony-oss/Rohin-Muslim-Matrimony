@@ -176,16 +176,16 @@ const Navbar = () => {
                         )}
                       </div>
                       <div className="overflow-y-auto max-h-[300px] divide-y divide-slate-100 flex-grow">
-                        {notifications.length === 0 ? (
+                        {notifications.filter(n => !n.isRead).length === 0 ? (
                           <div className="py-8 text-center text-slate-400 text-xs font-semibold">
-                            No notifications yet
+                            No new notifications
                           </div>
                         ) : (
-                          notifications.map((n) => (
+                          notifications.filter(n => !n.isRead).map((n) => (
                             <div 
                               key={n._id}
                               onClick={() => handleNotificationClick(n)}
-                              className={`flex items-start gap-3 p-3 hover:bg-slate-50 transition-colors cursor-pointer ${!n.isRead ? 'bg-crimson-50/40 border-l-2 border-crimson-600' : ''}`}
+                              className="flex items-start gap-3 p-3 hover:bg-slate-50 transition-colors cursor-pointer bg-crimson-50/40 border-l-2 border-crimson-600"
                             >
                               <div className="w-8 h-8 rounded-full bg-crimson-100 flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-crimson-900 text-xs border border-crimson-900/10">
                                 {n.senderPhoto && n.senderPhoto !== '/uploads/default-avatar.png' && n.senderPhoto !== '/uploads/blurred-avatar.png' ? (
@@ -195,12 +195,17 @@ const Navbar = () => {
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-[11px] leading-snug text-slate-700 ${!n.isRead ? 'font-bold' : 'font-medium'}`}>
-                                  {n.content}
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[11px] leading-snug text-slate-800 font-bold">
+                                    {n.title || 'Notification'}
+                                  </span>
+                                  <span className="text-[9px] font-semibold text-slate-400 flex-shrink-0">
+                                    {formatTimeAgo(n.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">
+                                  {n.message}
                                 </p>
-                                <span className="text-[9px] font-semibold text-slate-400 mt-1 block">
-                                  {formatTimeAgo(n.createdAt)}
-                                </span>
                               </div>
                             </div>
                           ))
@@ -268,16 +273,16 @@ const Navbar = () => {
                         )}
                       </div>
                       <div className="overflow-y-auto max-h-[250px] divide-y divide-slate-100 flex-grow">
-                        {notifications.length === 0 ? (
+                        {notifications.filter(n => !n.isRead).length === 0 ? (
                           <div className="py-6 text-center text-slate-400 text-[10px] font-semibold">
-                            No notifications yet
+                            No new notifications
                           </div>
                         ) : (
-                          notifications.map((n) => (
+                          notifications.filter(n => !n.isRead).map((n) => (
                             <div 
                               key={n._id}
                               onClick={() => handleNotificationClick(n)}
-                              className={`flex items-start gap-2.5 p-2.5 hover:bg-slate-50 transition-colors cursor-pointer ${!n.isRead ? 'bg-crimson-50/40 border-l-2 border-crimson-600' : ''}`}
+                              className="flex items-start gap-2.5 p-2.5 hover:bg-slate-50 transition-colors cursor-pointer bg-crimson-50/40 border-l-2 border-crimson-600"
                             >
                               <div className="w-7 h-7 rounded-full bg-crimson-100 flex-shrink-0 overflow-hidden flex items-center justify-center font-bold text-crimson-900 text-[10px] border border-crimson-900/10">
                                 {n.senderPhoto && n.senderPhoto !== '/uploads/default-avatar.png' && n.senderPhoto !== '/uploads/blurred-avatar.png' ? (
@@ -287,12 +292,17 @@ const Navbar = () => {
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-[10px] leading-snug text-slate-700 ${!n.isRead ? 'font-bold' : 'font-medium'}`}>
-                                  {n.content}
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[10px] leading-snug text-slate-800 font-bold">
+                                    {n.title || 'Notification'}
+                                  </span>
+                                  <span className="text-[8px] font-semibold text-slate-400 flex-shrink-0">
+                                    {formatTimeAgo(n.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-[9px] text-slate-500 mt-0.5 leading-snug">
+                                  {n.message}
                                 </p>
-                                <span className="text-[8px] font-semibold text-slate-400 mt-0.5 block">
-                                  {formatTimeAgo(n.createdAt)}
-                                </span>
                               </div>
                             </div>
                           ))

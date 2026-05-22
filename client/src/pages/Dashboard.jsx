@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa';
 import LogoLoader from '../components/LogoLoader';
 import MobileMatchesFeed from '../components/MobileMatchesFeed';
+import SupportContactCard from '../components/SupportContactCard';
 
 const Dashboard = () => {
   const { user, profile, refreshUser, getCompleteness } = useContext(AuthContext);
@@ -36,6 +37,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) {
       navigate('/login');
+    } else if (user.role === 'admin') {
+      navigate('/admin');
     }
   }, [user, navigate]);
 
@@ -346,10 +349,43 @@ const Dashboard = () => {
               <h2 className="text-3xl font-serif text-white mb-3">Begin Your Search</h2>
               <p className="text-slate-300 mb-8 max-w-xl mx-auto">Browse verified profiles matching your religious, professional, and personal preferences in our trusted network.</p>
               <button onClick={() => navigate('/search')} className="bg-gold-gradient text-crimson-950 px-10 py-4 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform text-lg flex items-center justify-center gap-2 mx-auto">
-                Discover Matches &rarr;
               </button>
             </div>
         </div>
+
+        {/* Customer Support & Verification Section */}
+        <div className="mb-10">
+          <h2 className="text-lg font-serif font-bold text-crimson-950 mb-4 flex items-center gap-2">
+            🤝 Customer Support & Verification
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="col-span-1 md:col-span-2">
+              <SupportContactCard plan={user.plan} />
+            </div>
+            <div className="glass-card rounded-2xl p-5 border border-crimson-100 bg-white flex flex-col justify-between shadow-sm">
+              <div>
+                <h3 className="font-bold text-crimson-950 text-sm mb-1 flex items-center gap-1.5">
+                  🛡️ Verify Your Profile
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Add a government-issued ID proof to get a green verified badge on your profile and build instant trust with other families.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate('/verify-identity')}
+                className={`mt-4 w-full py-2.5 rounded-xl text-xs font-extrabold transition-all uppercase tracking-wider ${
+                  user.isManuallyVerified
+                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-800 cursor-default'
+                    : 'bg-crimson-950 hover:bg-crimson-900 text-gold-400 shadow-md'
+                }`}
+                disabled={user.isManuallyVerified}
+              >
+                {user.isManuallyVerified ? '✓ Identity Verified' : 'Verify Identity Now'}
+              </button>
+            </div>
+          </div>
+        </div>
+
 
         {/* MODAL 1: WALI CONTACT */}
         {showWaliModal && (
