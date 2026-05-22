@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import ProfileCompletenessBanner from './components/ProfileCompletenessBanner';
 import BottomNavigation from './components/BottomNavigation';
 import LogoLoader from './components/LogoLoader';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Page Imports
 import LandingPage from './pages/LandingPage';
@@ -95,7 +96,10 @@ function AppContent() {
           },
         }}
       />
-      
+
+      {/* PWA Install Banner - shown on mobile when app is installable */}
+      <PWAInstallPrompt />
+
       {/* Sticky Header Wrapper (Navbar) */}
       <header className={`sticky top-0 z-50 w-full ${location.pathname === '/' ? 'hidden lg:block' : ''}`}>
         <Navbar />
