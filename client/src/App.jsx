@@ -102,7 +102,7 @@ function AppContent() {
       <PWAInstallPrompt />
 
       {/* Sticky Header Wrapper (Navbar) */}
-      <header className={`sticky top-0 z-50 w-full ${location.pathname === '/' ? 'hidden lg:block' : ''}`}>
+      <header className={`sticky top-0 z-50 w-full ${(location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register') ? 'hidden lg:block' : ''}`}>
         <Navbar />
       </header>
 
