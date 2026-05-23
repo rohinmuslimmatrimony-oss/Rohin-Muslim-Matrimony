@@ -81,6 +81,7 @@ const EditProfile = () => {
       ...profile,
       profession: formData.profession,
       education: formData.education,
+      phoneNumber: formData.phoneNumber,
       waliContact: formData.waliContact,
       familyDetails: {
         ...profile.familyDetails,
@@ -93,6 +94,58 @@ const EditProfile = () => {
   };
 
   const { score } = getDynamicCompleteness();
+
+  const checkIfDirty = () => {
+    if (!profile) return false;
+    if (photoFile !== null) return true;
+    
+    // Compare basic fields
+    const basicFields = [
+      'name', 'age', 'gender', 'sect', 'profession', 'education', 
+      'city', 'about', 'phoneNumber', 'waliContact', 'height', 
+      'maritalStatus', 'motherTongue', 'namazFrequency'
+    ];
+    for (const field of basicFields) {
+      const formVal = formData[field] !== undefined && formData[field] !== null ? String(formData[field]) : '';
+      const profVal = profile[field] !== undefined && profile[field] !== null ? String(profile[field]) : '';
+      if (formVal !== profVal) return true;
+    }
+    
+    // Compare isPhotoPublic
+    const formPhotoPublic = formData.isPhotoPublic;
+    const profPhotoPublic = profile.isPhotoPublic !== undefined ? profile.isPhotoPublic : true;
+    if (formPhotoPublic !== profPhotoPublic) return true;
+    
+    // Compare family fields
+    if ((formData.fatherOccupation || '') !== (profile.familyDetails?.fatherOccupation || '')) return true;
+    if ((formData.motherOccupation || '') !== (profile.familyDetails?.motherOccupation || '')) return true;
+    if (Number(formData.siblingsCount || 0) !== Number(profile.familyDetails?.siblingsCount || 0)) return true;
+    
+    // Compare partner preferences
+    if ((formData.partnerAgeRange || '') !== (profile.partnerPreferences?.ageRange || '')) return true;
+    if ((formData.partnerSect || '') !== (profile.partnerPreferences?.sectPreference || '')) return true;
+    if ((formData.partnerEducation || '') !== (profile.partnerPreferences?.educationPreference || '')) return true;
+    
+    // Compare siblingsList length or elements
+    const formSibLength = formData.siblingsList?.length || 0;
+    const profSibLength = profile.familyDetails?.siblingsList?.length || 0;
+    if (formSibLength !== profSibLength) return true;
+    
+    if (formSibLength > 0) {
+      for (let i = 0; i < formSibLength; i++) {
+        const fs = formData.siblingsList[i];
+        const ps = profile.familyDetails.siblingsList[i];
+        if (!ps) return true;
+        if (fs.relation !== ps.relation || fs.maritalStatus !== ps.maritalStatus || fs.occupation !== ps.occupation) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+  
+  const isFormDirty = checkIfDirty();
 
   const isCareerComplete = formData.profession && 
     formData.profession.trim() !== '' && 
@@ -164,7 +217,9 @@ const EditProfile = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
     setIsSubmitting(true);
     
     try {
@@ -187,7 +242,9 @@ const EditProfile = () => {
 
       if (res.data.success) {
         toast.success('Profile updated successfully!');
+        setPhotoFile(null); // Clear selected file state
         await refreshUser(); // Refresh global context
+        setShowMobileForm(false); // Go back to profile view on mobile
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update profile');
@@ -592,24 +649,72 @@ const EditProfile = () => {
               </div>
             </div>
 
-            {/* Action Bar */}
-            <div className="flex justify-end pt-4 border-t border-crimson-900/10">
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="bg-gold-gradient text-crimson-950 px-10 py-4 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
-              >
-                {isSubmitting ? (
-                  <span className="w-6 h-6 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
-                ) : (
-                  <><FaSave /> Save Profile Changes</>
-                )}
-              </button>
-            </div>
-
           </form>
         </div>
       </div>
+
+      {/* Floating Sticky Save Bar (only visible when form is modified/dirty) */}
+      {isFormDirty && (
+        <div className="fixed bottom-[76px] lg:bottom-6 left-4 right-4 z-50 flex justify-center animate-slideUp">
+          <div className="w-full max-w-4xl bg-gradient-to-r from-[#4f080e] to-[#300508] border border-gold-500/30 rounded-2xl px-4 py-3 sm:py-4 flex justify-between items-center shadow-[0_10px_30px_rgba(79,8,14,0.35)] text-white">
+            <span className="text-xs sm:text-sm font-extrabold text-gold-400 flex items-center gap-1.5 shrink-0">
+              <span className="w-2 h-2 rounded-full bg-gold-400 animate-pulse"></span>
+              Unsaved Changes
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (profile) {
+                    setFormData({
+                      name: profile.name || '',
+                      age: profile.age || '',
+                      gender: profile.gender || '',
+                      sect: profile.sect || '',
+                      profession: profile.profession || '',
+                      education: profile.education || '',
+                      city: profile.city || '',
+                      about: profile.about || '',
+                      phoneNumber: profile.phoneNumber || '',
+                      waliContact: profile.waliContact || '',
+                      height: profile.height || '',
+                      maritalStatus: profile.maritalStatus || '',
+                      motherTongue: profile.motherTongue || '',
+                      namazFrequency: profile.namazFrequency || '',
+                      isPhotoPublic: profile.isPhotoPublic !== undefined ? profile.isPhotoPublic : true,
+                      fatherOccupation: profile.familyDetails?.fatherOccupation || '',
+                      motherOccupation: profile.familyDetails?.motherOccupation || '',
+                      siblingsCount: profile.familyDetails?.siblingsCount || 0,
+                      siblingsList: profile.familyDetails?.siblingsList || [],
+                      partnerAgeRange: profile.partnerPreferences?.ageRange || '',
+                      partnerSect: profile.partnerPreferences?.sectPreference || '',
+                      partnerEducation: profile.partnerPreferences?.educationPreference || ''
+                    });
+                    setPhotoFile(null);
+                    setPhotoPreview(profile.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? `${SOCKET_BASE_URL}${profile.profilePhoto}` : '');
+                    toast('Changes discarded');
+                  }
+                }}
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-[#faf8f5] bg-transparent border border-white/20 hover:bg-white/10 active:scale-95 transition-all cursor-pointer shadow-sm"
+              >
+                Discard
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="bg-gold-gradient text-crimson-950 px-5 py-1.5 rounded-full font-bold shadow-md hover:scale-105 active:scale-95 transition-all text-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <span className="w-4 h-4 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
+                ) : (
+                  <>Save Changes</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

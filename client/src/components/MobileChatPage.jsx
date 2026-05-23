@@ -109,7 +109,7 @@ const MobileChatPage = () => {
             </p>
             {!searchQuery && (
               <Link 
-                to="/interests" 
+                to="/activity" 
                 className="mt-4 bg-gradient-to-r from-[#4f080e] to-[#700c12] text-white font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-crimson-900/10"
               >
                 Go to Activity Center <FaArrowRight className="text-[9px]" />

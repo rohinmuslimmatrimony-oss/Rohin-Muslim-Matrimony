@@ -7,7 +7,7 @@ import {
   FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaLock, 
   FaUserLock, FaHeart, FaExclamationTriangle, FaStar, 
   FaPhoneAlt, FaEnvelope, FaMosque, FaUsers, FaRulerVertical, FaLanguage,
-  FaCheckCircle
+  FaCheckCircle, FaCrown
 } from 'react-icons/fa';
 import LogoLoader from '../components/LogoLoader';
 
@@ -25,6 +25,7 @@ const UserProfile = () => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [galleryRequestStatus, setGalleryRequestStatus] = useState(null);
 
   useEffect(() => {
     fetchProfileData();
@@ -38,6 +39,7 @@ const UserProfile = () => {
         const profData = res.data.data;
         setProfile(profData);
         setIsConnected(res.data.isConnected);
+        setGalleryRequestStatus(res.data.galleryRequestStatus);
 
         // Fetch interest request status
         try {
@@ -106,6 +108,18 @@ const UserProfile = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to withdraw interest');
+    }
+  };
+
+  const handleRequestPhotoAccess = async () => {
+    try {
+      const res = await api.post(`/gallery-requests/send/${id}`);
+      if (res.data.success) {
+        toast.success('Photo access request sent successfully!');
+        setGalleryRequestStatus('pending');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to request photo access');
     }
   };
 
@@ -263,6 +277,17 @@ const UserProfile = () => {
                   </div>
                 )}
                 
+                {/* Crown Overlay (Premium/Elite Plan) */}
+                {(profile.user?.plan === 'premium' || profile.user?.plan === 'elite') && (
+                  <div className={`absolute top-2 left-2 p-1.5 rounded-full shadow-lg border text-white z-10 flex items-center justify-center ${
+                    profile.user.plan === 'elite' 
+                      ? 'bg-gradient-to-br from-[#d4af37] via-[#f3e3a3] to-[#b28e28] border-gold-400/40 text-[#4f080e]' 
+                      : 'bg-gradient-to-br from-[#10b981] via-[#6ee7b7] to-[#047857] border-emerald-400/40'
+                  }`}>
+                    <FaCrown className="text-xs" />
+                  </div>
+                )}
+
                 {profile.user?.isManuallyVerified && (
                   <div className="absolute bottom-2 right-2 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center border-2 border-white" title="Admin Verified">
                     ✓
@@ -281,7 +306,20 @@ const UserProfile = () => {
                       )}
                       <span className="font-sans font-light text-xl text-slate-500">, {profile.age}</span>
                     </h1>
-                    <p className="text-slate-500 font-medium">{profile.profileCreatedBy === 'Self' ? 'Profile created by Self' : `Profile created by ${profile.profileCreatedBy}`}</p>
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-1.5">
+                      <p className="text-slate-500 text-sm font-medium">{profile.profileCreatedBy === 'Self' ? 'Profile created by Self' : `Profile created by ${profile.profileCreatedBy}`}</p>
+                      <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wide flex items-center gap-1 shadow-sm border ${
+                        profile.user?.plan === 'elite' 
+                          ? 'bg-gradient-to-r from-amber-500/10 via-amber-400/10 to-amber-500/10 text-amber-800 border-amber-300'
+                          : profile.user?.plan === 'premium'
+                          ? 'bg-gradient-to-r from-emerald-500/10 via-emerald-400/10 to-emerald-500/10 text-emerald-800 border-emerald-300'
+                          : 'bg-slate-100 text-slate-700 border-slate-200'
+                      }`}>
+                        {profile.user?.plan === 'elite' && <FaCrown className="text-amber-600 text-[10px]" />}
+                        {profile.user?.plan === 'premium' && <FaCrown className="text-emerald-600 text-[10px]" />}
+                        <span className="uppercase">{profile.user?.plan || 'Free'} Member</span>
+                      </span>
+                    </div>
                   </div>
                   
                   {!isOwnProfile && (
@@ -329,6 +367,27 @@ const UserProfile = () => {
                           className="bg-gold-gradient text-crimson-950 px-6 py-2.5 rounded-full font-bold shadow-lg shadow-gold-500/20 hover:scale-105 transition-transform flex items-center gap-2"
                         >
                           <FaHeart /> Send Interest
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  
+                  {!isOwnProfile && profile.profilePhoto && profile.profilePhoto.includes('blurred-avatar.png') && (
+                    <div className="flex flex-col gap-2 mt-2 md:mt-0">
+                      {galleryRequestStatus === 'accepted' ? (
+                        <span className="bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full font-bold text-xs shadow-sm border border-emerald-200 text-center">
+                          Photo Access Approved ✓
+                        </span>
+                      ) : galleryRequestStatus === 'pending' ? (
+                        <span className="bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-bold text-xs shadow-sm border border-amber-200 text-center">
+                          Photo Access Requested 📷
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={handleRequestPhotoAccess}
+                          className="bg-[#4f080e] hover:bg-[#7f181e] text-white px-5 py-2.5 rounded-full font-bold shadow-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          Request Photo Access 📷
                         </button>
                       )}
                     </div>

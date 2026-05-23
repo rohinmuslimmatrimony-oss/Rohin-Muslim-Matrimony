@@ -23,6 +23,9 @@ import InterestsPage from './pages/InterestsPage';
 import PlansPage from './pages/PlansPage';
 import AdminDashboard from './pages/AdminDashboard';
 import KycVerificationPage from './pages/KycVerificationPage';
+import PaymentInfoPage from './pages/PaymentInfoPage';
+import BlockedUsersPage from './pages/BlockedUsersPage';
+import SupportPage from './pages/SupportPage';
 
 // Protected Route Guard (Must be logged in)
 const ProtectedRoute = ({ children }) => {
@@ -119,10 +122,14 @@ function AppContent() {
           <Route path="/search" element={<ProtectedRoute><SearchProfiles /></ProtectedRoute>} />
           <Route path="/profile/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-          <Route path="/interests" element={<ProtectedRoute><InterestsPage /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><div className="block lg:hidden"><MobileChatPage /></div><div className="hidden lg:block text-center mt-20 font-bold">Please use the Interests tab for desktop chat.</div></ProtectedRoute>} />
+          <Route path="/interests" element={<Navigate to="/activity" replace />} />
+          <Route path="/activity" element={<ProtectedRoute><InterestsPage /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><div className="block lg:hidden"><MobileChatPage /></div><div className="hidden lg:block text-center mt-20 font-bold">Please use the Activity tab for desktop chat.</div></ProtectedRoute>} />
           <Route path="/chat/:id" element={<ProtectedRoute><div className="block lg:hidden"><MobileChatRoom /></div></ProtectedRoute>} />
           <Route path="/verify-identity" element={<ProtectedRoute><KycVerificationPage /></ProtectedRoute>} />
+          <Route path="/payment-info" element={<ProtectedRoute><PaymentInfoPage /></ProtectedRoute>} />
+          <Route path="/blocked-users" element={<ProtectedRoute><BlockedUsersPage /></ProtectedRoute>} />
+          <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
 
           {/* Admin Management Views */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

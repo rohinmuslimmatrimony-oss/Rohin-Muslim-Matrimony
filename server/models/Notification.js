@@ -13,7 +13,7 @@ const NotificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['interest_sent', 'interest_accepted', 'message_received'],
+    enum: ['interest_sent', 'interest_accepted', 'message_received', 'gallery_request_sent', 'gallery_request_accepted'],
     required: true
   },
   title: {

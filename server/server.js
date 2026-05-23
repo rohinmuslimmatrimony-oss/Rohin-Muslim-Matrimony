@@ -45,6 +45,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/profiles', require('./routes/profileRoutes'));
 app.use('/api/requests', require('./routes/requestRoutes'));
+app.use('/api/gallery-requests', require('./routes/galleryRequestRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));

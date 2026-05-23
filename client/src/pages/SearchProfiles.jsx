@@ -128,10 +128,29 @@ const SearchProfiles = () => {
   };
 
   const applyFilters = (e) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    fetchProfiles(filters, 1);
-    setIsFilterOpen(false);
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+      setCurrentPage(1);
+      fetchProfiles(filters, 1);
+      setIsFilterOpen(false);
+    } else if (e && typeof e === 'object') {
+      // Called from mobile with local filters object - normalize all keys
+      const fullFilters = {
+        gender: e.gender || '',
+        ageMin: e.ageMin || 18,
+        ageMax: e.ageMax || 60,
+        sect: e.sect || 'All',
+        maritalStatus: e.maritalStatus || '',
+        profession: e.profession || '',
+        city: e.city || ''
+      };
+      setFilters(fullFilters);
+      setCurrentPage(1);
+      fetchProfiles(fullFilters, 1);
+    } else {
+      setCurrentPage(1);
+      fetchProfiles(filters, 1);
+    }
   };
 
   const handleResetFilters = () => {

@@ -22,10 +22,10 @@ const MobileProfilePage = ({ onEditClick }) => {
 
   const menuItems = [
     { icon: <FaPen className="text-slate-600 text-[15px]" />, label: 'Edit Profile', action: onEditClick },
-    { icon: <FaCreditCard className="text-slate-600 text-[15px]" />, label: 'Payment Info', action: () => navigate('/plans') },
+    { icon: <FaCreditCard className="text-slate-600 text-[15px]" />, label: 'Payment Info', action: () => navigate('/payment-info') },
     { icon: <FaCrown className="text-slate-600 text-[15px]" />, label: 'Explore Plans', action: () => navigate('/plans') },
-    { icon: <FaBan className="text-slate-600 text-[15px]" />, label: 'Blocked Users', action: () => toast('No blocked users.') },
-    { icon: <FaInfoCircle className="text-slate-600 text-[15px]" />, label: 'Help & Support', action: () => toast('Contact support@rohinmatrimony.com') }
+    { icon: <FaBan className="text-slate-600 text-[15px]" />, label: 'Blocked Users', action: () => navigate('/blocked-users') },
+    { icon: <FaInfoCircle className="text-slate-600 text-[15px]" />, label: 'Help & Support', action: () => navigate('/support') }
   ];
 
   const premiumPlans = [
@@ -55,7 +55,7 @@ const MobileProfilePage = ({ onEditClick }) => {
                 cy="56" 
                 r="52" 
                 fill="none" 
-                stroke="#e61a52" 
+                stroke={completeness === 100 ? '#10b981' : '#e61a52'} 
                 strokeWidth="4" 
                 strokeDasharray="326.72" 
                 strokeDashoffset={326.72 - (326.72 * completeness) / 100}
@@ -72,33 +72,61 @@ const MobileProfilePage = ({ onEditClick }) => {
               </div>
             )}
             
+            {/* Crown Overlay (Premium/Elite Plan) */}
+            {(user?.plan === 'premium' || user?.plan === 'elite') && (
+              <div className={`absolute top-1.5 left-1.5 p-1.5 rounded-full shadow-lg border text-white z-10 flex items-center justify-center ${
+                user.plan === 'elite' 
+                  ? 'bg-gradient-to-br from-[#d4af37] via-[#f3e3a3] to-[#b28e28] border-gold-400/40 text-[#4f080e]' 
+                  : 'bg-gradient-to-br from-[#10b981] via-[#6ee7b7] to-[#047857] border-emerald-400/40'
+              }`}>
+                <FaCrown className="text-[11px]" />
+              </div>
+            )}
+
+            {/* Verification Badge Overlay */}
+            {user?.isManuallyVerified && (
+              <div className="absolute top-1.5 right-1.5 bg-emerald-500 border-2 border-white p-1 rounded-full shadow-md text-white z-10 flex items-center justify-center">
+                <FaCheckCircle className="text-[10px]" />
+              </div>
+            )}
+            
             {/* Percentage Badge */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#e61a52] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-md whitespace-nowrap">
+            <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-md whitespace-nowrap ${completeness === 100 ? 'bg-[#10b981]' : 'bg-[#e61a52]'}`}>
               {completeness}%
             </div>
           </div>
 
           {/* Profile Status Pill */}
-          {completeness < 100 ? (
+          {completeness < 100 && (
             <div className="border border-red-200 bg-red-50 text-[#e61a52] text-[13px] font-semibold px-4 py-1.5 rounded-full mb-3 shadow-sm">
               Incomplete Profile
-            </div>
-          ) : (
-            <div className="border border-green-200 bg-green-50 text-green-600 text-[13px] font-semibold px-4 py-1.5 rounded-full mb-3 shadow-sm">
-              100% Completed
             </div>
           )}
 
           {/* Name and Badge */}
-          <div className="flex items-center gap-1.5 mb-1">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap justify-center">
             <h2 className="text-[22px] font-extrabold text-[#111111] tracking-tight">{profile?.name || 'Member'}</h2>
-            {user?.isManuallyVerified && <FaCheckCircle className="text-emerald-500 text-[15px]" />}
+            {user?.isManuallyVerified && (
+              <span className="flex items-center gap-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-sm">
+                <FaCheckCircle className="text-[10px]" /> Verified
+              </span>
+            )}
           </div>
 
-          {/* Plan Type */}
-          <p className="text-[15px] font-medium text-slate-500 capitalize">
-            {user?.plan || 'Free'} Member
-          </p>
+          {/* Plan Type Pill */}
+          <div className="flex items-center justify-center mb-2">
+            <span className={`text-[12px] font-extrabold px-3.5 py-1 rounded-full tracking-wide flex items-center gap-1 shadow-sm border ${
+              user?.plan === 'elite' 
+                ? 'bg-gradient-to-r from-amber-500/10 via-amber-400/10 to-amber-500/10 text-amber-800 border-amber-300'
+                : user?.plan === 'premium'
+                ? 'bg-gradient-to-r from-emerald-500/10 via-emerald-400/10 to-emerald-500/10 text-emerald-800 border-emerald-300'
+                : 'bg-slate-100 text-slate-700 border-slate-200'
+            }`}>
+              {user?.plan === 'elite' && <FaCrown className="text-amber-600 text-[10px] animate-pulse" />}
+              {user?.plan === 'premium' && <FaCrown className="text-emerald-600 text-[10px]" />}
+              <span className="uppercase">{user?.plan || 'Free'} Member</span>
+            </span>
+          </div>
 
           {/* Complete Profile CTA */}
           {completeness < 100 && (
@@ -108,6 +136,21 @@ const MobileProfilePage = ({ onEditClick }) => {
             </button>
           )}
         </div>
+
+        {/* Verification Card */}
+        <Link to="/verify-identity" className="block mb-6">
+          <div className="bg-indigo-50/50 border border-indigo-100 rounded-3xl p-5 flex items-center justify-between shadow-sm cursor-pointer hover:bg-indigo-50 transition-colors">
+            <div className="flex items-start gap-3">
+              <FaCheckCircle className="text-[#3b82f6] text-xl mt-1 flex-shrink-0" />
+              <span className="text-[15px] font-bold text-slate-800 leading-snug pr-4">
+                {user?.isManuallyVerified 
+                  ? 'Your profile is identity-verified. Tap to view document details.' 
+                  : 'Build trust on your profile with document verification'}
+              </span>
+            </div>
+            <FaChevronRight className="text-slate-400 text-[11px] flex-shrink-0" />
+          </div>
+        </Link>
 
         {/* Premium Plans Section - Only show for free members */}
         {(!user?.plan || user.plan === 'free') && (
@@ -156,21 +199,6 @@ const MobileProfilePage = ({ onEditClick }) => {
             </div>
           ))}
         </div>
-
-        {/* Verification Card */}
-        <Link to="/verify-identity" className="block mb-6">
-          <div className="bg-indigo-50/50 border border-indigo-100 rounded-3xl p-5 flex items-center justify-between shadow-sm cursor-pointer hover:bg-indigo-50 transition-colors">
-            <div className="flex items-start gap-3">
-              <FaCheckCircle className="text-[#3b82f6] text-xl mt-1 flex-shrink-0" />
-              <span className="text-[15px] font-bold text-slate-800 leading-snug pr-4">
-                {user?.isManuallyVerified 
-                  ? 'Your profile is identity-verified. Tap to view document details.' 
-                  : 'Build trust on your profile with document verification'}
-              </span>
-            </div>
-            <FaChevronRight className="text-slate-400 text-[11px] flex-shrink-0" />
-          </div>
-        </Link>
       </div>
     </div>
   );

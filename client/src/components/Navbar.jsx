@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaMoon, FaUser, FaSignOutAlt, FaCrown, FaBars, FaTimes, FaSearch, FaHeart, FaShieldAlt, FaBell, FaDownload } from 'react-icons/fa';
@@ -23,9 +23,22 @@ const Navbar = () => {
   const [isStandalone, setIsStandalone] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const userMenuRef = useRef(null);
 
   useEffect(() => {
     setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowMobileUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const formatTimeAgo = (dateString) => {
@@ -50,10 +63,10 @@ const Navbar = () => {
       if (window.innerWidth < 1024) {
         navigate(`/chat/${n.sender}`);
       } else {
-        navigate('/interests');
+        navigate('/activity');
       }
     } else {
-      navigate('/interests');
+      navigate('/activity');
     }
   };
 
@@ -113,8 +126,8 @@ const Navbar = () => {
             <>
               <Link to="/dashboard" className={isActive('/dashboard')}>Dashboard</Link>
               <Link to="/search" className={isActive('/search')}>Search Matches</Link>
-              <Link to="/interests" className={`${isActive('/interests')} flex items-center gap-1.5`}>
-                Interests
+              <Link to="/activity" className={`${isActive('/activity')} flex items-center gap-1.5`}>
+                Activity
                 {pendingRequestsCount > 0 && (
                   <span className="bg-gold-500 text-crimson-950 text-[10px] font-extrabold h-4 px-1.5 rounded-full flex items-center justify-center animate-pulse border border-crimson-900/10 shadow-sm">
                     {pendingRequestsCount}
@@ -319,7 +332,7 @@ const Navbar = () => {
               </div>
 
               {/* User Avatar */}
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 <button 
                   onClick={() => {
                     setShowMobileUserMenu(!showMobileUserMenu);
@@ -362,7 +375,7 @@ const Navbar = () => {
             </>
           )}
 
-          {location.pathname !== '/login' && location.pathname !== '/register' && (
+          {location.pathname !== '/login' && location.pathname !== '/register' && (!user || user.role === 'admin') && (
             <button 
               onClick={() => {
                 setIsOpen(!isOpen);
@@ -390,7 +403,7 @@ const Navbar = () => {
             <>
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-slate-900 font-semibold py-1 transition-colors">Dashboard</Link>
               <Link to="/search" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-slate-900 font-semibold py-1 transition-colors">Search Matches</Link>
-              <Link to="/interests" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-slate-900 font-semibold py-1 transition-colors">Interests</Link>
+              <Link to="/activity" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-slate-900 font-semibold py-1 transition-colors">Activity</Link>
             </>
           )}
           

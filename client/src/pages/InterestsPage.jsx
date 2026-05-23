@@ -4,13 +4,14 @@ import { AuthContext } from '../context/AuthContext';
 import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 import io from 'socket.io-client';
-import { FaCheckCircle, FaTimesCircle, FaCommentDots, FaPaperPlane, FaStar, FaRegStar, FaHeart } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaCommentDots, FaPaperPlane, FaStar, FaRegStar, FaHeart, FaEye, FaLock, FaUserCircle, FaEnvelope } from 'react-icons/fa';
 import MobileActivityPage from '../components/MobileActivityPage';
 
 const InterestsPage = () => {
   const { user, markNotificationsReadFromSender, fetchNotifications } = useContext(AuthContext);
-  const [activeTab, setActiveTab] = useState('received');
+  const [activeTab, setActiveTab] = useState('all');
   
+  // Basic states from original InterestsPage
   const [receivedRequests, setReceivedRequests] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -18,10 +19,21 @@ const InterestsPage = () => {
   const [shortlistLoading, setShortlistLoading] = useState(false);
   const [confirmCancelReqId, setConfirmCancelReqId] = useState(null);
   
+  // Chat states
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   
+  // New activity sub-tabs states
+  const [allActivities, setAllActivities] = useState([]);
+  const [allLoading, setAllLoading] = useState(false);
+  const [profileVisits, setProfileVisits] = useState([]);
+  const [profileVisitsLoading, setProfileVisitsLoading] = useState(false);
+  const [galleryRequests, setGalleryRequests] = useState({ received: [], sent: [] });
+  const [galleryRequestsLoading, setGalleryRequestsLoading] = useState(false);
+  const [contactsViewed, setContactsViewed] = useState([]);
+  const [contactsViewedLoading, setContactsViewedLoading] = useState(false);
+
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const activeChatRef = useRef(null);
@@ -62,6 +74,11 @@ const InterestsPage = () => {
       fetchNotifications();
     });
 
+    socketRef.current.on('gallery_requests_updated', () => {
+      fetchGalleryRequests();
+      if (activeTab === 'all') fetchAllActivities();
+    });
+
     return () => {
       if (socketRef.current) socketRef.current.disconnect();
     };
@@ -82,12 +99,20 @@ const InterestsPage = () => {
     };
   }, [activeChat]);
 
-  // Fetch shortlisted profiles when tab becomes active
+  // Handle activeTab change and load respective data
   useEffect(() => {
-    if (activeTab === 'shortlisted') {
+    if (activeTab === 'all') {
+      fetchAllActivities();
+    } else if (activeTab === 'shortlisted') {
       fetchShortlisted();
+    } else if (activeTab === 'visits') {
+      fetchProfileVisits();
+    } else if (activeTab === 'gallery') {
+      fetchGalleryRequests();
+    } else if (activeTab === 'contacts') {
+      fetchContactsViewed();
     }
-  }, [activeTab]);
+  }, [activeTab, receivedRequests, sentRequests]);
 
   const fetchRequests = async () => {
     try {
@@ -112,6 +137,92 @@ const InterestsPage = () => {
     }
   };
 
+  const fetchAllActivities = async () => {
+    setAllLoading(true);
+    try {
+      const [visitsRes, galleryRes, contactsRes] = await Promise.all([
+        api.get('/profiles/visitors').catch(() => ({ data: { success: false } })),
+        api.get('/gallery-requests').catch(() => ({ data: { success: false } })),
+        api.get('/profiles/contact-viewers').catch(() => ({ data: { success: false } }))
+      ]);
+
+      const items = [];
+
+      // 1. Add interests
+      receivedRequests.forEach(req => {
+        items.push({
+          id: `interest-rx-${req._id}`,
+          type: 'interest_received',
+          profile: req.senderProfile,
+          timestamp: req.createdAt,
+          raw: req
+        });
+      });
+      sentRequests.forEach(req => {
+        items.push({
+          id: `interest-tx-${req._id}`,
+          type: 'interest_sent',
+          profile: req.receiverProfile,
+          timestamp: req.createdAt,
+          raw: req
+        });
+      });
+
+      // 2. Add profile visits
+      if (visitsRes.data && visitsRes.data.success) {
+        (visitsRes.data.data || []).forEach(prof => {
+          items.push({
+            id: `visit-${prof._id}`,
+            type: 'profile_visit',
+            profile: prof,
+            timestamp: prof.updatedAt || prof.createdAt || new Date()
+          });
+        });
+      }
+
+      // 3. Add gallery requests
+      if (galleryRes.data && galleryRes.data.success) {
+        (galleryRes.data.received || []).forEach(req => {
+          items.push({
+            id: `gallery-rx-${req._id}`,
+            type: 'gallery_request_received',
+            profile: req.senderProfile,
+            timestamp: req.createdAt,
+            raw: req
+          });
+        });
+        (galleryRes.data.sent || []).forEach(req => {
+          items.push({
+            id: `gallery-tx-${req._id}`,
+            type: 'gallery_request_sent',
+            profile: req.receiverProfile,
+            timestamp: req.createdAt,
+            raw: req
+          });
+        });
+      }
+
+      // 4. Add contacts viewed
+      if (contactsRes.data && contactsRes.data.success) {
+        (contactsRes.data.data || []).forEach(prof => {
+          items.push({
+            id: `contact-${prof._id}`,
+            type: 'contact_viewed',
+            profile: prof,
+            timestamp: prof.updatedAt || prof.createdAt || new Date()
+          });
+        });
+      }
+
+      items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setAllActivities(items);
+    } catch (err) {
+      console.error('Failed to load all activities', err);
+    } finally {
+      setAllLoading(false);
+    }
+  };
+
   const fetchShortlisted = async () => {
     setShortlistLoading(true);
     try {
@@ -126,16 +237,48 @@ const InterestsPage = () => {
     }
   };
 
-  const handleRemoveShortlist = async (targetUserId) => {
+  const fetchProfileVisits = async () => {
+    setProfileVisitsLoading(true);
     try {
-      const res = await api.post(`/profiles/shortlist/${targetUserId}`);
+      const res = await api.get('/profiles/visitors');
       if (res.data.success) {
-        toast.success('Removed from shortlist');
-        // Immediately remove from local state
-        setShortlistedProfiles(prev => prev.filter(p => p.user?._id !== targetUserId && p.user !== targetUserId));
+        setProfileVisits(res.data.data);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to remove from shortlist');
+      toast.error('Failed to load profile visits');
+    } finally {
+      setProfileVisitsLoading(false);
+    }
+  };
+
+  const fetchGalleryRequests = async () => {
+    setGalleryRequestsLoading(true);
+    try {
+      const res = await api.get('/gallery-requests');
+      if (res.data.success) {
+        setGalleryRequests({
+          received: res.data.received || [],
+          sent: res.data.sent || []
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to load photo requests');
+    } finally {
+      setGalleryRequestsLoading(false);
+    }
+  };
+
+  const fetchContactsViewed = async () => {
+    setContactsViewedLoading(true);
+    try {
+      const res = await api.get('/profiles/contact-viewers');
+      if (res.data.success) {
+        setContactsViewed(res.data.data);
+      }
+    } catch (error) {
+      toast.error('Failed to load contact views');
+    } finally {
+      setContactsViewedLoading(false);
     }
   };
 
@@ -176,6 +319,42 @@ const InterestsPage = () => {
     }
   };
 
+  const handleAcceptGalleryRequest = async (reqId) => {
+    try {
+      const res = await api.put(`/gallery-requests/accept/${reqId}`);
+      if (res.data.success) {
+        toast.success('Photo access approved!');
+        fetchGalleryRequests();
+      }
+    } catch (error) {
+      toast.error('Failed to approve request');
+    }
+  };
+
+  const handleRejectGalleryRequest = async (reqId) => {
+    try {
+      const res = await api.put(`/gallery-requests/reject/${reqId}`);
+      if (res.data.success) {
+        toast.success('Photo access declined');
+        fetchGalleryRequests();
+      }
+    } catch (error) {
+      toast.error('Failed to decline request');
+    }
+  };
+
+  const handleRemoveShortlist = async (targetUserId) => {
+    try {
+      const res = await api.post(`/profiles/shortlist/${targetUserId}`);
+      if (res.data.success) {
+        toast.success('Removed from shortlist');
+        setShortlistedProfiles(prev => prev.filter(p => (p.user?._id || p.user) !== targetUserId));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to remove from shortlist');
+    }
+  };
+
   const openChat = async (partnerProfile) => {
     if (user.plan === 'free') {
       toast.error('You need a Premium or Elite plan to use Chat.');
@@ -200,12 +379,13 @@ const InterestsPage = () => {
     if (!newMessage.trim() || !activeChat) return;
 
     try {
-      const res = await api.post('/messages', { receiverId: activeChat.user._id, content: newMessage });
+      const partnerId = activeChat.user?._id || activeChat.user;
+      const res = await api.post('/messages', { receiverId: partnerId, content: newMessage });
       if (res.data.success) {
         const msgObj = res.data.data;
         setMessages((prev) => [...prev, msgObj]);
         socketRef.current.emit('send_message', { 
-          receiverId: activeChat.user._id, 
+          receiverId: partnerId, 
           messageObj: msgObj 
         });
         setNewMessage('');
@@ -213,6 +393,32 @@ const InterestsPage = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to send message');
     }
+  };
+
+  // Reusable card component for list items
+  const renderProfileCard = (profile, label, badge, keyVal) => {
+    if (!profile) return null;
+    const targetUserId = profile.user?._id || profile.user;
+
+    return (
+      <div key={keyVal || profile._id} className="glass-card p-4 rounded-2xl flex justify-between items-center border border-crimson-900/10 hover:shadow-md transition-all">
+        <Link to={`/profile/${targetUserId}`} className="flex items-center gap-4 cursor-pointer hover:opacity-85 transition-opacity">
+          {profile.profilePhoto && profile.profilePhoto !== '/uploads/blurred-avatar.png' ? (
+            <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt={profile.name} className="w-12 h-12 rounded-full object-cover border border-crimson-100 shadow-sm" />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-crimson-900 flex items-center justify-center font-bold text-gold-500 font-serif text-lg">
+              {profile.name ? profile.name[0].toUpperCase() : 'M'}
+            </div>
+          )}
+          <div>
+            <h4 className="font-bold text-crimson-950 hover:underline">{profile.name}</h4>
+            <p className="text-xs text-slate-500">{profile.profession || 'Not Specified'} • {profile.city}</p>
+            {label && <p className="text-[10px] text-crimson-700 font-extrabold uppercase mt-1 tracking-wider">{label}</p>}
+          </div>
+        </Link>
+        {badge && <div className="flex items-center gap-2">{badge}</div>}
+      </div>
+    );
   };
 
   const renderRequests = (list, isReceived) => {
@@ -224,152 +430,41 @@ const InterestsPage = () => {
           const profile = isReceived ? req.senderProfile : req.receiverProfile;
           if (!profile) return null;
 
-          return (
-            <div key={req._id} className="glass-card p-4 rounded-2xl flex justify-between items-center border border-crimson-900/10">
-              <Link to={`/profile/${profile.user}`} className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
-                <div className="w-12 h-12 rounded-full bg-crimson-100 flex items-center justify-center font-bold text-crimson-900">
-                  {profile.name[0]}
-                </div>
-                <div>
-                  <h4 className="font-bold text-crimson-950 hover:underline">{profile.name}</h4>
-                  <p className="text-xs text-slate-500">{profile.profession} • {profile.city}</p>
-                </div>
-              </Link>
-              
-              {isReceived ? (
-                <div className="flex gap-2">
-                  <button onClick={() => handleAccept(req._id)} className="text-crimson-600 hover:text-crimson-700 p-2 border border-crimson-200 rounded-full hover:bg-crimson-50 transition-colors" title="Accept">
-                    <FaCheckCircle className="text-xl" />
-                  </button>
-                  <button onClick={() => handleReject(req._id)} className="text-red-500 hover:text-red-600 p-2 border border-red-200 rounded-full hover:bg-red-50 transition-colors" title="Decline">
-                    <FaTimesCircle className="text-xl" />
-                  </button>
-                </div>
-              ) : confirmCancelReqId === req._id ? (
-                <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-2.5 py-1 shadow-sm transition-all duration-300">
-                  <span className="text-[10px] font-bold text-red-700 px-1">Withdraw?</span>
-                  <button
-                    onClick={() => {
-                      handleCancelSentRequest(profile.user);
-                      setConfirmCancelReqId(null);
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm cursor-pointer"
-                  >
-                    Yes
-                  </button>
-                  <button
-                    onClick={() => setConfirmCancelReqId(null)}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer"
-                  >
-                    No
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Pending</span>
-                  <button 
-                    onClick={() => setConfirmCancelReqId(req._id)} 
-                    className="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full border border-red-200 hover:border-red-300 transition-all cursor-pointer"
-                    title="Withdraw Interest"
-                  >
-                    Withdraw
-                  </button>
-                </div>
-              )}
+          const action = isReceived ? (
+            <div className="flex gap-2">
+              <button onClick={() => handleAccept(req._id)} className="text-crimson-600 hover:text-crimson-700 p-2 border border-crimson-200 rounded-full hover:bg-crimson-50 transition-all" title="Accept">
+                <FaCheckCircle className="text-xl" />
+              </button>
+              <button onClick={() => handleReject(req._id)} className="text-red-500 hover:text-red-600 p-2 border border-red-200 rounded-full hover:bg-red-50 transition-all" title="Decline">
+                <FaTimesCircle className="text-xl" />
+              </button>
+            </div>
+          ) : confirmCancelReqId === req._id ? (
+            <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-2.5 py-1 shadow-sm transition-all duration-300">
+              <span className="text-[10px] font-bold text-red-700 px-1">Withdraw?</span>
+              <button onClick={() => { handleCancelSentRequest(profile.user); setConfirmCancelReqId(null); }} className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer">Yes</button>
+              <button onClick={() => setConfirmCancelReqId(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer">No</button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Pending</span>
+              <button onClick={() => setConfirmCancelReqId(req._id)} className="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full border border-red-200 hover:border-red-300 transition-all cursor-pointer">Withdraw</button>
             </div>
           );
-        })}
-      </div>
-    );
-  };
 
-  const renderShortlisted = () => {
-    if (shortlistLoading) {
-      return (
-        <div className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-4 border-crimson-200 border-t-crimson-900 rounded-full animate-spin"></div>
-        </div>
-      );
-    }
-
-    if (shortlistedProfiles.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-4">
-            <FaRegStar className="text-2xl text-amber-400" />
-          </div>
-          <h3 className="text-lg font-bold text-crimson-950 mb-2">No Shortlisted Profiles</h3>
-          <p className="text-sm text-slate-500 max-w-xs">
-            You haven't saved any profiles yet. Visit a profile and click "Shortlist" to bookmark it here.
-          </p>
-          <Link 
-            to="/search" 
-            className="mt-5 text-xs font-bold bg-crimson-950 text-white px-5 py-2.5 rounded-full hover:bg-crimson-800 transition-colors"
-          >
-            Browse Profiles
-          </Link>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {shortlistedProfiles.map((profile) => {
-          const targetUserId = profile.user?._id || profile.user;
-          return (
-            <div
-              key={profile._id}
-              className="glass-card p-4 rounded-2xl flex justify-between items-center border border-amber-100 hover:border-amber-200 transition-all"
-            >
-              <Link to={`/profile/${targetUserId}`} className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
-                {profile.profilePhoto && profile.profilePhoto !== '/uploads/blurred-avatar.png' ? (
-                  <img
-                    src={profile.profilePhoto}
-                    alt={profile.name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-amber-200 shadow-sm"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-bold text-white shadow-sm text-lg">
-                    {profile.name?.[0]?.toUpperCase() || 'M'}
-                  </div>
-                )}
-                <div>
-                  <h4 className="font-bold text-crimson-950 hover:underline flex items-center gap-1.5">
-                    <FaStar className="text-amber-500 text-xs" />
-                    {profile.name}
-                  </h4>
-                  <p className="text-xs text-slate-500">
-                    {profile.age ? `${profile.age} yrs` : ''}{profile.age && profile.profession ? ' • ' : ''}{profile.profession || ''}{(profile.age || profile.profession) && profile.city ? ' • ' : ''}{profile.city}
-                  </p>
-                </div>
-              </Link>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  to={`/profile/${targetUserId}`}
-                  className="text-xs font-bold text-crimson-700 bg-crimson-50 hover:bg-crimson-100 px-4 py-1.5 rounded-full border border-crimson-200 transition-colors"
-                >
-                  View
-                </Link>
-                <button
-                  onClick={() => handleRemoveShortlist(targetUserId)}
-                  className="text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-4 py-1.5 rounded-full border border-amber-200 hover:border-amber-300 transition-all flex items-center gap-1"
-                  title="Remove from shortlist"
-                >
-                  <FaStar className="text-amber-500 text-[10px]" /> Remove
-                </button>
-              </div>
-            </div>
-          );
+          return renderProfileCard(profile, isReceived ? "Received Interest Request" : "Sent Interest Request", action, isReceived ? `req-rx-${req._id}` : `req-tx-${req._id}`);
         })}
       </div>
     );
   };
 
   const tabs = [
-    { id: 'received', label: 'Received Requests', count: receivedRequests.length },
-    { id: 'sent', label: 'Sent Requests', count: sentRequests.length },
-    { id: 'matches', label: 'Mutual Matches (Chat)', count: connections.length },
+    { id: 'all', label: 'All Activities', count: allActivities.length },
+    { id: 'interests', label: 'Interests (Received/Sent)', count: receivedRequests.length + sentRequests.length },
+    { id: 'matches', label: 'Mutual Connections (Chat)', count: connections.length },
+    { id: 'visits', label: 'Profile Visits', count: profileVisits.length },
+    { id: 'gallery', label: 'Gallery Requests', count: galleryRequests.received.length },
+    { id: 'contacts', label: 'Contacts Viewed', count: contactsViewed.length },
     { id: 'shortlisted', label: '⭐ Shortlisted', count: shortlistedProfiles.length },
   ];
 
@@ -391,141 +486,304 @@ const InterestsPage = () => {
       {/* DESKTOP VIEW */}
       <div className="hidden lg:block min-h-screen bg-cream-50 pt-24 pb-12 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-8 border-b border-crimson-900/10 pb-4">Connections & Interests</h1>
+          <h1 className="text-3xl font-serif font-bold text-crimson-950 mb-8 border-b border-crimson-900/10 pb-4">Activity Center</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Sidebar / Tabs */}
-          <div className="lg:col-span-1">
-            <div className="flex flex-row lg:flex-col gap-2 mb-6 overflow-x-auto">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => { setActiveTab(tab.id); setActiveChat(null); }}
-                  className={`flex-1 lg:flex-none text-left px-6 py-3.5 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${
-                    activeTab === tab.id 
-                      ? tab.id === 'shortlisted' 
-                        ? 'bg-amber-500 text-white shadow-md' 
-                        : 'bg-crimson-950 text-gold-400 shadow-md'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  {tab.label}
-                  {(tab.count > 0 || tab.id === 'shortlisted') && (
-                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                      activeTab === tab.id ? 'bg-white/20' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {tab.count}
-                    </span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Sidebar / Tabs */}
+            <div className="lg:col-span-1">
+              <div className="flex flex-col gap-2 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
+                <span className="text-xs text-slate-400 font-extrabold uppercase px-3 mb-2 tracking-wider">Tab Navigation</span>
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setActiveTab(tab.id); setActiveChat(null); }}
+                    className={`text-left px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center justify-between ${
+                      activeTab === tab.id 
+                        ? tab.id === 'shortlisted' 
+                          ? 'bg-amber-500 text-white shadow-md' 
+                          : 'bg-crimson-950 text-gold-400 shadow-md'
+                        : 'bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] ${
+                        activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="lg:col-span-2">
+              
+              {/* ALL TAB */}
+              {activeTab === 'all' && (
+                <div className="animate-fadeIn space-y-4">
+                  <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2">Recent Interactions</h3>
+                  {allLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-8 h-8 border-4 border-crimson-200 border-t-crimson-900 rounded-full animate-spin"></div>
+                    </div>
+                  ) : allActivities.length === 0 ? (
+                    <p className="text-slate-500 text-center py-10 italic">No activity yet. Complete your profile and explore matches to get noticed!</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {allActivities.map((act) => {
+                        const profile = act.profile;
+                        if (!profile) return null;
+
+                        let actLabel = "";
+                        let actionBadge = null;
+
+                        if (act.type === 'interest_received') {
+                          actLabel = "Expressed Interest In You";
+                          actionBadge = (
+                            <div className="flex gap-2">
+                              <button onClick={() => handleAccept(act.raw._id)} className="bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-lg text-xs" title="Accept"><FaCheckCircle className="text-lg" /></button>
+                              <button onClick={() => handleReject(act.raw._id)} className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg text-xs" title="Decline"><FaTimesCircle className="text-lg" /></button>
+                            </div>
+                          );
+                        } else if (act.type === 'interest_sent') {
+                          actLabel = `Sent Interest (${act.raw.status})`;
+                          actionBadge = <span className="text-[10px] bg-amber-50 text-amber-700 font-extrabold px-3 py-1 rounded-full border border-amber-200 uppercase tracking-wider">{act.raw.status}</span>;
+                        } else if (act.type === 'profile_visit') {
+                          actLabel = "Visited Your Profile";
+                          actionBadge = <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-3 py-1 rounded-full border border-slate-200 uppercase tracking-wider">Visit</span>;
+                        } else if (act.type === 'gallery_request_received') {
+                          actLabel = "Requested Access to Your Photos";
+                          actionBadge = act.raw.status === 'pending' ? (
+                            <div className="flex gap-2">
+                              <button onClick={() => handleAcceptGalleryRequest(act.raw._id)} className="bg-crimson-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow hover:bg-crimson-850">Approve</button>
+                              <button onClick={() => handleRejectGalleryRequest(act.raw._id)} className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200">Decline</button>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-3 py-1 rounded-full uppercase tracking-wider">{act.raw.status}</span>
+                          );
+                        } else if (act.type === 'gallery_request_sent') {
+                          actLabel = `Requested photo access (${act.raw.status})`;
+                          actionBadge = <span className="text-[10px] bg-amber-50 text-amber-700 font-extrabold px-3 py-1 rounded-full border border-amber-200 uppercase tracking-wider">{act.raw.status}</span>;
+                        } else if (act.type === 'contact_viewed') {
+                          actLabel = "Viewed Your Contact Information";
+                          actionBadge = <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-3 py-1 rounded-full border border-emerald-200 uppercase tracking-wider">Contacts</span>;
+                        }
+
+                        return renderProfileCard(profile, actLabel, actionBadge, act.id);
+                      })}
+                    </div>
                   )}
-                </button>
-              ))}
+                </div>
+              )}
+
+              {/* INTERESTS TAB */}
+              {activeTab === 'interests' && (
+                <div className="animate-fadeIn space-y-8">
+                  <div>
+                    <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2">Received Interests</h3>
+                    {renderRequests(receivedRequests, true)}
+                  </div>
+                  <div className="pt-4">
+                    <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2">Sent Interests</h3>
+                    {renderRequests(sentRequests, false)}
+                  </div>
+                </div>
+              )}
+
+              {/* PROFILE VISITS TAB */}
+              {activeTab === 'visits' && (
+                <div className="animate-fadeIn space-y-4">
+                  <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2"><FaEye className="text-crimson-700" /> Who Viewed Your Profile</h3>
+                  {profileVisitsLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-8 h-8 border-4 border-crimson-200 border-t-crimson-900 rounded-full animate-spin"></div>
+                    </div>
+                  ) : profileVisits.length === 0 ? (
+                    <p className="text-slate-500 text-center py-10 italic">No views registered yet. Keep updating your details to capture more views!</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {profileVisits.map(profile => renderProfileCard(profile, "Visited your profile", null, `visit-${profile._id}`))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* GALLERY REQUESTS TAB */}
+              {activeTab === 'gallery' && (
+                <div className="animate-fadeIn space-y-8">
+                  <div>
+                    <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2">Received Photo Requests</h3>
+                    {galleryRequestsLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="w-6 h-6 border-2 border-crimson-200 border-t-crimson-900 rounded-full animate-spin"></div>
+                      </div>
+                    ) : galleryRequests.received.length === 0 ? (
+                      <p className="text-slate-500 text-center py-6 italic text-sm">No photo access requests received.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {galleryRequests.received.map(req => {
+                          const profile = req.senderProfile;
+                          const action = req.status === 'pending' ? (
+                            <div className="flex gap-2">
+                              <button onClick={() => handleAcceptGalleryRequest(req._id)} className="bg-crimson-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow hover:bg-crimson-850">Approve</button>
+                              <button onClick={() => handleRejectGalleryRequest(req._id)} className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200">Decline</button>
+                            </div>
+                          ) : (
+                            <span className="text-xs bg-slate-100 text-slate-600 font-extrabold px-3 py-1.5 rounded-full border border-slate-200 uppercase tracking-wider">{req.status}</span>
+                          );
+                          return renderProfileCard(profile, "Requested access to your photos", action, `gallery-rx-${req._id}`);
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2">Sent Photo Requests</h3>
+                    {galleryRequestsLoading ? null : galleryRequests.sent.length === 0 ? (
+                      <p className="text-slate-500 text-center py-6 italic text-sm">No photo requests sent.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {galleryRequests.sent.map(req => {
+                          const profile = req.receiverProfile;
+                          const badge = <span className="text-xs bg-amber-50 text-amber-700 font-extrabold px-3 py-1 rounded-full border border-amber-200 uppercase tracking-wider">{req.status}</span>;
+                          return renderProfileCard(profile, "You requested photo access", badge, `gallery-tx-${req._id}`);
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* CONTACTS TAB */}
+              {activeTab === 'contacts' && (
+                <div className="animate-fadeIn space-y-4">
+                  <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2"><FaEnvelope className="text-crimson-700" /> Who Viewed Your Contact Info</h3>
+                  {contactsViewedLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-8 h-8 border-4 border-crimson-200 border-t-crimson-900 rounded-full animate-spin"></div>
+                    </div>
+                  ) : contactsViewed.length === 0 ? (
+                    <p className="text-slate-500 text-center py-10 italic">No one has viewed your contact details yet.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {contactsViewed.map(profile => renderProfileCard(profile, "Viewed contact details", null, `contact-${profile._id}`))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SHORTLISTED TAB */}
+              {activeTab === 'shortlisted' && (
+                <div className="animate-fadeIn space-y-4">
+                  <h3 className="text-xl font-serif text-crimson-950 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2"><FaStar className="text-amber-500" /> Shortlisted Profiles</h3>
+                  {shortlistLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-8 h-8 border-4 border-crimson-200 border-t-crimson-900 rounded-full animate-spin"></div>
+                    </div>
+                  ) : shortlistedProfiles.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-slate-500 italic mb-4">No shortlisted profiles yet. Bookmark profiles you like to find them here!</p>
+                      <Link to="/search" className="bg-crimson-950 text-gold-400 px-6 py-2.5 rounded-full font-bold text-xs hover:bg-crimson-900 shadow">Search Matches</Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {shortlistedProfiles.map(profile => {
+                        const targetUserId = profile.user?._id || profile.user;
+                        const action = (
+                          <button onClick={() => handleRemoveShortlist(targetUserId)} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors flex items-center gap-1">
+                            <FaStar className="text-amber-500 text-[10px]" /> Remove
+                          </button>
+                        );
+                        return renderProfileCard(profile, "Shortlisted Bookmark", action, `shortlist-${profile._id}`);
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* MUTUAL MATCHES / CHAT TAB */}
+              {activeTab === 'matches' && !activeChat && (
+                <div className="animate-fadeIn">
+                  <h3 className="text-xl font-serif text-crimson-950 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">Your Connections <FaCommentDots className="text-crimson-700" /></h3>
+                  {connections.length === 0 ? (
+                    <p className="text-slate-500 text-center py-10 italic">No mutual connections yet. Start sending interests!</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {connections.map(conn => (
+                        <div key={conn._id} onClick={() => openChat(conn)} className="glass-card p-4 rounded-2xl flex items-center gap-4 border border-crimson-900/10 cursor-pointer hover:bg-crimson-50 hover:border-crimson-200 transition-all">
+                          <div className="w-12 h-12 rounded-full bg-crimson-100 flex items-center justify-center font-bold text-crimson-900 flex-shrink-0">
+                            {conn.name ? conn.name[0].toUpperCase() : 'M'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-crimson-950 truncate">{conn.name}</h4>
+                            <p className="text-xs text-slate-500 truncate">Tap to chat</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Live Chat Interface */}
+              {activeTab === 'matches' && activeChat && (
+                <div className="flex flex-col h-[600px] glass-card rounded-3xl border border-crimson-900/10 overflow-hidden shadow-lg animate-fadeIn">
+                  {/* Chat Header */}
+                  <div className="bg-crimson-950 px-6 py-4 flex items-center justify-between text-white">
+                    <div className="flex items-center gap-4">
+                      <button onClick={() => setActiveChat(null)} className="text-gold-400 hover:text-white">&larr; Back</button>
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold">
+                        {activeChat.name ? activeChat.name[0].toUpperCase() : 'M'}
+                      </div>
+                      <div>
+                        <h3 className="font-bold font-serif">{activeChat.name}</h3>
+                        <p className="text-[10px] text-crimson-300">Connected Match</p>
+                      </div>
+                    </div>
+                    <Link 
+                      to={`/profile/${activeChat.user?._id || activeChat.user}`} 
+                      className="text-xs font-bold bg-gold-gradient text-crimson-950 px-3.5 py-1.5 rounded-full hover:scale-105 transition-transform"
+                    >
+                      View Profile
+                    </Link>
+                  </div>
+
+                  {/* Chat Messages */}
+                  <div className="flex-1 p-6 overflow-y-auto bg-slate-50 flex flex-col gap-3">
+                    {messages.map((msg, idx) => {
+                      const isMine = msg.sender === user._id;
+                      return (
+                        <div key={idx} className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${isMine ? 'bg-crimson-800 text-white self-end rounded-br-sm' : 'bg-white border border-slate-200 text-slate-700 self-start rounded-bl-sm shadow-sm'}`}>
+                          {msg.content}
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Chat Input */}
+                  <form onSubmit={sendMessage} className="p-4 bg-white border-t border-slate-200 flex gap-2 items-center">
+                    <input 
+                      type="text" 
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 bg-slate-100 px-4 py-3 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-crimson-900/20"
+                    />
+                    <button type="submit" disabled={!newMessage.trim()} className="w-12 h-12 bg-gold-gradient rounded-full flex items-center justify-center text-crimson-950 hover:scale-105 transition-transform disabled:opacity-50 cursor-pointer">
+                      <FaPaperPlane className="ml-[-2px]" />
+                    </button>
+                  </form>
+                </div>
+              )}
+
             </div>
           </div>
-
-          {/* Main Content Area */}
-          <div className="lg:col-span-2">
-            {activeTab === 'received' && (
-              <div className="animate-fadeIn">
-                <h3 className="text-xl font-serif text-crimson-950 mb-4">Profiles interested in you</h3>
-                {renderRequests(receivedRequests, true)}
-              </div>
-            )}
-
-            {activeTab === 'sent' && (
-              <div className="animate-fadeIn">
-                <h3 className="text-xl font-serif text-crimson-950 mb-4">Interests you sent</h3>
-                {renderRequests(sentRequests, false)}
-              </div>
-            )}
-
-            {activeTab === 'matches' && !activeChat && (
-              <div className="animate-fadeIn">
-                <h3 className="text-xl font-serif text-crimson-950 mb-4 flex items-center gap-2">Your Connections <FaCommentDots className="text-crimson-700" /></h3>
-                {connections.length === 0 ? (
-                  <p className="text-slate-500 text-center py-10 italic">No mutual connections yet. Start sending interests!</p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {connections.map(conn => (
-                      <div key={conn._id} onClick={() => openChat(conn)} className="glass-card p-4 rounded-2xl flex items-center gap-4 border border-crimson-900/10 cursor-pointer hover:bg-crimson-50 hover:border-crimson-200 transition-all">
-                        <div className="w-12 h-12 rounded-full bg-crimson-100 flex items-center justify-center font-bold text-crimson-900 flex-shrink-0">
-                          {conn.name[0]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-crimson-950 truncate">{conn.name}</h4>
-                          <p className="text-xs text-slate-500 truncate">Tap to chat</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Chat Interface */}
-            {activeTab === 'matches' && activeChat && (
-              <div className="flex flex-col h-[600px] glass-card rounded-3xl border border-crimson-900/10 overflow-hidden shadow-lg animate-fadeIn">
-                {/* Chat Header */}
-                <div className="bg-crimson-950 px-6 py-4 flex items-center justify-between text-white">
-                  <div className="flex items-center gap-4">
-                    <button onClick={() => setActiveChat(null)} className="text-gold-400 hover:text-white">&larr;</button>
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold">{activeChat.name[0]}</div>
-                    <div>
-                      <h3 className="font-bold font-serif">{activeChat.name}</h3>
-                      <p className="text-[10px] text-crimson-300">Connected Match</p>
-                    </div>
-                  </div>
-                  <Link 
-                    to={`/profile/${activeChat.user?._id || activeChat.user}`} 
-                    className="text-xs font-bold bg-gold-gradient text-crimson-950 px-3.5 py-1.5 rounded-full hover:scale-105 transition-transform"
-                  >
-                    View Profile
-                  </Link>
-                </div>
-
-                {/* Chat Messages */}
-                <div className="flex-1 p-6 overflow-y-auto bg-slate-50 flex flex-col gap-3">
-                  {messages.map((msg, idx) => {
-                    const isMine = msg.sender === user._id;
-                    return (
-                      <div key={idx} className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${isMine ? 'bg-crimson-800 text-white self-end rounded-br-sm' : 'bg-white border border-slate-200 text-slate-700 self-start rounded-bl-sm shadow-sm'}`}>
-                        {msg.content}
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Chat Input */}
-                <form onSubmit={sendMessage} className="p-4 bg-white border-t border-slate-200 flex gap-2 items-center">
-                  <input 
-                    type="text" 
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="flex-1 bg-slate-100 px-4 py-3 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-crimson-900/20"
-                  />
-                  <button type="submit" disabled={!newMessage.trim()} className="w-12 h-12 bg-gold-gradient rounded-full flex items-center justify-center text-crimson-950 hover:scale-105 transition-transform disabled:opacity-50">
-                    <FaPaperPlane className="ml-[-2px]" />
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* Shortlisted Profiles Tab */}
-            {activeTab === 'shortlisted' && (
-              <div className="animate-fadeIn">
-                <h3 className="text-xl font-serif text-crimson-950 mb-4 flex items-center gap-2">
-                  <FaStar className="text-amber-500" /> Your Shortlisted Profiles
-                </h3>
-                {renderShortlisted()}
-              </div>
-            )}
-          </div>
-
         </div>
       </div>
-    </div>
     </>
   );
 };

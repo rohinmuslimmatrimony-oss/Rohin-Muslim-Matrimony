@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaUserLock, FaLock, FaHeart, FaCheckCircle } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaUserLock, FaLock, FaHeart, FaCheckCircle, FaCrown } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 
 const ProfileCard = ({ profile, currentPlan, onSendInterest, onCancelInterest, isSent, isReceived }) => {
@@ -31,6 +31,17 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, onCancelInterest, i
         <span className="absolute top-3 left-3 bg-crimson-900/90 text-gold-400 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md border border-crimson-700/50">
           {profile.sect || 'Sunni'}
         </span>
+
+        {/* Crown Badge (Plan) */}
+        {(profile.user?.plan === 'premium' || profile.user?.plan === 'elite') && (
+          <span className={`absolute top-3 right-3 p-1.5 rounded-full backdrop-blur-md border text-white shadow-md z-10 flex items-center justify-center ${
+            profile.user.plan === 'elite'
+              ? 'bg-gradient-to-br from-[#d4af37] via-[#f3e3a3] to-[#b28e28] border-[#d4af37]/40 text-[#4f080e]'
+              : 'bg-gradient-to-br from-[#10b981] via-[#6ee7b7] to-[#047857] border-emerald-400/40 text-white'
+          }`} title={profile.user.plan === 'elite' ? 'Elite Member' : 'Premium Member'}>
+            <FaCrown className="text-[10px]" />
+          </span>
+        )}
 
         {/* Locked Overlay for Free Users */}
         {isFreePlan && (

@@ -70,8 +70,12 @@ export const AuthProvider = ({ children }) => {
         }
       }
       const elapsed = Date.now() - startTime;
-      if (elapsed < 3000) {
-        await new Promise(r => setTimeout(r, 3000 - elapsed));
+      const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+      if (!hasSeenSplash) {
+        if (elapsed < 3000) {
+          await new Promise(r => setTimeout(r, 3000 - elapsed));
+        }
+        sessionStorage.setItem('hasSeenSplash', 'true');
       }
       setLoading(false);
     };
@@ -93,7 +97,7 @@ export const AuthProvider = ({ children }) => {
           <div 
             onClick={() => { 
               toast.dismiss(t.id); 
-              window.location.href = '/interests'; 
+              window.location.href = '/activity'; 
             }} 
             className="cursor-pointer py-1"
           >
@@ -128,7 +132,7 @@ export const AuthProvider = ({ children }) => {
           <div 
             onClick={() => { 
               toast.dismiss(t.id); 
-              window.location.href = '/interests'; 
+              window.location.href = '/activity'; 
             }} 
             className="cursor-pointer py-1"
           >
@@ -162,14 +166,14 @@ export const AuthProvider = ({ children }) => {
 
         fetchNotifications();
         const activePartnerId = localStorage.getItem('activeChatPartnerId');
-        const isCurrentlyChatting = (window.location.pathname === '/interests' || window.location.pathname.startsWith('/chat/')) && activePartnerId === data.sender;
+        const isCurrentlyChatting = (window.location.pathname === '/activity' || window.location.pathname.startsWith('/chat/')) && activePartnerId === data.sender;
         
         if (!isCurrentlyChatting) {
           toast((t) => (
             <div 
               onClick={() => { 
                 toast.dismiss(t.id); 
-                window.location.href = window.innerWidth < 1024 ? `/chat/${data.sender}` : '/interests'; 
+                window.location.href = window.innerWidth < 1024 ? `/chat/${data.sender}` : '/activity'; 
               }} 
               className="cursor-pointer py-1"
             >
@@ -361,17 +365,32 @@ export const AuthProvider = ({ children }) => {
 
   const getCompleteness = (prof = profile) => {
     if (!prof) return { score: 0, missingFields: [] };
-    let score = 20; // Base score (email, password, name, gender, age, city)
+    let score = 10; // Base score (email, password, name, gender, age, city)
     const missingFields = [];
     
-    // 1. Family Details (+40%)
-    if (prof.familyDetails?.fatherOccupation && prof.familyDetails?.fatherOccupation.trim() !== '') {
-      score += 40;
+    // 1. Profile Photo (+20%)
+    const hasPhoto = prof.profilePhoto && prof.profilePhoto !== '/uploads/default-avatar.png' && prof.profilePhoto !== '/uploads/blurred-avatar.png';
+    if (hasPhoto) {
+      score += 20;
     } else {
-      missingFields.push({ name: '👪 Family Details', percentage: 40, field: 'familyDetails' });
+      missingFields.push({ name: '📷 Upload Profile Photo', percentage: 20, field: 'profilePhoto' });
+    }
+
+    // 2. Candidate Contact Number (+20%)
+    if (prof.phoneNumber && prof.phoneNumber.trim() !== '') {
+      score += 20;
+    } else {
+      missingFields.push({ name: '📞 Candidate Contact Number', percentage: 20, field: 'phoneNumber' });
+    }
+
+    // 3. Family Details (+25%)
+    if (prof.familyDetails?.fatherOccupation && prof.familyDetails?.fatherOccupation.trim() !== '') {
+      score += 25;
+    } else {
+      missingFields.push({ name: '👪 Family Details', percentage: 25, field: 'familyDetails' });
     }
     
-    // 2. Career Details Customization (+40%)
+    // 4. Career Details Customization (+25%)
     if (
       prof.profession && 
       prof.profession.trim() !== '' && 
@@ -380,12 +399,12 @@ export const AuthProvider = ({ children }) => {
       prof.education.trim() !== '' && 
       prof.education !== 'Not Specified'
     ) {
-      score += 40;
+      score += 25;
     } else {
-      missingFields.push({ name: '💼 Career & Education Details', percentage: 40, field: 'careerDetails' });
+      missingFields.push({ name: '💼 Career & Education Details', percentage: 25, field: 'careerDetails' });
     }
 
-    // 3. Wali Contact (Optional)
+    // 5. Wali Contact (Optional)
     if (!prof.waliContact || prof.waliContact.trim() === '') {
       missingFields.push({ name: '📞 Chaperone / Wali Contact (Optional)', percentage: 0, field: 'waliContact' });
     }

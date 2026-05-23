@@ -1,6 +1,7 @@
 const Profile = require('../models/Profile');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
+const GalleryRequest = require('../models/GalleryRequest');
 
 const getPlanFeatures = async (plan) => {
   let settings = await Settings.findOne();
@@ -114,10 +115,20 @@ exports.getProfiles = async (req, res) => {
       return p;
     });
 
+    // Fetch accepted gallery requests where current user is sender
+    const acceptedGalleryReqs = await GalleryRequest.find({
+      sender: req.user.id,
+      status: 'accepted'
+    }).select('receiver');
+    const allowedGalleryUserIds = acceptedGalleryReqs.map(r => r.receiver.toString());
+
     // Apply photo privacy rules
     profiles = profiles.map(profile => {
       const isConnected = profile.connections && profile.connections.some(c => c.toString() === req.user.id);
-      if (!profile.isPhotoPublic && !isConnected && req.user.role !== 'admin') {
+      const targetUserId = profile.user?._id?.toString() || profile.user?.toString();
+      const hasGalleryAccess = isConnected || allowedGalleryUserIds.includes(targetUserId);
+
+      if (!profile.isPhotoPublic && !hasGalleryAccess && req.user.role !== 'admin') {
         profile.profilePhoto = '/uploads/blurred-avatar.png';
         profile.gallery = [];
       }
@@ -188,8 +199,16 @@ exports.getProfileById = async (req, res) => {
     const isConnected = profile.connections.includes(currentUserId);
     const profileData = profile.toObject();
 
+    // Fetch gallery request status
+    const galleryReq = await GalleryRequest.findOne({
+      sender: currentUserId,
+      receiver: targetUserId
+    });
+    const galleryRequestStatus = galleryReq ? galleryReq.status : null;
+    const hasGalleryAccess = isConnected || galleryRequestStatus === 'accepted';
+
     // Photo Privacy
-    if (!profileData.isPhotoPublic && !isConnected && !isAdmin && !isOwnProfile) {
+    if (!profileData.isPhotoPublic && !hasGalleryAccess && !isAdmin && !isOwnProfile) {
       profileData.profilePhoto = '/uploads/blurred-avatar.png';
       profileData.gallery = [];
     }
@@ -235,6 +254,7 @@ exports.getProfileById = async (req, res) => {
       success: true,
       data: profileData,
       isConnected,
+      galleryRequestStatus,
       viewedCount: viewer.viewedProfiles.length,
       viewLimit: planFeatures.dailyViewLimit,
       plan: viewer.plan
@@ -269,11 +289,11 @@ exports.updateMyProfile = async (req, res) => {
     if (age) updateData.age = parseInt(age);
     if (gender) updateData.gender = gender;
     if (sect) updateData.sect = sect;
-    if (profession) updateData.profession = profession;
-    if (education) updateData.education = education;
+    if (profession !== undefined) updateData.profession = profession;
+    if (education !== undefined) updateData.education = education;
     if (city) updateData.city = city;
-    if (about) updateData.about = about;
-    if (phoneNumber) updateData.phoneNumber = phoneNumber;
+    if (about !== undefined) updateData.about = about;
+    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
     if (waliContact !== undefined) updateData.waliContact = waliContact;
     if (height) updateData.height = height;
     if (maritalStatus) updateData.maritalStatus = maritalStatus;
@@ -372,3 +392,50 @@ exports.toggleShortlist = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Get profiles of users who visited the logged-in user's profile
+// @route   GET /api/profiles/visitors
+// @access  Private
+exports.getProfileVisitors = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    // Find all users whose viewedProfiles contains currentUserId
+    const visitors = await User.find({ viewedProfiles: currentUserId }).select('_id');
+    const visitorIds = visitors.map(v => v._id);
+    const visitorProfiles = await Profile.find({ user: { $in: visitorIds } })
+      .populate('user', 'email role plan isManuallyVerified');
+    
+    return res.status(200).json({
+      success: true,
+      count: visitorProfiles.length,
+      data: visitorProfiles
+    });
+  } catch (error) {
+    console.error('GetProfileVisitors Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get profiles of users who viewed the logged-in user's contact details
+// @route   GET /api/profiles/contact-viewers
+// @access  Private
+exports.getContactViewers = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    // Find all users whose viewedContacts contains currentUserId
+    const viewers = await User.find({ viewedContacts: currentUserId }).select('_id');
+    const viewerIds = viewers.map(v => v._id);
+    const contactViewerProfiles = await Profile.find({ user: { $in: viewerIds } })
+      .populate('user', 'email role plan isManuallyVerified');
+    
+    return res.status(200).json({
+      success: true,
+      count: contactViewerProfiles.length,
+      data: contactViewerProfiles
+    });
+  } catch (error) {
+    console.error('GetContactViewers Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+

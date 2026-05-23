@@ -107,6 +107,7 @@ exports.register = async (req, res) => {
         role: user.role,
         plan: user.plan,
         viewLimit: user.viewLimit,
+        isManuallyVerified: user.isManuallyVerified,
       },
       profile,
     });
@@ -150,6 +151,7 @@ exports.login = async (req, res) => {
         role: user.role,
         plan: user.plan,
         viewLimit: user.viewLimit,
+        isManuallyVerified: user.isManuallyVerified,
       },
       profile,
     });
@@ -179,6 +181,9 @@ exports.getMe = async (req, res) => {
         role: user.role,
         plan: user.plan,
         viewLimit: user.viewLimit,
+        isManuallyVerified: user.isManuallyVerified,
+        viewedProfiles: user.viewedProfiles || [],
+        viewedContacts: user.viewedContacts || [],
       },
       profile,
     });
@@ -224,6 +229,7 @@ exports.upgradePlan = async (req, res) => {
         role: user.role,
         plan: user.plan,
         viewLimit: user.viewLimit,
+        isManuallyVerified: user.isManuallyVerified,
       }
     });
   } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FaHome, FaHeart, FaComments, FaUser } from 'react-icons/fa';
+import { FaHome, FaSearch, FaHeart, FaComments, FaUser } from 'react-icons/fa';
 
 const BottomNavigation = () => {
   const { user, pendingRequestsCount, notifications } = useContext(AuthContext);
@@ -18,7 +18,8 @@ const BottomNavigation = () => {
 
   const navItems = [
     { label: 'Home', icon: FaHome, path: '/dashboard' },
-    { label: 'Activity', icon: FaHeart, path: '/interests', badge: pendingRequestsCount },
+    { label: 'Search', icon: FaSearch, path: '/search' },
+    { label: 'Activity', icon: FaHeart, path: '/activity', badge: pendingRequestsCount },
     { label: 'Chat', icon: FaComments, path: '/chat', badge: unreadMessagesCount },
     { label: 'Profile', icon: FaUser, path: '/edit-profile' }
   ];
