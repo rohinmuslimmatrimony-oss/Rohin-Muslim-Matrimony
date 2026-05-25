@@ -21,7 +21,7 @@ const ProfileCard = ({ profile, currentPlan, onSendInterest, onCancelInterest, i
           />
         ) : (
           <div className="w-full h-full relative">
-            <DefaultAvatar gender={profile.gender} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${profile.profilePhoto === '/uploads/blurred-avatar.png' ? 'blur-md opacity-70' : ''}`} />
+            <DefaultAvatar gender={profile.gender} className={`w-full h-full object-contain bg-[#e2e8f0] group-hover:scale-105 transition-transform duration-500 ${profile.profilePhoto === '/uploads/blurred-avatar.png' ? 'blur-md opacity-70' : ''}`} />
             {profile.profilePhoto === '/uploads/blurred-avatar.png' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                  <div className="bg-black/40 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-white/10">

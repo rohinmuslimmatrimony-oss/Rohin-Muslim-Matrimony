@@ -180,8 +180,8 @@ const MobileMatchesFeed = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full relative">
-                      <DefaultAvatar gender={p.gender} className={`w-full h-full object-cover ${p.profilePhoto === '/uploads/blurred-avatar.png' ? 'blur-md opacity-70' : ''}`} />
+                    <div className="w-full h-full relative bg-[#e2e8f0]">
+                      <DefaultAvatar gender={p.gender} className={`w-full h-full object-contain bg-[#e2e8f0] ${p.profilePhoto === '/uploads/blurred-avatar.png' ? 'blur-md opacity-70' : ''}`} />
                       {p.profilePhoto === '/uploads/blurred-avatar.png' && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                            <div className="bg-black/40 backdrop-blur-sm rounded-full w-16 h-16 flex items-center justify-center shadow-lg border border-white/10 mt-[-30px]">

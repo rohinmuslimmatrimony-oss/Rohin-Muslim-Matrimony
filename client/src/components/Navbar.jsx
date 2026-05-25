@@ -11,15 +11,15 @@ import premiumBadge from '../assets/premium-badge.png';
 import eliteBadge from '../assets/elite-badge.png';
 
 const Navbar = () => {
-  const { 
-    user, 
-    profile, 
-    logout, 
-    notifications, 
-    unreadCount, 
-    pendingRequestsCount, 
-    markAsRead, 
-    markAllAsRead 
+  const {
+    user,
+    profile,
+    logout,
+    notifications,
+    unreadCount,
+    pendingRequestsCount,
+    markAsRead,
+    markAllAsRead
   } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -84,8 +84,8 @@ const Navbar = () => {
   };
 
   const isActive = (path) => {
-    return location.pathname === path 
-      ? 'text-[#4f080e] border-b-2 border-[#4f080e] font-bold' 
+    return location.pathname === path
+      ? 'text-[#4f080e] border-b-2 border-[#4f080e] font-bold'
       : 'text-slate-700 hover:text-[#4f080e] font-semibold';
   };
 
@@ -94,10 +94,10 @@ const Navbar = () => {
     const planColors = plan === 'elite' ? 'text-amber-600' : plan === 'premium' ? 'text-crimson-700' : 'text-slate-600';
     return (
       <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-        <img 
-          src={badgeSrc} 
-          alt={`${plan} badge`} 
-          className="h-20 w-auto object-contain" 
+        <img
+          src={badgeSrc}
+          alt={`${plan} badge`}
+          className="h-20 w-auto object-contain"
         />
         <span className={`text-[10px] font-extrabold uppercase tracking-widest ${planColors}`}>
           {plan}
@@ -109,7 +109,7 @@ const Navbar = () => {
   return (
     <nav className="w-full bg-[#faf9f6] border-b border-[#d4af37]/35 py-3.5 px-4 md:px-8 transition-colors shadow-lg">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
+
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2 group">
           <img src={logo3} alt="Rohin Muslim Matrimony Logo" className="h-11 md:h-14 w-auto object-contain" />
@@ -138,11 +138,11 @@ const Navbar = () => {
               </Link>
             </>
           )}
-          
+
           {user && user.role === 'admin' && (
-             <Link to="/admin" className="bg-gradient-to-r from-gold-400 to-gold-600 text-crimson-950 hover:from-gold-300 hover:to-gold-500 font-bold px-5 py-2.5 rounded-xl text-xs tracking-wider uppercase flex items-center gap-2 shadow-lg shadow-gold-500/10 border border-gold-300 hover:scale-105 active:scale-95 transition-all">
-               <FaShieldAlt className="text-crimson-950 text-xs" /> Admin Dashboard
-             </Link>
+            <Link to="/admin" className="bg-gradient-to-r from-gold-400 to-gold-600 text-crimson-950 hover:from-gold-300 hover:to-gold-500 font-bold px-5 py-2.5 rounded-xl text-xs tracking-wider uppercase flex items-center gap-2 shadow-lg shadow-gold-500/10 border border-gold-300 hover:scale-105 active:scale-95 transition-all">
+              <FaShieldAlt className="text-crimson-950 text-xs" /> Admin Dashboard
+            </Link>
           )}
         </div>
 
@@ -169,17 +169,17 @@ const Navbar = () => {
                   {profile?.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
                     <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <DefaultAvatar gender={profile?.gender} className="w-full h-full object-cover" />
+                    <DefaultAvatar gender={profile?.gender} className="w-full h-full object-contain bg-[#e2e8f0]" />
                   )}
                 </Link>
                 {user.isManuallyVerified && (
                   <FaCheckCircle className="absolute -bottom-1 -right-1 text-blue-500 bg-white rounded-full text-sm border-2 border-white" />
                 )}
               </div>
-              
+
               {/* Notification Bell Desktop */}
               <div className="relative" ref={desktopNotifyRef}>
-                <button 
+                <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className={`w-9 h-9 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all relative ${unreadCount > 0 ? 'animate-pulse bg-slate-200' : ''}`}
                   title="Notifications"
@@ -200,7 +200,7 @@ const Navbar = () => {
                       <div className="flex items-center justify-between px-4 pb-2.5 border-b border-slate-100">
                         <span className="text-xs font-bold text-slate-800">Notifications ({unreadCount})</span>
                         {unreadCount > 0 && (
-                          <button 
+                          <button
                             onClick={() => {
                               markAllAsRead();
                             }}
@@ -217,7 +217,7 @@ const Navbar = () => {
                           </div>
                         ) : (
                           notifications.filter(n => !n.isRead).map((n) => (
-                            <div 
+                            <div
                               key={n._id}
                               onClick={() => handleNotificationClick(n)}
                               className="flex items-start gap-3 p-3 hover:bg-slate-50 transition-colors cursor-pointer bg-crimson-50/40 border-l-2 border-crimson-600"
@@ -273,7 +273,7 @@ const Navbar = () => {
             <>
               {/* Notification Bell Mobile */}
               <div className="relative" ref={mobileNotifyRef}>
-                <button 
+                <button
                   onClick={() => {
                     setShowNotifications(!showNotifications);
                     setIsOpen(false);
@@ -296,7 +296,7 @@ const Navbar = () => {
                       <div className="flex items-center justify-between px-3 pb-2 border-b border-slate-100">
                         <span className="text-[10px] font-extrabold text-slate-800">Notifications ({unreadCount})</span>
                         {unreadCount > 0 && (
-                          <button 
+                          <button
                             onClick={() => {
                               markAllAsRead();
                             }}
@@ -313,7 +313,7 @@ const Navbar = () => {
                           </div>
                         ) : (
                           notifications.filter(n => !n.isRead).map((n) => (
-                            <div 
+                            <div
                               key={n._id}
                               onClick={() => handleNotificationClick(n)}
                               className="flex items-start gap-2.5 p-2.5 hover:bg-slate-50 transition-colors cursor-pointer bg-crimson-50/40 border-l-2 border-crimson-600"
@@ -349,7 +349,7 @@ const Navbar = () => {
 
               {/* User Avatar */}
               <div className="relative">
-                <Link 
+                <Link
                   to="/my-profile"
                   onClick={() => setIsOpen(false)}
                   className={`block w-9 h-9 rounded-full overflow-hidden border-2 bg-crimson-950 flex items-center justify-center hover:scale-105 transition-transform ${user.plan === 'elite' ? 'border-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.6)]' : user.plan === 'premium' ? 'border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'border-slate-300'}`}
@@ -358,7 +358,7 @@ const Navbar = () => {
                   {profile?.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
                     <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <DefaultAvatar gender={profile?.gender} className="w-full h-full object-cover" />
+                    <DefaultAvatar gender={profile?.gender} className="w-full h-full object-contain bg-[#e2e8f0]" />
                   )}
                 </Link>
                 {user.isManuallyVerified && (
@@ -369,10 +369,10 @@ const Navbar = () => {
           )}
 
           {location.pathname !== '/login' && location.pathname !== '/register' && (!user || user.role === 'admin') && (
-            <button 
+            <button
               onClick={() => {
                 setIsOpen(!isOpen);
-              }} 
+              }}
               className="text-slate-800 hover:text-[#4f080e] text-2xl focus:outline-none p-1.5"
             >
               {isOpen ? <FaTimes /> : <FaBars />}
@@ -398,19 +398,19 @@ const Navbar = () => {
               <Link to="/activity" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1 transition-colors">Activity</Link>
             </>
           )}
-          
+
           {user && user.role === 'admin' && (
-             <Link to="/admin" onClick={() => setIsOpen(false)} className="bg-gradient-to-r from-gold-400 to-gold-600 text-crimson-950 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 my-2 shadow-md">
-               <FaShieldAlt className="text-crimson-950 text-sm" /> Admin Dashboard
-             </Link>
+            <Link to="/admin" onClick={() => setIsOpen(false)} className="bg-gradient-to-r from-gold-400 to-gold-600 text-crimson-950 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 my-2 shadow-md">
+              <FaShieldAlt className="text-crimson-950 text-sm" /> Admin Dashboard
+            </Link>
           )}
 
           {!isStandalone && (
-            <button 
+            <button
               onClick={() => {
                 alert("To install: Tap your browser menu (⋮) or the 'Share' icon and select 'Install App' or 'Add to Home Screen'.");
                 setIsOpen(false);
-              }} 
+              }}
               className="text-left text-[#4f080e] hover:text-[#7f181e] font-bold py-1 flex items-center gap-1.5 transition-colors border-t border-slate-200 mt-1 pt-3"
             >
               <FaDownload /> Install App
@@ -425,7 +425,7 @@ const Navbar = () => {
                     {profile?.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
                       <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <DefaultAvatar gender={profile?.gender} className="w-full h-full object-cover" />
+                      <DefaultAvatar gender={profile?.gender} className="w-full h-full object-contain bg-[#e2e8f0]" />
                     )}
                   </Link>
                   {user.isManuallyVerified && (

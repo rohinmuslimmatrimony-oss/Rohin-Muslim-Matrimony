@@ -151,8 +151,8 @@ const MyProfilePage = () => {
                 {photoUrl ? (
                   <img src={photoUrl} alt="Profile" className={`w-full h-full rounded-full object-cover p-2 border-2 ${isAdmin ? 'border-gold-500 shadow-[0_0_15px_rgba(212,175,55,0.15)] bg-white group-hover:scale-105 transition-transform duration-300' : user?.plan === 'elite' ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.15)] bg-white' : user?.plan === 'premium' ? 'border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.15)] bg-white' : 'border-transparent bg-white'}`} />
                 ) : (
-                  <div className={`w-full h-full rounded-full flex items-center justify-center p-2 border-2 ${isAdmin ? 'bg-white border-gold-500 shadow-[0_0_15px_rgba(212,175,55,0.15)] group-hover:scale-105 transition-transform duration-300' : 'bg-white ' + (user?.plan === 'elite' ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.15)]' : user?.plan === 'premium' ? 'border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-transparent')}`}>
-                    <DefaultAvatar gender={profile?.gender} className={`w-full h-full rounded-full object-cover ${isAdmin ? 'brightness-0 invert opacity-90' : ''}`} />
+                  <div className={`w-full h-full rounded-full flex items-center justify-center p-2 border-2 ${isAdmin ? 'bg-white border-gold-500 shadow-[0_0_15px_rgba(212,175,55,0.15)] group-hover:scale-105 transition-transform duration-300' : 'bg-[#e2e8f0] ' + (user?.plan === 'elite' ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.15)]' : user?.plan === 'premium' ? 'border-[#10b981] shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-transparent')}`}>
+                    <DefaultAvatar gender={profile?.gender} className={`w-full h-full rounded-full object-contain bg-[#e2e8f0] ${isAdmin ? 'brightness-0 invert opacity-90' : ''}`} />
                   </div>
                 )}
                 

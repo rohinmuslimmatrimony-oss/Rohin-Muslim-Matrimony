@@ -273,8 +273,8 @@ const UserProfile = () => {
                 {profile.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' && profile.profilePhoto !== '/uploads/blurred-avatar.png' ? (
                   <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt={profile.name} className="w-full h-full object-cover rounded-full" />
                 ) : (
-                  <div className="w-full h-full relative rounded-full overflow-hidden bg-slate-200">
-                    <DefaultAvatar gender={profile.gender} className={`w-full h-full object-cover rounded-full ${profile.profilePhoto === '/uploads/blurred-avatar.png' ? 'blur-md opacity-60' : ''}`} />
+                  <div className="w-full h-full relative rounded-full overflow-hidden bg-[#e2e8f0]">
+                    <DefaultAvatar gender={profile.gender} className={`w-full h-full object-contain bg-[#e2e8f0] rounded-full ${profile.profilePhoto === '/uploads/blurred-avatar.png' ? 'blur-md opacity-60' : ''}`} />
                     {profile.profilePhoto === '/uploads/blurred-avatar.png' && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/10">
                         <div className="bg-black/40 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center shadow-lg border border-white/20">
