@@ -115,6 +115,28 @@ const ProfileSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    privacySettings: {
+      mobile: {
+        type: String,
+        enum: ['all_paid', 'community_paid', 'contacted_paid', 'hidden'],
+        default: 'all_paid',
+      },
+      photo: {
+        type: String,
+        enum: ['all', 'premium_elite', 'connections', 'hidden'],
+        default: 'all',
+      },
+      horoscope: {
+        type: String,
+        enum: ['all', 'connections', 'hidden'],
+        default: 'all',
+      },
+      profile: {
+        type: String,
+        enum: ['all', 'connections', 'hidden'],
+        default: 'all',
+      }
+    },
     gallery: [{
       type: String,
     }],

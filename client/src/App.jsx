@@ -28,6 +28,7 @@ import KycVerificationPage from './pages/KycVerificationPage';
 import PaymentInfoPage from './pages/PaymentInfoPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import SupportPage from './pages/SupportPage';
+import PrivacySettings from './pages/PrivacySettings';
 
 // Protected Route Guard (Must be logged in)
 const ProtectedRoute = ({ children }) => {
@@ -137,6 +138,7 @@ function AppContent() {
           <Route path="/verify-identity" element={<ProtectedRoute><KycVerificationPage /></ProtectedRoute>} />
           <Route path="/payment-info" element={<ProtectedRoute><PaymentInfoPage /></ProtectedRoute>} />
           <Route path="/blocked-users" element={<ProtectedRoute><BlockedUsersPage /></ProtectedRoute>} />
+          <Route path="/privacy-settings" element={<ProtectedRoute><PrivacySettings /></ProtectedRoute>} />
           <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
 
           {/* Admin Management Views */}

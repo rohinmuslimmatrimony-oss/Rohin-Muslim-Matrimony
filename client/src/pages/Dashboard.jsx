@@ -379,8 +379,8 @@ const Dashboard = () => {
                  </div>
                </div>
                
-               <button onClick={() => navigate('/edit-profile')} className="relative z-10 w-full py-2 border-2 border-crimson-900 text-crimson-950 rounded-lg text-sm font-bold hover:bg-crimson-50 transition-colors">
-                 Update Profile &amp; Privacy
+               <button onClick={() => navigate('/privacy-settings')} className="relative z-10 w-full py-2 border-2 border-crimson-900 text-crimson-950 rounded-lg text-sm font-bold hover:bg-crimson-50 transition-colors">
+                 Manage Privacy Settings
                </button>
              </div>
           </div>
