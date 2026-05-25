@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaEnvelope, FaLock, FaArrowRight, FaEye, FaEyeSlash, FaRegUser } from 'react-icons/fa';
 import logo3 from '../assets/logo3.png';
+import loginPageLogo from '../assets/login page logo.png';
 import islamicBg from '../assets/islamic_bg_login.png';
 
 const Login = () => {
@@ -150,25 +151,25 @@ const Login = () => {
 
       {/* ===================== DESKTOP VIEW ===================== */}
       <div 
-        className="hidden md:flex min-h-[85vh] items-center justify-center px-4 py-10 sm:py-16 relative bg-cover bg-center overflow-hidden"
+        className="hidden md:flex h-[calc(100vh-85px)] items-center justify-center px-4 relative bg-cover bg-center overflow-hidden"
         style={{ backgroundImage: `url(${islamicBg})` }}
       >
       {/* Dark Overlay to give depth and ensure card contrast */}
-      <div className="absolute inset-0 bg-black/30 z-0 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-black/35 z-0 pointer-events-none"></div>
 
       {/* Card Wrapper (Responsive, no overflow-hidden) */}
       <div className="w-[92%] sm:w-full max-w-md relative z-10">
         
         {/* Login Card */}
-        <div className="w-full bg-[#180205]/18 backdrop-blur-[4px] rounded-2xl sm:rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-gold-500/30 p-6 sm:p-8 md:p-10 relative">
+        <div className="w-full bg-gradient-to-b from-[#850f1d]/95 to-[#240307]/98 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9),_0_0_30px_rgba(212,175,55,0.25)] border-2 border-[#d4af37] p-6 sm:p-7 md:p-8 relative">
           
           {/* Logo and Greeting */}
-          <div className="flex flex-col items-center gap-1.5 mb-4 sm:mb-6 text-center">
+          <div className="flex flex-col items-center gap-0.5 mb-3 sm:mb-4 text-center">
             <Link to="/" className="group" title="Navigate to Home">
-              <img src={logo3} alt="Rohin Muslim Matrimony Logo" className="hidden sm:block h-16 w-auto object-contain hover:scale-105 transition-transform duration-300 brightness-110" />
+              <img src={loginPageLogo} alt="Rohin Muslim Matrimony Logo" className="hidden sm:block h-28 w-auto object-contain hover:scale-105 transition-transform duration-300 brightness-110" />
             </Link>
-            <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-bold font-serif sm:mt-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Welcome Back</h2>
-            <p className="text-white/80 text-xs sm:text-sm font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Please log in to your halal matrimony account</p>
+            <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-bold font-serif drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Welcome Back</h2>
+            <p className="text-white/85 text-xs sm:text-sm font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Please log in to your halal matrimony account</p>
           </div>
 
           {/* Login Form */}
@@ -179,7 +180,7 @@ const Login = () => {
                 Email Address
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-white/60">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]">
                   <FaEnvelope className="text-xs sm:text-sm" />
                 </span>
                 <input
@@ -189,7 +190,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="enter your email address"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-semibold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]"
                 />
               </div>
             </div>
@@ -202,7 +203,7 @@ const Login = () => {
                 </label>
               </div>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-white/60">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]">
                   <FaLock className="text-xs sm:text-sm" />
                 </span>
                 <input
@@ -212,12 +213,12 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="enter password"
-                  className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-semibold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/60 hover:text-white transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#ffd666]/70 hover:text-[#ffd666] transition-colors"
                   title={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <FaEyeSlash className="text-xs sm:text-sm" /> : <FaEye className="text-xs sm:text-sm" />}

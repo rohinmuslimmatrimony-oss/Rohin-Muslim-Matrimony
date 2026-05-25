@@ -201,7 +201,7 @@ const Register = () => {
 
       {/* ===================== DESKTOP VIEW ===================== */}
       <div 
-        className="hidden md:flex min-h-[90vh] items-center justify-center px-3 sm:px-4 py-2 sm:py-12 relative bg-cover bg-center overflow-hidden"
+        className="hidden md:flex h-[calc(100vh-85px)] items-center justify-center px-3 sm:px-4 relative bg-cover bg-center overflow-hidden"
         style={{ 
           backgroundImage: `linear-gradient(rgba(20, 1, 3, 0.4), rgba(20, 1, 3, 0.55)), url(${islamicBg})`,
           backgroundAttachment: 'scroll' 
@@ -212,28 +212,28 @@ const Register = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-gold-600/10 rounded-full blur-[120px]"></div>
 
         {/* Register Glass Card */}
-        <div className="w-full max-w-md bg-[#180205]/18 backdrop-blur-[4px] rounded-2xl sm:rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.85)] border border-gold-500/30 pt-3 pb-2.5 px-4 sm:p-7 relative z-10">
+        <div className="w-full max-w-md bg-gradient-to-b from-[#850f1d]/95 to-[#240307]/98 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9),_0_0_30px_rgba(212,175,55,0.25)] border-2 border-[#d4af37] p-4 sm:p-5 relative z-10">
           
-          {/* Top Sleek Header Box (No Logo, Compact) */}
-          <div className="bg-[#4a040b]/40 rounded-xl px-4 py-1 border border-gold-500/15 text-center mb-2.5 relative">
-            <h2 className="text-white text-sm sm:text-base md:text-lg font-serif font-extrabold tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">Create Free Account</h2>
-            <p className="text-[#ffd666] text-[7.5px] sm:text-[9px] font-bold tracking-widest uppercase mt-0.5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">10-Second Fast Registration</p>
+          {/* Header Text */}
+          <div className="text-center mb-2 sm:mb-2.5">
+            <h2 className="text-[#ffd666] text-base sm:text-lg md:text-xl font-bold font-serif drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Create Free Account</h2>
+            <p className="text-white/80 text-[7.5px] sm:text-[9px] font-bold tracking-widest uppercase mt-0.5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">10-Second Fast Registration</p>
           </div>
 
           {errorMsg && (
-            <div className="bg-red-950/65 text-red-200 text-xs font-semibold p-1.5 rounded-xl border border-red-500/30 mb-2.5 animate-fadeIn">
+            <div className="bg-red-950/65 text-red-200 text-xs font-semibold p-1.5 rounded-xl border border-red-500/30 mb-2 animate-fadeIn">
               ⚠️ {errorMsg}
             </div>
           )}
 
           {/* Single-Step Form */}
-          <form onSubmit={handleSubmit} className="space-y-1.5 sm:space-y-3.5 text-left">
+          <form onSubmit={handleSubmit} className="space-y-1.5 sm:space-y-2 text-left">
             
             {/* Full Name */}
             <div className="space-y-0.5">
               <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Full Name</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60"><FaUser className="text-xs sm:text-sm" /></span>
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaUser className="text-xs sm:text-sm" /></span>
                 <input 
                   type="text" 
                   required 
@@ -241,7 +241,7 @@ const Register = () => {
                   value={formData.name} 
                   onChange={handleChange} 
                   placeholder="e.g. Shaik Habib" 
-                  className="w-full pl-8 pr-4 py-1 sm:py-2 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400 font-semibold" 
+                  className="w-full pl-10 pr-4 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-bold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
                 />
               </div>
             </div>
@@ -250,7 +250,7 @@ const Register = () => {
             <div className="space-y-0.5">
               <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Email Address</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60"><FaEnvelope className="text-xs sm:text-sm" /></span>
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaEnvelope className="text-xs sm:text-sm" /></span>
                 <input 
                   type="email" 
                   required 
@@ -258,7 +258,7 @@ const Register = () => {
                   value={formData.email} 
                   onChange={handleChange} 
                   placeholder="you@domain.com" 
-                  className="w-full pl-8 pr-4 py-1 sm:py-2 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400 font-semibold" 
+                  className="w-full pl-10 pr-4 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-bold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
                 />
               </div>
             </div>
@@ -267,7 +267,7 @@ const Register = () => {
             <div className="space-y-0.5">
               <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Password</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60"><FaLock className="text-xs sm:text-sm" /></span>
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaLock className="text-xs sm:text-sm" /></span>
                 <input 
                   type={showPassword ? 'text' : 'password'} 
                   required 
@@ -276,12 +276,12 @@ const Register = () => {
                   value={formData.password} 
                   onChange={handleChange} 
                   placeholder="Minimum 6 characters" 
-                  className="w-full pl-8 pr-10 py-1 sm:py-2 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400 font-semibold" 
+                  className="w-full pl-10 pr-10 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-bold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/60 hover:text-white transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#ffd666]/70 hover:text-[#ffd666] transition-colors"
                   title={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <FaEyeSlash className="text-xs sm:text-sm" /> : <FaEye className="text-xs sm:text-sm" />}
@@ -294,22 +294,22 @@ const Register = () => {
               <div className="space-y-0.5">
                 <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Gender</label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60"><FaVenusMars className="text-xs sm:text-sm" /></span>
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaVenusMars className="text-xs sm:text-sm" /></span>
                   <select 
                     name="gender" 
                     value={formData.gender} 
                     onChange={handleChange} 
-                    className="w-full pl-8 pr-4 py-1 sm:py-2 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400 font-semibold appearance-none"
+                    className="w-full pl-10 pr-4 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/45 font-bold appearance-none shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]"
                   >
-                    <option className="bg-slate-900 text-white font-semibold" value="male">Male</option>
-                    <option className="bg-slate-900 text-white font-semibold" value="female">Female</option>
+                    <option className="bg-[#1e0205] text-white font-bold" value="male">Male</option>
+                    <option className="bg-[#1e0205] text-white font-bold" value="female">Female</option>
                   </select>
                 </div>
               </div>
               <div className="space-y-0.5">
                 <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Age</label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60"><FaCalendarAlt className="text-xs sm:text-sm" /></span>
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaCalendarAlt className="text-xs sm:text-sm" /></span>
                   <input 
                     type="number" 
                     required 
@@ -318,7 +318,7 @@ const Register = () => {
                     name="age" 
                     value={formData.age} 
                     onChange={handleChange} 
-                    className="w-full pl-8 pr-4 py-1 sm:py-2 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400 font-semibold" 
+                    className="w-full pl-10 pr-4 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-bold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
                   />
                 </div>
               </div>
@@ -328,7 +328,7 @@ const Register = () => {
             <div className="space-y-0.5">
               <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">City</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/60"><FaCity className="text-xs sm:text-sm" /></span>
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaCity className="text-xs sm:text-sm" /></span>
                 <input 
                   type="text" 
                   required 
@@ -336,7 +336,7 @@ const Register = () => {
                   value={formData.city} 
                   onChange={handleChange} 
                   placeholder="e.g. Hyderabad, Vijayawada" 
-                  className="w-full pl-8 pr-4 py-1 sm:py-2 rounded-xl bg-black/15 border border-white/20 focus:border-white/40 focus:ring-1 focus:ring-white/40 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-slate-400 font-semibold" 
+                  className="w-full pl-10 pr-4 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-bold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
                 />
               </div>
             </div>
@@ -346,7 +346,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || loading}
-                className="w-full bg-gold-gradient text-crimson-950 font-bold py-1.5 sm:py-2.5 rounded-xl shadow-lg hover:shadow-gold-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 mt-0.5 sm:mt-2 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gold-gradient text-crimson-950 font-bold py-1.5 sm:py-2 rounded-xl shadow-lg hover:shadow-gold-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <span className="w-5 h-5 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
@@ -358,7 +358,7 @@ const Register = () => {
           </form>
 
           {/* Redirect */}
-          <p className="text-white/85 text-[10px] sm:text-sm text-center mt-2 sm:mt-5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+          <p className="text-white/85 text-[10px] sm:text-sm text-center mt-2 sm:mt-2.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
             Already registered?{' '}
             <Link to="/login" className="text-[#ffd666] font-bold hover:underline hover:text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">
               Sign In here
