@@ -87,6 +87,133 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #b28e28;
   }
+
+  /* Ornate Matrimony Unique Card Borders */
+  .unique-card-gold {
+    position: relative;
+    border: 3.5px solid #d4af37;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25), inset 0 0 0 1px rgba(212,175,55,0.08);
+    transition: all 0.3s ease;
+  }
+
+  .unique-card-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(212, 175, 55, 0.35);
+    border-color: #ebd94e;
+  }
+
+  .unique-card-gold::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1.5px solid rgba(79, 8, 14, 0.5);
+    border-radius: 5px;
+    pointer-events: none;
+  }
+
+  .unique-card-gold::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23d4af37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23d4af37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23d4af37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23d4af37'/%3E%3C/svg%3E");
+    background-position: 
+      top 3px left 3px, 
+      top 3px right 3px, 
+      bottom 3px left 3px, 
+      bottom 3px right 3px;
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+  }
+
+  .unique-card-crimson {
+    position: relative;
+    border: 3.5px solid #7a0e19;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(79, 8, 14, 0.18), inset 0 0 0 1px rgba(79,8,14,0.05);
+    transition: all 0.3s ease;
+  }
+
+  .unique-card-crimson:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(79, 8, 14, 0.28);
+    border-color: #9e1520;
+  }
+
+  .unique-card-crimson::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1.5px solid rgba(212, 175, 55, 0.6);
+    border-radius: 5px;
+    pointer-events: none;
+  }
+
+  .unique-card-crimson::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23b28e28'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23b28e28'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23b28e28'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpolygon points='5,0 6.2,3.8 10,5 6.2,6.2 5,10 3.8,6.2 0,5 3.8,3.8' fill='%23b28e28'/%3E%3C/svg%3E");
+    background-position: 
+      top 3px left 3px, 
+      top 3px right 3px, 
+      bottom 3px left 3px, 
+      bottom 3px right 3px;
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+  }
+
+  .unique-card-hybrid {
+    position: relative;
+    border: 3px solid rgba(212, 175, 55, 0.85);
+    border-radius: 8px;
+    box-shadow: 0 4px 18px rgba(212, 175, 55, 0.15), 0 1px 6px rgba(79,8,14,0.06);
+    transition: all 0.3s ease;
+  }
+
+  .unique-card-hybrid:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.22);
+    border-color: #d4af37;
+  }
+
+  .unique-card-hybrid::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1.5px dashed rgba(79, 8, 14, 0.4);
+    border-radius: 5px;
+    pointer-events: none;
+  }
+
+  .unique-card-hybrid::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='2' fill='%23d4af37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='2' fill='%23d4af37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='2' fill='%23d4af37'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='2' fill='%23d4af37'/%3E%3C/svg%3E");
+    background-position: 
+      top 4px left 4px, 
+      top 4px right 4px, 
+      bottom 4px left 4px, 
+      bottom 4px right 4px;
+    background-repeat: no-repeat;
+    background-size: 8px 8px;
+  }
 }
 
 /* Micro-animations */
@@ -147,6 +274,10 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
 }
 
 .animate-slideUp {

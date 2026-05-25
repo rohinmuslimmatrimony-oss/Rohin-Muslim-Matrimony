@@ -6,6 +6,9 @@ import { SOCKET_BASE_URL } from '../services/api';
 import DefaultAvatar from './DefaultAvatar';
 
 import logo3 from '../assets/logo3.png';
+import basicBadge from '../assets/basic-badge.png';
+import premiumBadge from '../assets/premium-badge.png';
+import eliteBadge from '../assets/elite-badge.png';
 
 const Navbar = () => {
   const { 
@@ -87,24 +90,19 @@ const Navbar = () => {
   };
 
   const renderPlanBadge = (plan) => {
-    if (plan === 'premium') {
-      return (
-        <span className="flex items-center gap-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-300">
-          <FaCrown className="text-[8px]" /> Premium
-        </span>
-      );
-    }
-    if (plan === 'elite') {
-      return (
-        <span className="flex items-center gap-0.5 bg-gold-50 text-gold-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-gold-300">
-          <FaCrown className="text-[8px]" /> Elite
-        </span>
-      );
-    }
+    const badgeSrc = plan === 'elite' ? eliteBadge : plan === 'premium' ? premiumBadge : basicBadge;
+    const planColors = plan === 'elite' ? 'text-amber-600' : plan === 'premium' ? 'text-crimson-700' : 'text-slate-600';
     return (
-      <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300">
-        Free
-      </span>
+      <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+        <img 
+          src={badgeSrc} 
+          alt={`${plan} badge`} 
+          className="h-20 w-auto object-contain" 
+        />
+        <span className={`text-[10px] font-extrabold uppercase tracking-widest ${planColors}`}>
+          {plan}
+        </span>
+      </div>
     );
   };
 
@@ -152,18 +150,19 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4">
-              <div className="flex flex-col text-right">
-                <span className="text-sm font-bold text-slate-800">{user?.role === 'admin' ? 'Administrator' : (profile?.name || 'Member')}</span>
-                <span className="flex justify-end mt-0.5">
-                  {user?.role === 'admin' ? (
-                    <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white shadow-sm flex items-center gap-1">
-                      <FaShieldAlt className="text-crimson-500 text-[9px]" />
-                      ADMIN
-                    </span>
-                  ) : (
-                    renderPlanBadge(user.plan)
-                  )}
-                </span>
+              <div className="flex items-center gap-2">
+                {user?.role !== 'admin' && renderPlanBadge(user.plan)}
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                    {user?.role === 'admin' && (
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white shadow-sm flex items-center gap-1">
+                        <FaShieldAlt className="text-crimson-500 text-[9px]" />
+                        ADMIN
+                      </span>
+                    )}
+                    {user?.role === 'admin' ? 'Administrator' : (profile?.name || 'Member')}
+                  </span>
+                </div>
               </div>
               <div className="relative">
                 <Link to="/my-profile" className={`block w-10 h-10 rounded-full overflow-hidden border-2 bg-crimson-950 flex items-center justify-center hover:scale-105 transition-transform ${user.plan === 'elite' ? 'border-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.6)]' : user.plan === 'premium' ? 'border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'border-slate-300'}`}>
@@ -433,18 +432,19 @@ const Navbar = () => {
                     <FaCheckCircle className="absolute -bottom-0.5 -right-0.5 text-blue-500 bg-white rounded-full text-[14px] border-2 border-white" />
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-slate-800 text-sm font-bold">{user?.role === 'admin' ? 'Administrator' : (profile?.name || 'Member')}</span>
-                  <span className="flex mt-0.5">
-                    {user?.role === 'admin' ? (
-                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white shadow-sm flex items-center gap-1">
-                        <FaShieldAlt className="text-crimson-500 text-[9px]" />
-                        ADMIN
-                      </span>
-                    ) : (
-                      renderPlanBadge(user.plan)
-                    )}
-                  </span>
+                <div className="flex items-center gap-2">
+                  {user?.role !== 'admin' && renderPlanBadge(user.plan)}
+                  <div className="flex flex-col text-left">
+                    <span className="text-slate-800 text-sm font-bold flex items-center gap-1.5">
+                      {user?.role === 'admin' && (
+                        <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white shadow-sm flex items-center gap-1">
+                          <FaShieldAlt className="text-crimson-500 text-[9px]" />
+                          ADMIN
+                        </span>
+                      )}
+                      {user?.role === 'admin' ? 'Administrator' : (profile?.name || 'Member')}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button onClick={handleLogout} className="flex items-center gap-1.5 text-slate-700 hover:text-red-600 font-semibold py-1.5 transition-colors">
