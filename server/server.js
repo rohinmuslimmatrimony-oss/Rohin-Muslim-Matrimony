@@ -41,7 +41,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mount routes
+// Mount routes (with /api for local dev)
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/profiles', require('./routes/profileRoutes'));
 app.use('/api/requests', require('./routes/requestRoutes'));
@@ -52,24 +52,40 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/kyc', require('./routes/kycRoutes'));
 
+// Mount routes (without /api for cPanel Passenger which strips the sub-URI)
+app.use('/auth', require('./routes/authRoutes'));
+app.use('/profiles', require('./routes/profileRoutes'));
+app.use('/requests', require('./routes/requestRoutes'));
+app.use('/gallery-requests', require('./routes/galleryRequestRoutes'));
+app.use('/messages', require('./routes/messageRoutes'));
+app.use('/admin', require('./routes/adminRoutes'));
+app.use('/reports', require('./routes/reportRoutes'));
+app.use('/notifications', require('./routes/notificationRoutes'));
+app.use('/kyc', require('./routes/kycRoutes'));
+
 // Public Platform Settings (Pricing)
 app.get('/api/settings', require('./controllers/adminController').getSettings);
+app.get('/settings', require('./controllers/adminController').getSettings);
 
 // Public Success Stories route
 const SuccessStory = require('./models/SuccessStory');
-app.get('/api/success-stories', async (req, res) => {
+const successStoriesHandler = async (req, res) => {
   try {
     const stories = await SuccessStory.find({ isPublished: true }).sort({ createdAt: -1 });
     res.status(200).json({ success: true, count: stories.length, data: stories });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-});
+};
+app.get('/api/success-stories', successStoriesHandler);
+app.get('/success-stories', successStoriesHandler);
 
 // Basic health check route
-app.get('/api/health', (req, res) => {
+const healthCheckHandler = (req, res) => {
   res.status(200).json({ success: true, message: 'Muslim Matrimony API is healthy and running!' });
-});
+};
+app.get('/api/health', healthCheckHandler);
+app.get('/health', healthCheckHandler);
 
 // Socket.io Real-Time Connection Handling
 io.on('connection', (socket) => {
