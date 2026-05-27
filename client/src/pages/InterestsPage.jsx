@@ -57,7 +57,7 @@ const InterestsPage = () => {
     fetchRequests();
     fetchConnections();
     
-    socketRef.current = io(SOCKET_BASE_URL);
+    socketRef.current = io(SOCKET_BASE_URL, { path: '/api/socket.io' });
     if (user?._id) {
       socketRef.current.emit('join_room', user._id);
     }

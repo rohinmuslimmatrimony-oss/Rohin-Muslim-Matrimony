@@ -16,6 +16,7 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
+  path: '/api/socket.io',
   cors: {
     origin: '*', // Adjust for production safety
     methods: ['GET', 'POST', 'PUT', 'DELETE']

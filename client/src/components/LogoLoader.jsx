@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import logo3 from '../assets/logo3.png';
+import logo3 from '../assets/logo.png';
 
 const LogoLoader = ({ fullScreen = false, text = 'Loading Blessings...' }) => {
   const [displayedText, setDisplayedText] = useState('');

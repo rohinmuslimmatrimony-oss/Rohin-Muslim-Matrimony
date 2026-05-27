@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let socket;
     if (user?._id) {
-      socket = io(SOCKET_BASE_URL);
+      socket = io(SOCKET_BASE_URL, { path: '/api/socket.io' });
       
       socket.emit('join_room', user._id);
       

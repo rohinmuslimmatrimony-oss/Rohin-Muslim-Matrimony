@@ -5,10 +5,7 @@ import { FaMoon, FaUser, FaSignOutAlt, FaCrown, FaBars, FaTimes, FaSearch, FaHea
 import { SOCKET_BASE_URL } from '../services/api';
 import DefaultAvatar from './DefaultAvatar';
 
-import logo3 from '../assets/logo3.png';
-import basicBadge from '../assets/basic-badge.png';
-import premiumBadge from '../assets/premium-badge.png';
-import eliteBadge from '../assets/elite-badge.png';
+import logo3 from '../assets/logo.png';
 
 const Navbar = () => {
   const {
@@ -89,22 +86,7 @@ const Navbar = () => {
       : 'text-slate-700 hover:text-[#4f080e] font-semibold';
   };
 
-  const renderPlanBadge = (plan) => {
-    const badgeSrc = plan === 'elite' ? eliteBadge : plan === 'premium' ? premiumBadge : basicBadge;
-    const planColors = plan === 'elite' ? 'text-amber-600' : plan === 'premium' ? 'text-crimson-700' : 'text-slate-600';
-    return (
-      <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-        <img
-          src={badgeSrc}
-          alt={`${plan} badge`}
-          className="h-20 w-auto object-contain"
-        />
-        <span className={`text-[10px] font-extrabold uppercase tracking-widest ${planColors}`}>
-          {plan}
-        </span>
-      </div>
-    );
-  };
+
 
   return (
     <nav className="w-full bg-[#faf9f6] border-b border-[#d4af37]/35 py-3.5 px-4 md:px-8 transition-colors shadow-lg">
@@ -151,7 +133,6 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                {user?.role !== 'admin' && renderPlanBadge(user.plan)}
                 <div className="flex flex-col text-left">
                   <span className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
                     {user?.role === 'admin' && (
@@ -433,7 +414,6 @@ const Navbar = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  {user?.role !== 'admin' && renderPlanBadge(user.plan)}
                   <div className="flex flex-col text-left">
                     <span className="text-slate-800 text-sm font-bold flex items-center gap-1.5">
                       {user?.role === 'admin' && (

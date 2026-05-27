@@ -70,7 +70,7 @@ const MobileChatRoom = () => {
     fetchChatHistory();
 
     // 3. Initialize Socket.io Connection
-    socketRef.current = io(SOCKET_BASE_URL);
+    socketRef.current = io(SOCKET_BASE_URL, { path: '/api/socket.io' });
     if (user?._id) {
       socketRef.current.emit('join_room', user._id);
     }

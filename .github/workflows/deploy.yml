@@ -40,6 +40,10 @@ jobs:
           <IfModule mod_rewrite.c>
               RewriteEngine On
               RewriteBase /
+              
+              # Forward /uploads to the Node.js backend
+              RewriteRule ^uploads/(.*)$ /api/uploads/$1 [L,PT]
+              
               RewriteRule ^index\.html$ - [L]
               # Ignore /api requests so they can reach Node.js backend
               RewriteCond %{REQUEST_URI} !^/api [NC]
