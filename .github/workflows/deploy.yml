@@ -1,0 +1,102 @@
+name: Deploy to cPanel (rohinmuslimmatrimony.com)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ─────────────────────────────────────────
+  # JOB 1: Build & Deploy Frontend (React)
+  # ─────────────────────────────────────────
+  deploy-frontend:
+    name: Build & Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Build React app
+        run: npm run build
+        working-directory: client
+        env:
+          VITE_API_URL: https://rohinmuslimmatrimony.com/api
+
+      - name: Create .htaccess for React SPA routing
+        run: |
+          cat > client/dist/.htaccess << 'EOF'
+          <IfModule mod_rewrite.c>
+              RewriteEngine On
+              RewriteBase /
+              RewriteRule ^index\.html$ - [L]
+              RewriteCond %{REQUEST_FILENAME} !-f
+              RewriteCond %{REQUEST_FILENAME} !-d
+              RewriteRule . /index.html [L]
+          </IfModule>
+          EOF
+
+      - name: Deploy frontend to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: client/dist/
+          server-dir: /rohinmuslimmatrimony.com/
+          dangerous-clean-slate: false
+
+  # ─────────────────────────────────────────
+  # JOB 2: Deploy Backend (Node.js)
+  # ─────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create server .env file
+        run: |
+          cat > server/.env << 'EOF'
+          PORT=5000
+          MONGO_URI=mongodb+srv://rohinmuslimmatrimony_db_user:rdXYKfglh2chFptr@cluster0.0pnsi3n.mongodb.net/muslim-matrimony?retryWrites=true&w=majority&appName=Cluster0
+          JWT_SECRET=muslim_matrimony_mvp_secret_key_2026_halal_love
+          NODE_ENV=production
+          PAYMENT_GATEWAY_MODE=mock_razorpay
+          MOCK_MERCHANT_KEY=mock_rzp_live_xxx123
+          MOCK_MERCHANT_SECRET=mock_rzp_secret_xxx123
+          EMAIL_HOST=smtp.gmail.com
+          EMAIL_PORT=587
+          EMAIL_SECURE=false
+          EMAIL_USER=webnappstudio@gmail.com
+          EMAIL_PASS=ahyyebsdxtiwzdoq
+          VAPID_PUBLIC_KEY=BCsipIoyavxdG_xn-wVwitQ3f3hjG-g1IhJ-yHG9EyFSjx7j8qtmHCpE1tXGIZ0TESV4IEMP25zVz5m9xbwKGgE
+          VAPID_PRIVATE_KEY=wdAb8oMLtV5Bs3uPgyTjVAqKTHQLPqXwP4Pd81UH2fU
+          EOF
+
+      - name: Deploy backend to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: server/
+          server-dir: /backend/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+          dangerous-clean-slate: false
