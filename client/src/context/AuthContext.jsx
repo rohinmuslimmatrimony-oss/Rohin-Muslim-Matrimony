@@ -286,15 +286,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.post('/auth/login', { email, password });
       
-      if (res.data.success) {
+      if (res.data && res.data.success) {
         localStorage.setItem('token', res.data.token);
         setUser(res.data.user);
         setProfile(res.data.profile);
         toast.success(`Welcome back, ${res.data.profile?.name || 'Member'}!`);
         return { success: true, role: res.data.user.role };
+      } else {
+        const msg = res.data?.message || 'Login failed. Invalid response from server.';
+        toast.error(msg);
+        return { success: false, error: msg };
       }
     } catch (error) {
-      const msg = error.response?.data?.message || 'Login failed. Invalid credentials.';
+      const msg = error.response?.data?.message || 'Login failed. Invalid credentials or server error.';
       toast.error(msg);
       return { success: false, error: msg };
     }
