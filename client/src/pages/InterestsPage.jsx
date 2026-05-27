@@ -57,7 +57,7 @@ const InterestsPage = () => {
     fetchRequests();
     fetchConnections();
     
-    socketRef.current = io(SOCKET_BASE_URL, { path: '/api/socket.io' });
+    socketRef.current = io(SOCKET_BASE_URL, { path: '/api/socket.io', reconnectionAttempts: 0, timeout: 5000 }); // TODO: Remove reconnectionAttempts & timeout when moved to VPS/Cloud (WebSocket-supported server)
     if (user?._id) {
       socketRef.current.emit('join_room', user._id);
     }

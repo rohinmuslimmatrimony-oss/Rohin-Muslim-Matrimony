@@ -11,9 +11,6 @@ import SimpleSpinner from '../components/SimpleSpinner';
 import MobileMatchesFeed from '../components/MobileMatchesFeed';
 import SupportContactCard from '../components/SupportContactCard';
 
-import basicBadge from '../assets/basic-badge.png';
-import premiumBadge from '../assets/premium-badge.png';
-import eliteBadge from '../assets/elite-badge.png';
 
 const Dashboard = () => {
   const { user, profile, refreshUser, getCompleteness } = useContext(AuthContext);
@@ -313,17 +310,6 @@ const Dashboard = () => {
           <div className={`${user.plan === 'elite' ? 'unique-card-gold' : user.plan === 'premium' ? 'unique-card-crimson' : 'unique-card-hybrid'} p-4 md:py-3 md:px-4 md:h-[170px] flex flex-col justify-between overflow-hidden`}>
             <div className="relative">
               <h3 className="text-[#4f080e] text-sm font-bold uppercase tracking-wider mb-2">Current Membership</h3>
-              {/* Badge pinned to right, absolutely positioned so it doesn't overflow */}
-              <div className="absolute top-0 right-0 flex flex-col items-center gap-0.5">
-                <img
-                  src={user.plan === 'elite' ? eliteBadge : user.plan === 'premium' ? premiumBadge : basicBadge}
-                  alt={`${user.plan} badge`}
-                  className="h-24 w-auto object-contain"
-                />
-                <span className={`text-[10px] font-extrabold uppercase tracking-widest ${user.plan === 'elite' ? 'text-amber-600' : user.plan === 'premium' ? 'text-crimson-600' : 'text-slate-500'}`}>
-                  {user.plan}
-                </span>
-              </div>
               <span className={`text-3xl md:text-4xl font-serif font-bold capitalize block mb-1 ${user.plan === 'elite' ? 'text-gold-600' : user.plan === 'premium' ? 'text-crimson-600' : 'text-crimson-950'}`}>
                 {user.plan}
               </span>

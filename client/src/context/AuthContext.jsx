@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let socket;
     if (user?._id) {
-      socket = io(SOCKET_BASE_URL, { path: '/api/socket.io' });
+      socket = io(SOCKET_BASE_URL, { path: '/api/socket.io', reconnectionAttempts: 0, timeout: 5000 }); // TODO: Remove reconnectionAttempts & timeout when moved to VPS/Cloud (WebSocket-supported server)
       
       socket.emit('join_room', user._id);
       
