@@ -10,6 +10,34 @@ import {
 import SimpleSpinner from '../components/SimpleSpinner';
 import MobileMatchesFeed from '../components/MobileMatchesFeed';
 import SupportContactCard from '../components/SupportContactCard';
+import DesktopDailyRecommendationsModal from '../components/DesktopDailyRecommendationsModal';
+
+// Helper: get today's localStorage key for daily viewed profiles
+const getDailyViewedKey = (userId) => {
+  const today = new Date().toISOString().slice(0, 10); // e.g. "2026-06-09"
+  return `daily_viewed_${userId}_${today}`;
+};
+
+const getDailyViewedIds = (userId) => {
+  try {
+    const raw = localStorage.getItem(getDailyViewedKey(userId));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const addDailyViewedId = (userId, profileUserId) => {
+  try {
+    const key = getDailyViewedKey(userId);
+    const existing = getDailyViewedIds(userId);
+    if (!existing.includes(profileUserId)) {
+      existing.push(profileUserId);
+      localStorage.setItem(key, JSON.stringify(existing));
+    }
+  } catch {}
+};
+
 
 
 const Dashboard = () => {
@@ -34,6 +62,108 @@ const Dashboard = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Daily Recommendations States
+  const [dailyProfiles, setDailyProfiles] = useState([]);
+  const [currentDailyIdx, setCurrentDailyIdx] = useState(0);
+  const [loadingDaily, setLoadingDaily] = useState(true);
+  const [showDailyModal, setShowDailyModal] = useState(false);
+  const [sentRequests, setSentRequests] = useState([]);
+  const recordedViewsRef = React.useRef(new Set());
+
+  // Fetch daily recommendations
+  const fetchDailyRecommendations = async () => {
+    try {
+      setLoadingDaily(true);
+      const res = await api.get('/profiles/daily-recommendations');
+      if (res.data.success) {
+        // Filter out profiles already viewed today (localStorage check)
+        const viewedIds = user?._id ? getDailyViewedIds(user._id) : [];
+        const filtered = res.data.data.filter(p => {
+          const pUserId = p.user?._id || p.user;
+          return !viewedIds.includes(pUserId);
+        });
+        setDailyProfiles(filtered);
+        
+        setCurrentDailyIdx(0);
+        if (filtered.length === 0 && res.data.data.length > 0) {
+          // All already viewed today — jump to batch complete
+          setCurrentDailyIdx(res.data.data.length);
+          setDailyProfiles(res.data.data);
+        }
+
+        // Auto open logic on load (once per tab session)
+        const hasAutoOpened = sessionStorage.getItem('daily_recs_auto_opened');
+        if (!hasAutoOpened && filtered.length > 0) {
+          setTimeout(() => {
+            setShowDailyModal(true);
+            sessionStorage.setItem('daily_recs_auto_opened', 'true');
+          }, 800);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch daily recommendations:', error);
+    } finally {
+      setLoadingDaily(false);
+    }
+  };
+
+  const fetchMyRequests = async () => {
+    try {
+      const res = await api.get('/requests');
+      if (res.data.success) {
+        setSentRequests((res.data.sent || []).map(r => r.receiver?._id || r.receiver));
+      }
+    } catch (error) {
+      console.error('Failed to fetch requests:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      fetchDailyRecommendations();
+      fetchMyRequests();
+    }
+  }, [user]);
+
+  const recordDailyView = (profileUserId) => {
+    if (!profileUserId || recordedViewsRef.current.has(profileUserId)) return;
+    recordedViewsRef.current.add(profileUserId);
+    if (user?._id) addDailyViewedId(user._id, profileUserId);
+    api.post(`/profiles/daily-recommendations/view/${profileUserId}`).catch(console.error);
+  };
+
+  const handleSkipDaily = (profileId) => {
+    recordDailyView(profileId);
+    setCurrentDailyIdx(prev => prev + 1);
+  };
+
+  const handleInterestDaily = async (profileId) => {
+    if (user?.role !== 'admin') {
+      const completeness = getCompleteness().score;
+      if (completeness < 100) {
+        toast.error('Please complete your profile details to 100% on the Dashboard before sending interest requests!', {
+          duration: 5000,
+          icon: '🔒',
+        });
+        return;
+      }
+    }
+
+    try {
+      const res = await api.post(`/requests/send/${profileId}`);
+      if (res.data.success) {
+        toast.success('Interest sent successfully!');
+        setSentRequests(prev => [...prev, profileId]);
+        recordDailyView(profileId);
+        setTimeout(() => {
+          setCurrentDailyIdx(prev => prev + 1);
+        }, 1000);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to send interest');
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -130,19 +260,39 @@ const Dashboard = () => {
                 <div className="hidden md:block w-px bg-gold-500/30 self-stretch mx-2"></div>
 
                 {/* RIGHT: Begin Your Search */}
-                <div className="flex flex-col justify-center items-start md:items-end gap-2 flex-shrink-0 md:w-[280px]">
-                  <div className="text-right">
-                    <h2 className="text-base md:text-lg font-serif text-gold-300 font-bold leading-none mb-1">Begin Your Search 🔍</h2>
-                    <p className="text-slate-400 text-xs font-medium leading-tight">Find matches based on your preferences.</p>
-                  </div>
-                  <button
-                    onClick={() => navigate('/search')}
-                    className="relative overflow-hidden bg-gold-gradient hover:brightness-110 text-[#4f080e] border-2 border-[#b28e28]/85 px-6 py-2 rounded-lg font-serif font-extrabold text-sm shadow-[0_0_18px_rgba(212,175,55,0.35)] hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] hover:scale-[1.04] active:scale-[0.97] transition-all duration-300 cursor-pointer w-full md:w-auto flex items-center justify-center gap-2"
-                  >
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]"></span>
-                    <span className="relative z-10">Search Matches</span>
-                  </button>
-                </div>
+                 <div className="flex flex-col justify-center items-start md:items-end gap-2 flex-shrink-0 md:w-[320px]">
+                   <div className="text-right w-full md:pr-2">
+                     <h2 className="text-base md:text-lg font-serif text-gold-300 font-bold leading-none mb-1">Begin Your Search 🔍</h2>
+                     <p className="text-slate-400 text-xs font-medium leading-tight">Find matches based on your preferences.</p>
+                   </div>
+                   <div className="flex gap-2.5 w-full justify-end">
+                     <button
+                       onClick={() => navigate('/search')}
+                       className="relative overflow-hidden bg-gold-gradient hover:brightness-110 text-[#4f080e] border border-[#b28e28]/50 px-4 py-2 rounded-lg font-serif font-extrabold text-xs shadow-[0_0_18px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.45)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 cursor-pointer flex-1 flex items-center justify-center gap-1.5"
+                     >
+                       <span className="relative z-10">Search Matches</span>
+                     </button>
+                     {user.role !== 'admin' && (
+                       <button
+                         onClick={() => setShowDailyModal(true)}
+                         className="relative overflow-hidden bg-gradient-to-r from-[#e61a52] to-red-650 hover:brightness-110 text-white border border-red-700/30 px-4 py-2 rounded-lg font-serif font-extrabold text-xs shadow-[0_0_18px_rgba(230,26,82,0.25)] hover:shadow-[0_0_25px_rgba(230,26,82,0.45)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 cursor-pointer flex-1 flex items-center justify-center gap-1.5"
+                       >
+                         {/* Shimmer Effect */}
+                         <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></span>
+                         <span className="relative z-10 whitespace-nowrap">Daily Matches</span>
+                         {(() => {
+                           const viewedIds = user?._id ? getDailyViewedIds(user._id) : [];
+                           const unswipedCount = Math.max(0, dailyProfiles.filter(p => !viewedIds.includes(p.user?._id || p.user)).length);
+                           return unswipedCount > 0 ? (
+                             <span className="bg-yellow-400 text-red-950 font-sans font-bold text-[9px] px-1.5 py-0.5 rounded-full animate-bounce flex items-center justify-center min-w-[15px] h-[15px] shadow-sm">
+                               {unswipedCount}
+                             </span>
+                           ) : null;
+                         })()}
+                       </button>
+                     )}
+                   </div>
+                 </div>
               </div>
             </div>
           </div>
@@ -588,9 +738,24 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* MODAL 4: DESKTOP DAILY RECOMMENDATIONS */}
+        <DesktopDailyRecommendationsModal
+          show={showDailyModal}
+          onClose={() => setShowDailyModal(false)}
+          dailyProfiles={dailyProfiles}
+          currentDailyIdx={currentDailyIdx}
+          onSkip={handleSkipDaily}
+          onInterest={handleInterestDaily}
+          sentRequests={sentRequests}
+          user={user}
+          profile={profile}
+          getCompleteness={getCompleteness}
+        />
+
         </div>
       </div>
     </>
+
   );
 };
 

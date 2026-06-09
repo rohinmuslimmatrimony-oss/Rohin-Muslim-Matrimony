@@ -100,7 +100,6 @@ const LandingPage = () => {
       >
         <div className="max-w-[1550px] mx-auto w-full relative z-10">
 
-
           {/* Three-Column Banner Content */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-8 items-center mt-1 md:mt-2">
 
@@ -153,7 +152,7 @@ const LandingPage = () => {
             </div>
 
             {/* Center Column Banner Image styled as Mihrab Islamic Archway */}
-            <div className="md:col-span-6 flex flex-col justify-center items-center relative px-2 mt-3.5 md:-mt-10 md:-mt-14">
+            <div className="md:col-span-6 flex flex-col justify-center items-center relative px-2 mt-3.5 md:-mt-6 md:-mt-8">
               {/* Starry Outer Aura Glow */}
               <div className="absolute inset-0 bg-gold-500/5 rounded-2xl blur-xl pointer-events-none"></div>
 
@@ -163,6 +162,36 @@ const LandingPage = () => {
                   alt="Muslim Marriage Consultancy Banner"
                   className="max-h-[240px] sm:max-h-[280px] md:max-h-[580px] w-full h-auto object-contain block mx-auto"
                 />
+              </div>
+
+              {/* Tagline Card - Designed as a Luxury Branding Advertisement under the image */}
+              <div className="hidden md:block w-full max-w-[560px] mt-4 mb-2 z-20 animate-scaleUp">
+                <div className="relative overflow-hidden bg-gradient-to-r from-[#310206] via-[#4f080e] to-[#310206] border-2 border-[#d4af37] rounded-xl py-3 px-6 shadow-[0_10px_25px_rgba(0,0,0,0.4),_0_0_15px_rgba(212,175,55,0.15)] hover:scale-[1.02] hover:shadow-[0_15px_30px_rgba(212,175,55,0.25)] transition-all duration-500 group cursor-pointer">
+                  
+                  {/* Shimmer light beam running across */}
+                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none"></span>
+                  
+                  {/* Decorative side brackets/borders inside the card */}
+                  <div className="absolute top-1 bottom-1 left-1.5 w-1.5 border-l border-t border-b border-[#d4af37]/45 rounded-l-lg pointer-events-none"></div>
+                  <div className="absolute top-1 bottom-1 right-1.5 w-1.5 border-r border-t border-b border-[#d4af37]/40 rounded-r-lg pointer-events-none"></div>
+
+                  <div className="flex flex-col items-center gap-2 relative z-10 text-center">
+                    {/* Promo Badge Tag */}
+                    <span className="bg-gradient-to-r from-[#ebd94e] to-[#d4af37] text-[#4f080e] text-[9px] md:text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded border border-[#ebd94e] shadow-md flex items-center gap-1.5 flex-shrink-0 animate-pulse-gold">
+                      <FaCrown className="text-[9px]" /> Exclusive
+                    </span>
+                    
+                    {/* Tagline Content */}
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-white font-serif font-black text-xs md:text-sm tracking-wide drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.5)]">
+                        One Registration. Endless Possibilities.
+                      </span>
+                      <span className="text-[#fcf1ce] font-serif font-bold text-[11px] md:text-xs tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        We Handle Your Online & Offline Matches.
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Grand Mobile Auth Action Buttons */}
@@ -750,6 +779,10 @@ const LandingPage = () => {
                 Begins with Trust
               </span>
             </h1>
+            <p className="text-[10px] text-gold-300 font-semibold tracking-wide leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] mt-2.5 px-2">
+              One Registration. Endless Possibilities.<br />
+              We Handle Your Online & Offline Matches.
+            </p>
           </div>
 
           {/* Action Button */}
