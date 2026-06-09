@@ -19,10 +19,10 @@ const resetDailyViews = async () => {
     
     console.log('Database connected successfully.');
 
-    // Clear viewedProfiles array for all user accounts
+    // Clear viewedProfiles and viewedRecommendations arrays for all user accounts
     const result = await User.updateMany(
       { role: 'user' },
-      { $set: { viewedProfiles: [] } }
+      { $set: { viewedProfiles: [], viewedRecommendations: [] } }
     );
 
     console.log(`Successfully reset daily views for ${result.modifiedCount} users.`);

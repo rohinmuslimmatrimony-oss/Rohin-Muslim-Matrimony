@@ -40,6 +40,12 @@ const UserSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    viewedRecommendations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     interestsSentToday: [
       {
         targetUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

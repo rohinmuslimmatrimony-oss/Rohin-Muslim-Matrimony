@@ -24,3 +24,5 @@ pnpm-debug.log*
 *.sw?
 /.env
 /server/.env
+# Local development overrides (not for production)
+client/.env.development

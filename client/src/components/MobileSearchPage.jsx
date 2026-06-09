@@ -11,25 +11,117 @@ import { Country, State } from 'country-state-city';
 
 // --- Reusable Components ---
 
-const DualRangeSlider = ({ min, max, minVal, maxVal, onChange, label, formatValue }) => {
+const DualRangeSlider = ({ min, max, minVal, maxVal, onChange, label, formatValue, step = 1 }) => {
   const [minThumb, setMinThumb] = useState(minVal);
   const [maxThumb, setMaxThumb] = useState(maxVal);
 
+  const [minInput, setMinInput] = useState(String(minVal));
+  const [maxInput, setMaxInput] = useState(String(maxVal));
+
   useEffect(() => {
     setMinThumb(minVal);
+    setMinInput(String(minVal));
     setMaxThumb(maxVal);
+    setMaxInput(String(maxVal));
   }, [minVal, maxVal]);
 
   const handleMinChange = (e) => {
-    const value = Math.min(Number(e.target.value), maxThumb - 1);
+    const value = Math.min(Number(e.target.value), maxThumb - step);
     setMinThumb(value);
+    setMinInput(String(value));
     onChange(value, maxThumb);
   };
 
   const handleMaxChange = (e) => {
-    const value = Math.max(Number(e.target.value), minThumb + 1);
+    const value = Math.max(Number(e.target.value), minThumb + step);
     setMaxThumb(value);
+    setMaxInput(String(value));
     onChange(minThumb, value);
+  };
+
+  const isHeight = label.toLowerCase().includes('height');
+
+  // Generate height options from min to max with step 0.1
+  const heightOptions = [];
+  if (isHeight) {
+    for (let i = min; i <= max; i = Math.round((i + 0.1) * 10) / 10) {
+      heightOptions.push(i);
+    }
+  }
+
+  const handleMinSelectChange = (e) => {
+    const val = Number(e.target.value);
+    setMinThumb(val);
+    setMinInput(String(val));
+    onChange(val, maxThumb);
+  };
+
+  const handleMaxSelectChange = (e) => {
+    const val = Number(e.target.value);
+    setMaxThumb(val);
+    setMaxInput(String(val));
+    onChange(minThumb, val);
+  };
+
+  const handleMinInputChange = (e) => {
+    const val = e.target.value;
+    setMinInput(val);
+    const num = Number(val);
+    if (!isNaN(num) && val !== '') {
+      if (num >= min && num <= maxThumb - step) {
+        setMinThumb(num);
+        onChange(num, maxThumb);
+      }
+    }
+  };
+
+  const handleMinInputBlur = () => {
+    let num = Number(minInput);
+    if (isNaN(num) || minInput === '') {
+      num = min;
+    }
+    if (num < min) num = min;
+    if (num > maxThumb - step) num = maxThumb - step;
+    num = isHeight ? Math.round(num * 10) / 10 : Math.round(num);
+    setMinThumb(num);
+    setMinInput(String(num));
+    onChange(num, maxThumb);
+  };
+
+  const handleMaxInputChange = (e) => {
+    const val = e.target.value;
+    setMaxInput(val);
+    const num = Number(val);
+    if (!isNaN(num) && val !== '') {
+      if (num >= minThumb + step && num <= max) {
+        setMaxThumb(num);
+        onChange(minThumb, num);
+      }
+    }
+  };
+
+  const handleMaxInputBlur = () => {
+    let num = Number(maxInput);
+    if (isNaN(num) || maxInput === '') {
+      num = max;
+    }
+    if (num > max) num = max;
+    if (num < minThumb + step) num = minThumb + step;
+    num = isHeight ? Math.round(num * 10) / 10 : Math.round(num);
+    setMaxThumb(num);
+    setMaxInput(String(num));
+    onChange(minThumb, num);
+  };
+
+  const handleKeyDown = (e, type) => {
+    if (e.key === 'Enter') {
+      if (type === 'min') {
+        handleMinInputBlur();
+      } else {
+        handleMaxInputBlur();
+      }
+      e.target.blur();
+    }
   };
 
   const getPercent = (value) => Math.round(((value - min) / (max - min)) * 100);
@@ -37,11 +129,85 @@ const DualRangeSlider = ({ min, max, minVal, maxVal, onChange, label, formatValu
   return (
     <div className="bg-white border border-slate-200/80 rounded-2xl p-4 mb-3 shadow-sm">
       <label className="text-xs font-semibold text-slate-600 block mb-3">{label}</label>
-      <div className="flex justify-between text-xs font-bold text-slate-800 mb-6">
-        <span>Min {formatValue(minThumb)}</span>
-        <span>Max {formatValue(maxThumb)}</span>
+      
+      {/* Editable Input Fields Row */}
+      <div className="grid grid-cols-2 gap-4 text-xs font-bold text-slate-800 mb-5">
+        {/* Min Input Box */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold pl-0.5">Min Value</span>
+          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 shadow-inner focus-within:border-[#e61a52] focus-within:ring-1 focus-within:ring-[#e61a52]/10 transition-all">
+            {isHeight ? (
+              <select
+                value={minThumb}
+                onChange={handleMinSelectChange}
+                className="w-full bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer text-xs"
+              >
+                {heightOptions.map((val) => {
+                  if (val >= maxThumb) return null;
+                  return (
+                    <option key={val} value={val}>
+                      {formatValue(val)}
+                    </option>
+                  );
+                })}
+              </select>
+            ) : (
+              <div className="flex items-center w-full">
+                <input
+                  type="number"
+                  min={min}
+                  max={maxThumb - step}
+                  value={minInput}
+                  onChange={handleMinInputChange}
+                  onBlur={handleMinInputBlur}
+                  onKeyDown={(e) => handleKeyDown(e, 'min')}
+                  className="w-full bg-transparent text-slate-800 font-bold focus:outline-none text-xs"
+                />
+                <span className="text-[10px] text-slate-400 font-normal ml-1 shrink-0">yrs</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Max Input Box */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold pl-0.5">Max Value</span>
+          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 shadow-inner focus-within:border-[#e61a52] focus-within:ring-1 focus-within:ring-[#e61a52]/10 transition-all">
+            {isHeight ? (
+              <select
+                value={maxThumb}
+                onChange={handleMaxSelectChange}
+                className="w-full bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer text-xs"
+              >
+                {heightOptions.map((val) => {
+                  if (val <= minThumb) return null;
+                  return (
+                    <option key={val} value={val}>
+                      {formatValue(val)}
+                    </option>
+                  );
+                })}
+              </select>
+            ) : (
+              <div className="flex items-center w-full">
+                <input
+                  type="number"
+                  min={minThumb + step}
+                  max={max}
+                  value={maxInput}
+                  onChange={handleMaxInputChange}
+                  onBlur={handleMaxInputBlur}
+                  onKeyDown={(e) => handleKeyDown(e, 'max')}
+                  className="w-full bg-transparent text-slate-800 font-bold focus:outline-none text-xs"
+                />
+                <span className="text-[10px] text-slate-400 font-normal ml-1 shrink-0">yrs</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       
+      {/* Slider Track */}
       <div className="relative w-full h-1 bg-slate-200 rounded-full mb-2">
         <div 
           className="absolute h-1 bg-[#e61a52] rounded-full"
@@ -49,11 +215,11 @@ const DualRangeSlider = ({ min, max, minVal, maxVal, onChange, label, formatValu
         ></div>
         
         <input 
-          type="range" min={min} max={max} value={minThumb} onChange={handleMinChange}
+          type="range" min={min} max={max} step={step} value={minThumb} onChange={handleMinChange}
           className="absolute w-full -top-2 appearance-none bg-transparent pointer-events-none z-20 slider-thumb"
         />
         <input 
-          type="range" min={min} max={max} value={maxThumb} onChange={handleMaxChange}
+          type="range" min={min} max={max} step={step} value={maxThumb} onChange={handleMaxChange}
           className="absolute w-full -top-2 appearance-none bg-transparent pointer-events-none z-30 slider-thumb"
         />
       </div>
@@ -311,6 +477,7 @@ const MobileSearchPage = ({ onApplyFilters }) => {
           <DualRangeSlider 
             label="Age Range"
             min={18} max={60}
+            step={1}
             minVal={filters.ageMin} maxVal={filters.ageMax}
             onChange={(min, max) => setFilters(p => ({ ...p, ageMin: min, ageMax: max }))}
             formatValue={(v) => `${v} yrs`}
@@ -319,6 +486,7 @@ const MobileSearchPage = ({ onApplyFilters }) => {
           <DualRangeSlider 
             label="Height Range"
             min={4.0} max={7.0}
+            step={0.1}
             minVal={filters.heightMin} maxVal={filters.heightMax}
             onChange={(min, max) => setFilters(p => ({ ...p, heightMin: min, heightMax: max }))}
             formatValue={formatHeight}

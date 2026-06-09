@@ -2,14 +2,18 @@ import axios from 'axios';
 
 const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// 1. Clean the root server URL (remove trailing slashes and /api if present)
+// 1. Clean the root API server URL (remove trailing slashes and /api if present)
 let cleanServerUrl = rawUrl.replace(/\/$/, ''); // Remove trailing slash
 if (cleanServerUrl.endsWith('/api')) {
   cleanServerUrl = cleanServerUrl.substring(0, cleanServerUrl.length - 4);
 }
 
-export const SOCKET_BASE_URL = cleanServerUrl || 'http://localhost:5000';
-export const API_BASE_URL = `${SOCKET_BASE_URL}/api`;
+export const API_BASE_URL = `${cleanServerUrl}/api`;
+
+// SOCKET_BASE_URL is used for media/image URLs — can point to a different server (e.g. production CDN)
+// VITE_MEDIA_URL overrides this independently so local dev can load images from production
+const rawMediaUrl = import.meta.env.VITE_MEDIA_URL || cleanServerUrl;
+export const SOCKET_BASE_URL = rawMediaUrl.replace(/\/$/, '') || 'http://localhost:5000';
 
 // Create custom axios instance
 const api = axios.create({

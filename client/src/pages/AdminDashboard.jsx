@@ -1372,6 +1372,10 @@ const AdminDashboard = () => {
                           <input type="number" value={settings.freePlanFeatures?.contactViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, contactViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
+                          <label className="text-xs text-slate-400">Daily Recommendations:</label>
+                          <input type="number" value={settings.freePlanFeatures?.dailyRecommendationLimit ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, dailyRecommendationLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                        </div>
+                        <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Profile Boost Level:</label>
                           <input type="number" value={settings.freePlanFeatures?.profileBoost ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, profileBoost: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
@@ -1417,6 +1421,10 @@ const AdminDashboard = () => {
                           <input type="number" value={settings.premiumPlanFeatures?.contactViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, contactViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
+                          <label className="text-xs text-slate-400">Daily Recommendations:</label>
+                          <input type="number" value={settings.premiumPlanFeatures?.dailyRecommendationLimit ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, dailyRecommendationLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                        </div>
+                        <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Profile Boost Level:</label>
                           <input type="number" value={settings.premiumPlanFeatures?.profileBoost ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, profileBoost: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
@@ -1460,6 +1468,10 @@ const AdminDashboard = () => {
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Contact Views Limit:</label>
                           <input type="number" value={settings.elitePlanFeatures?.contactViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, contactViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs text-slate-400">Daily Recommendations:</label>
+                          <input type="number" value={settings.elitePlanFeatures?.dailyRecommendationLimit ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, dailyRecommendationLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Profile Boost Level:</label>

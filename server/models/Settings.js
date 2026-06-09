@@ -9,7 +9,8 @@ const FeatureSchema = new mongoose.Schema({
   dailyInterestLimit: { type: Number, default: 3 },
   profileBoost: { type: Boolean, default: false },
   advancedFilters: { type: Boolean, default: false },
-  contactViewLimit: { type: Number, default: 0 }
+  contactViewLimit: { type: Number, default: 0 },
+  dailyRecommendationLimit: { type: Number, default: 5 }
 });
 
 const SettingsSchema = new mongoose.Schema(
@@ -38,7 +39,8 @@ const SettingsSchema = new mongoose.Schema(
         dailyInterestLimit: 3,
         profileBoost: false,
         advancedFilters: false,
-        contactViewLimit: 0
+        contactViewLimit: 0,
+        dailyRecommendationLimit: 5
       })
     },
     premiumPlanFeatures: {
@@ -52,7 +54,8 @@ const SettingsSchema = new mongoose.Schema(
         dailyInterestLimit: 30,
         profileBoost: true,
         advancedFilters: true,
-        contactViewLimit: 50
+        contactViewLimit: 50,
+        dailyRecommendationLimit: 10
       })
     },
     elitePlanFeatures: {
@@ -66,7 +69,8 @@ const SettingsSchema = new mongoose.Schema(
         dailyInterestLimit: 99999,
         profileBoost: true,
         advancedFilters: true,
-        contactViewLimit: 99999
+        contactViewLimit: 99999,
+        dailyRecommendationLimit: 14
       })
     },
     // Support Contact Configuration

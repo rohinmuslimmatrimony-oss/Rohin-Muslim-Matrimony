@@ -546,3 +546,186 @@ exports.getContactViewers = async (req, res) => {
   }
 };
 
+// @desc    Get dynamic daily recommendations based on partner preferences and plan limits
+// @route   GET /api/profiles/daily-recommendations
+// @access  Private
+exports.getDailyRecommendations = async (req, res) => {
+  try {
+    const myProfile = await Profile.findOne({ user: req.user.id });
+    if (!myProfile) {
+      return res.status(404).json({ success: false, message: 'Please create a profile first' });
+    }
+
+    const currentUser = await User.findById(req.user.id);
+    if (!currentUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Determine dynamic limit based on setting controls
+    const planFeatures = await getPlanFeatures(currentUser.plan);
+    const limit = planFeatures.dailyRecommendationLimit || 5;
+
+    const oppositeGender = myProfile.gender === 'male' ? 'female' : 'male';
+
+    // Exclude connected users, sent requests, and already viewed recommendations
+    const excludedUserIds = [
+      req.user.id,
+      ...(myProfile.connections || [])
+    ];
+
+    // Exclude viewed daily recommendations
+    if (currentUser.viewedRecommendations && currentUser.viewedRecommendations.length > 0) {
+      excludedUserIds.push(...currentUser.viewedRecommendations.map(id => id.toString()));
+    }
+
+    // Query candidates of opposite gender
+    let candidates = await Profile.find({
+      user: { $nin: excludedUserIds },
+      gender: oppositeGender
+    }).populate('user', 'email role plan isManuallyVerified');
+
+    // Parse partner preferences
+    const prefAge = myProfile.partnerPreferences?.ageRange || '18-35';
+    const prefSect = myProfile.partnerPreferences?.sectPreference || 'No Preference';
+    const prefEdu = myProfile.partnerPreferences?.educationPreference || "Doesn't Matter";
+
+    let minAge = 18;
+    let maxAge = 80;
+    if (prefAge && prefAge.includes('-')) {
+      const parts = prefAge.split('-');
+      minAge = parseInt(parts[0]) || 18;
+      maxAge = parseInt(parts[1]) || 80;
+    }
+
+    // Map candidates to add matchDetails and matchScore
+    const scoredCandidates = candidates.map(candidate => {
+      const candObj = candidate.toObject();
+
+      // 1. Age match
+      const ageMatch = candObj.age >= minAge && candObj.age <= maxAge;
+      
+      // 2. Sect match
+      const sectMatch = prefSect === 'No Preference' || 
+                        prefSect.toLowerCase() === 'open to all' || 
+                        (candObj.sect && candObj.sect.toLowerCase() === prefSect.toLowerCase());
+
+      // 3. Education match
+      const eduMatch = prefEdu === "Doesn't Matter" || 
+                       prefEdu.toLowerCase() === 'any' || 
+                       (candObj.education && candObj.education.toLowerCase().includes(prefEdu.toLowerCase()));
+
+      // 4. City location match
+      const cityMatch = candObj.city && myProfile.city && 
+                        candObj.city.toLowerCase() === myProfile.city.toLowerCase();
+
+      // 5. Mother Tongue match
+      const tongueMatch = candObj.motherTongue && myProfile.motherTongue && 
+                          candObj.motherTongue.toLowerCase() === myProfile.motherTongue.toLowerCase();
+
+      let score = 0;
+      if (ageMatch) score++;
+      if (sectMatch) score++;
+      if (eduMatch) score++;
+      if (cityMatch) score++;
+      if (tongueMatch) score++;
+
+      candObj.matchDetails = {
+        age: { label: `Age Range (${minAge}-${maxAge} Yrs)`, matched: ageMatch, value: `${candObj.age} yrs` },
+        sect: { label: `Sect (${prefSect})`, matched: sectMatch, value: candObj.sect || 'Not Specified' },
+        education: { label: `Education Preferred (${prefEdu})`, matched: eduMatch, value: candObj.education || 'Not Specified' },
+        city: { label: `Same Location (${myProfile.city})`, matched: cityMatch, value: candObj.city || 'Not Specified' },
+        motherTongue: { label: `Same Mother Tongue (${myProfile.motherTongue})`, matched: tongueMatch, value: candObj.motherTongue || 'Not Specified' }
+      };
+      candObj.matchScore = score;
+      return candObj;
+    });
+
+    // Exclude admins (populated in candidate.user.role)
+    const filteredCandidates = scoredCandidates.filter(c => c.user && c.user.role !== 'admin');
+
+    // Sort by matchScore descending, then by planWeight (Elite > Premium > Free)
+    filteredCandidates.sort((a, b) => {
+      if (b.matchScore !== a.matchScore) {
+        return b.matchScore - a.matchScore;
+      }
+      const getPlanWeight = (plan) => {
+        if (plan === 'elite') return 3;
+        if (plan === 'premium') return 2;
+        return 1;
+      };
+      return getPlanWeight(b.user.plan) - getPlanWeight(a.user.plan);
+    });
+
+    // Limit to the dynamic plan recommendation limit
+    const dailyRecommendations = filteredCandidates.slice(0, limit);
+
+    // Apply photo privacy rules
+    const visitorReqs = await GalleryRequest.find({
+      sender: req.user.id,
+      status: 'accepted'
+    }).select('receiver');
+    const allowedGalleryUserIds = visitorReqs.map(r => r.receiver.toString());
+
+    const finalRecommendations = dailyRecommendations.map(profile => {
+      const isConnected = profile.connections && profile.connections.some(c => c.toString() === req.user.id);
+      const targetUserId = profile.user?._id?.toString() || profile.user?.toString();
+      const hasGalleryAccess = isConnected || allowedGalleryUserIds.includes(targetUserId);
+
+      const photoPrivacy = profile.privacySettings?.photo || (profile.isPhotoPublic ? 'all' : 'hidden');
+      let photoVisible = true;
+
+      if (photoPrivacy === 'premium_elite') {
+        const viewerPlan = currentUser.plan;
+        photoVisible = (viewerPlan === 'premium' || viewerPlan === 'elite' || isConnected || hasGalleryAccess);
+      } else if (photoPrivacy === 'connections') {
+        photoVisible = (isConnected || hasGalleryAccess);
+      } else if (photoPrivacy === 'hidden') {
+        photoVisible = hasGalleryAccess;
+      }
+
+      if (!photoVisible) {
+        profile.profilePhoto = '/uploads/blurred-avatar.png';
+        profile.gallery = [];
+      }
+      return profile;
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: finalRecommendations.length,
+      limit,
+      data: finalRecommendations
+    });
+  } catch (error) {
+    console.error('GetDailyRecommendations Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Record daily recommendation view (swiped/skipped)
+// @route   POST /api/profiles/daily-recommendations/view/:id
+// @access  Private
+exports.recordRecommendationView = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.viewedRecommendations) {
+      user.viewedRecommendations = [];
+    }
+
+    if (!user.viewedRecommendations.includes(targetUserId)) {
+      user.viewedRecommendations.push(targetUserId);
+      await user.save();
+    }
+
+    return res.status(200).json({ success: true, message: 'Recommendation view recorded' });
+  } catch (error) {
+    console.error('RecordRecommendationView Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
