@@ -765,7 +765,7 @@ const LandingPage = () => {
           <img
             src={logo3}
             alt="Rohin Muslim Matrimony Logo"
-            className="h-[50px] w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+            className="h-[100px] w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
           />
         </div>
 

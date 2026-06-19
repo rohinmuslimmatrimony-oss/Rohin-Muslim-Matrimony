@@ -126,7 +126,7 @@ const PWAInstallPrompt = () => {
       {/* Left: App Logo + Info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
         <img
-          src="/icons/icon-192x192.png"
+          src="/icons/RMMappIcon.jpeg"
           alt="App Icon"
           style={{
             width: 44,
