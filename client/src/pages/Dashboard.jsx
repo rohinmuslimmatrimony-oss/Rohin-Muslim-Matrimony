@@ -229,7 +229,7 @@ const Dashboard = () => {
       </div>
 
       {/* DESKTOP VIEW (Standard Dashboard) */}
-      <div className="hidden md:flex md:flex-col md:justify-center md:h-[calc(100vh-80px)] md:min-h-0 bg-cream-50 pt-6 pb-6 px-4 relative overflow-hidden">
+      <div className="hidden md:flex md:flex-col min-h-[calc(100vh-80px)] bg-cream-50 pt-4 pb-16 px-4 relative">
         {/* Background Decor */}
         <div className="absolute top-[0%] left-[0%] w-96 h-96 bg-crimson-900/5 rounded-full blur-[100px] -z-10"></div>
         <div className="absolute bottom-[0%] right-[0%] w-96 h-96 bg-gold-500/5 rounded-full blur-[100px] -z-10"></div>
@@ -463,15 +463,20 @@ const Dashboard = () => {
               <span className={`text-3xl md:text-4xl font-serif font-bold capitalize block mb-1 ${user.plan === 'elite' ? 'text-gold-600' : user.plan === 'premium' ? 'text-crimson-600' : 'text-crimson-950'}`}>
                 {user.plan}
               </span>
-              <p className="text-sm text-slate-500 leading-tight pr-24">
+              <p className="text-sm text-slate-500 leading-tight pr-2">
                 {user.plan === 'free' ? 'Upgrade to connect with matches directly.' : 'Enjoying premium matchmaking benefits.'}
               </p>
             </div>
-            {user.plan !== 'elite' && (
-               <button onClick={() => navigate('/plans')} className="relative z-10 text-sm font-bold text-crimson-800 hover:text-gold-600 transition-colors w-max">
-                 View Upgrade Options &rarr;
-               </button>
-            )}
+            <div className="flex items-center gap-3 relative z-10 mt-2">
+              {user.plan !== 'elite' && (
+                 <button onClick={() => navigate('/plans')} className="text-xs font-bold text-crimson-800 hover:text-gold-600 transition-colors">
+                   Upgrade Options &rarr;
+                 </button>
+              )}
+              <button onClick={() => navigate('/payment-info')} className="text-xs font-bold text-slate-600 hover:text-crimson-950 transition-colors border-l pl-3 border-slate-300">
+                Payment Info 💳
+              </button>
+            </div>
           </div>
 
           {/* View Limit Card */}

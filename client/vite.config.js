@@ -22,10 +22,28 @@ export default defineConfig({
         lang: 'en',
         icons: [
           {
-            src: '/icons/RMMappIcon.jpeg',
-            sizes: '192x192 512x512 180x180',
+            src: '/icons/app-icon.jpeg',
+            sizes: '192x192',
             type: 'image/jpeg',
-            purpose: 'any maskable',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/app-icon.jpeg',
+            sizes: '512x512',
+            type: 'image/jpeg',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/app-icon.jpeg',
+            sizes: '192x192',
+            type: 'image/jpeg',
+            purpose: 'maskable',
+          },
+          {
+            src: '/icons/app-icon.jpeg',
+            sizes: '512x512',
+            type: 'image/jpeg',
+            purpose: 'maskable',
           },
         ],
       },

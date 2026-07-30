@@ -309,17 +309,21 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.post('/auth/register', formData);
       
-      if (res.data.success) {
+      if (res.data && res.data.success) {
         localStorage.setItem('token', res.data.token);
         setUser(res.data.user);
         setProfile(res.data.profile);
-        toast.success(`Account created! Welcome, ${res.data.profile.name}!`);
+        toast.success(`Account created! Welcome, ${res.data.profile?.name || 'Member'}!`);
         return { success: true };
+      } else {
+        const msg = res.data?.message || 'Registration failed. Invalid response from server.';
+        toast.error(msg);
+        return { success: false, error: msg, message: msg };
       }
     } catch (error) {
-      const msg = error.response?.data?.message || 'Registration failed.';
+      const msg = error.response?.data?.message || 'Registration failed. Please try again.';
       toast.error(msg);
-      return { success: false, error: msg };
+      return { success: false, error: msg, message: msg };
     }
   };
 

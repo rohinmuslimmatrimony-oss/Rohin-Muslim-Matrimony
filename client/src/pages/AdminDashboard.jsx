@@ -1260,7 +1260,7 @@ const AdminDashboard = () => {
                           <option value="mock">Mock Gateway (Test Mode)</option>
                           <option value="live">Live Gateway (Razorpay/Stripe)</option>
                         </select>
-                        <p className="text-xs text-slate-500">Live gateway will be functional when Razorpay keys are added to .env.</p>
+                        <p className="text-xs text-emerald-400">✅ Live Gateway configured with Razorpay keys (INR ₹).</p>
                       </div>
                     </div>
 

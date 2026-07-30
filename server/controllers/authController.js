@@ -12,6 +12,7 @@ const generateToken = (id) => {
 };
 
 // @desc    Register a new user & create initial profile
+// @desc    Register a new user & create initial profile
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
@@ -22,16 +23,23 @@ exports.register = async (req, res) => {
     partnerAgeRange, partnerSect, partnerEducation
   } = req.body;
 
+  let createdUserId = null;
+
   try {
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
     // Check if user already exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ success: false, message: 'Email already registered' });
     }
 
     // Create user
     const user = await User.create({
-      email,
+      email: normalizedEmail,
       password,
       role: 'user', // Default is user
       plan: 'free',
@@ -39,16 +47,18 @@ exports.register = async (req, res) => {
       viewedProfiles: []
     });
 
+    createdUserId = user._id;
+
     // Create default profile linked to the user
     const profile = await Profile.create({
       user: user._id,
-      name: name || 'Matrimony Member',
-      age: age || 25,
+      name: (name && name.trim()) ? name.trim() : 'Matrimony Member',
+      age: age ? parseInt(age) : 25,
       gender: gender || 'male',
       sect: sect || 'Sunni',
       profession: profession || '',
       education: education || '',
-      city: city || '',
+      city: (city && city.trim()) ? city.trim() : 'Not Specified',
       about: about || '',
       profileCreatedBy: profileCreatedBy || 'Self',
       maritalStatus: maritalStatus || 'Never Married',
@@ -62,7 +72,7 @@ exports.register = async (req, res) => {
         siblingsCount: siblingsCount ? parseInt(siblingsCount) : 0
       },
       partnerPreferences: {
-        ageRange: partnerAgeRange || '',
+        ageRange: partnerAgeRange || '18-30',
         sectPreference: partnerSect || 'No Preference',
         educationPreference: partnerEducation || "Doesn't Matter"
       }
@@ -114,6 +124,9 @@ exports.register = async (req, res) => {
     });
   } catch (error) {
     console.error('Register Error:', error);
+    if (createdUserId) {
+      await User.findByIdAndDelete(createdUserId).catch(() => {});
+    }
     return res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -125,27 +138,32 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
     // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
     // Check if password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    // Get user profile
+    // Get user profile — auto create/repair fallback if missing
     let profile = await Profile.findOne({ user: user._id });
-    if (!profile && user.role === 'admin') {
+    if (!profile) {
       profile = await Profile.create({
         user: user._id,
-        name: 'Administrator',
+        name: user.role === 'admin' ? 'Administrator' : (user.email.split('@')[0] || 'Matrimony Member'),
         gender: 'male',
-        age: 35,
-        city: 'Admin City'
+        age: 25,
+        city: 'Not Specified'
       });
     }
 

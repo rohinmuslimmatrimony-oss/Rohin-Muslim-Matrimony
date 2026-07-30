@@ -52,6 +52,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/kyc', require('./routes/kycRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // Mount routes (without /api for cPanel Passenger which strips the sub-URI)
 app.use('/auth', require('./routes/authRoutes'));
@@ -63,6 +64,7 @@ app.use('/admin', require('./routes/adminRoutes'));
 app.use('/reports', require('./routes/reportRoutes'));
 app.use('/notifications', require('./routes/notificationRoutes'));
 app.use('/kyc', require('./routes/kycRoutes'));
+app.use('/payment', require('./routes/paymentRoutes'));
 
 // Public Platform Settings (Pricing)
 app.get('/api/settings', require('./controllers/adminController').getSettings);

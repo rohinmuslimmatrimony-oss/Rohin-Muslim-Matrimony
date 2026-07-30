@@ -61,10 +61,10 @@ const Register = () => {
     const res = await register(formData);
     setIsSubmitting(false);
 
-    if (res.success) {
+    if (res && res.success) {
       navigate('/dashboard');
     } else {
-      setErrorMsg(res.message || 'Registration failed. Please try again.');
+      setErrorMsg(res?.message || res?.error || 'Registration failed. Please try again.');
     }
   };
 

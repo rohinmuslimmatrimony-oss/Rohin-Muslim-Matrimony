@@ -39,25 +39,100 @@ const PlansPage = () => {
 
     setLoading(true);
     try {
-      toast.loading(`Processing payment via ${import.meta.env.VITE_PAYMENT_MODE || 'Mock Gateway'}...`, { id: 'payment' });
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      toast.loading('Initializing payment checkout...', { id: 'payment' });
+
+      // Step 1: Create Order via backend API
+      const orderRes = await api.post('/payment/create-order', { plan: planName });
       
-      const res = await api.put('/auth/upgrade', { plan: planName });
-      
-      if (res.data.success) {
-        toast.success(`Payment Successful! Upgraded to ${planName.toUpperCase()} plan.`, { id: 'payment' });
-        await refreshUser();
-        navigate('/dashboard');
+      if (!orderRes.data.success) {
+        throw new Error(orderRes.data.message || 'Failed to create payment order');
       }
+
+      const { mode, order, keyId } = orderRes.data;
+
+      // Mock Mode Fallback (if live keys missing or mode is set to mock)
+      if (mode === 'mock' || !window.Razorpay || !keyId) {
+        toast.loading('Processing payment (Mock Gateway)...', { id: 'payment' });
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        const verifyRes = await api.post('/payment/verify-payment', { plan: planName });
+        if (verifyRes.data.success) {
+          toast.success(`Payment Successful! Upgraded to ${planName.toUpperCase()} plan.`, { id: 'payment' });
+          await refreshUser();
+          navigate('/dashboard');
+        } else {
+          throw new Error(verifyRes.data.message || 'Payment upgrade failed');
+        }
+        return;
+      }
+
+      // Live Razorpay Modal Flow
+      toast.dismiss('payment');
+      
+      const options = {
+        key: keyId,
+        amount: order.amount,
+        currency: order.currency || 'INR',
+        name: 'Rohin Muslim Matrimony',
+        description: `Upgrade to ${planName.toUpperCase()} Plan`,
+        image: '/icons/RMMappIcon.jpeg',
+        order_id: order.id,
+        prefill: {
+          name: user.name || '',
+          email: user.email || '',
+          contact: user.phone || ''
+        },
+        theme: {
+          color: '#8b0000'
+        },
+        handler: async function (response) {
+          try {
+            toast.loading('Verifying payment details...', { id: 'payment-verify' });
+            const verifyRes = await api.post('/payment/verify-payment', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              plan: planName
+            });
+
+            if (verifyRes.data.success) {
+              toast.success(`Payment Successful! Upgraded to ${planName.toUpperCase()} plan.`, { id: 'payment-verify' });
+              await refreshUser();
+              navigate('/dashboard');
+            } else {
+              toast.error(verifyRes.data.message || 'Payment verification failed', { id: 'payment-verify' });
+            }
+          } catch (verifyError) {
+            console.error('Payment Verification Error:', verifyError);
+            toast.error(verifyError.response?.data?.message || 'Payment verification failed', { id: 'payment-verify' });
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast.error('Payment cancelled by user', { id: 'payment' });
+            setLoading(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        toast.error(response.error?.description || 'Payment failed', { id: 'payment' });
+        setLoading(false);
+      });
+
+      rzp.open();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Payment failed', { id: 'payment' });
-    } finally {
+      console.error('Upgrade Error:', error);
+      toast.error(error.response?.data?.message || error.message || 'Payment failed', { id: 'payment' });
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen md:min-h-0 md:h-[calc(100vh-80px)] bg-gradient-to-b from-[#55080f] via-[#4f080e] to-[#2b0306] pt-20 pb-20 md:pt-6 md:pb-10 px-4 md:px-8 relative overflow-hidden flex flex-col justify-center">
+    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-[#55080f] via-[#4f080e] to-[#2b0306] pt-12 pb-20 md:pt-8 md:pb-16 px-4 md:px-8 relative flex flex-col justify-start">
       {/* Golden Glowing Halo Decor */}
       <div className="absolute top-[10%] left-[50%] -translate-x-1/2 w-full max-w-4xl h-[450px] bg-gradient-to-b from-gold-500/20 via-gold-600/5 to-transparent rounded-full blur-[120px] -z-10 animate-pulse-gold"></div>
 
