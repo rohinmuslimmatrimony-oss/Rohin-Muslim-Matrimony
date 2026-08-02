@@ -6,7 +6,8 @@ import toast from 'react-hot-toast';
 import { 
   FaUsers, FaChartPie, FaExclamationTriangle, FaTrash, 
   FaCheckCircle, FaEdit, FaCrown, FaStar, FaCog, FaRupeeSign,
-  FaHeart, FaPlus, FaMoneyBillWave, FaIdCard, FaHandshake, FaSignOutAlt, FaCopy
+  FaHeart, FaPlus, FaMoneyBillWave, FaIdCard, FaHandshake, FaSignOutAlt, FaCopy,
+  FaTimes, FaExternalLinkAlt, FaCheck, FaBan
 } from 'react-icons/fa';
 import SimpleSpinner from '../components/SimpleSpinner';
 
@@ -350,10 +351,14 @@ const AdminDashboard = () => {
         adminNote: kycAdminNote
       });
       if (res.data.success) {
-        toast.success(res.data.message);
+        toast.success(res.data.message || `KYC Request ${action === 'approve' ? 'Approved' : 'Rejected'} successfully!`);
         setSelectedKyc(null);
         setKycAdminNote('');
         fetchDashboardData();
+        const kycRes = await api.get(`/admin/kyc?status=${kycFilter}`);
+        if (kycRes.data.success) {
+          setKycRequests(kycRes.data.data || []);
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to review KYC request');
@@ -1996,6 +2001,204 @@ const AdminDashboard = () => {
                 <button type="submit" className="px-6 py-2 bg-crimson-600 hover:bg-crimson-500 text-white font-bold rounded-lg text-sm transition-colors">Save Story</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* KYC REVIEW MODAL */}
+      {selectedKyc && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-4xl shadow-2xl my-8 text-slate-100 overflow-hidden animate-fadeIn">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 p-6 bg-slate-950/40">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg">
+                  <FaIdCard />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-serif font-bold text-white">KYC Document Review</h3>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                      selectedKyc.status === 'approved' 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                        : selectedKyc.status === 'rejected' 
+                          ? 'bg-red-500/10 text-red-400 border-red-500/30' 
+                          : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                    }`}>
+                      {selectedKyc.status ? selectedKyc.status.toUpperCase() : 'PENDING'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Review and verify member identity documents
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSelectedKyc(null)} 
+                className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors text-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6">
+              
+              {/* Left Column: Details & Verification Action */}
+              <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
+                
+                <div className="space-y-4">
+                  {/* User Profile Card */}
+                  <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest block">
+                      Member Account
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-full bg-emerald-900/60 border border-emerald-700 flex items-center justify-center font-bold text-emerald-300 text-base">
+                        {selectedKyc.profile?.name ? selectedKyc.profile.name[0] : (selectedKyc.user?.email ? selectedKyc.user.email[0].toUpperCase() : '?')}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-white text-sm truncate">{selectedKyc.profile?.name || 'No Profile'}</p>
+                        <p className="text-xs text-slate-400 truncate">{selectedKyc.user?.email}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                            selectedKyc.user?.plan === 'elite' 
+                              ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30' 
+                              : selectedKyc.user?.plan === 'premium' 
+                                ? 'bg-crimson-500/20 text-crimson-400 border border-crimson-500/30' 
+                                : 'bg-slate-700/50 text-slate-300 border border-slate-600'
+                          }`}>
+                            {selectedKyc.user?.plan?.toUpperCase() || 'FREE'}
+                          </span>
+                          {selectedKyc.profile?.city && (
+                            <span className="text-[11px] text-slate-400">📍 {selectedKyc.profile.city}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Document Details Card */}
+                  <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2.5">
+                    <span className="text-[11px] font-bold text-amber-400 uppercase tracking-widest block">
+                      ID Document Info
+                    </span>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-slate-400 block text-[11px]">ID Type</span>
+                        <span className="font-bold text-white uppercase">{selectedKyc.idType || 'Aadhaar'}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[11px]">Submitted Date</span>
+                        <span className="font-bold text-slate-200">
+                          {selectedKyc.createdAt ? new Date(selectedKyc.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-slate-400 block text-[11px]">Full Name on Document</span>
+                        <span className="font-bold text-emerald-400 text-sm">{selectedKyc.fullNameOnId || 'N/A'}</span>
+                      </div>
+                      {selectedKyc.idNumber && (
+                        <div className="col-span-2">
+                          <span className="text-slate-400 block text-[11px]">Document Number</span>
+                          <span className="font-mono font-bold text-slate-200">{selectedKyc.idNumber}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Admin Remarks & Quick Tags */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                      Admin Remarks / Rejection Reason
+                    </label>
+                    <textarea 
+                      rows={2}
+                      value={kycAdminNote}
+                      onChange={(e) => setKycAdminNote(e.target.value)}
+                      placeholder="Add note for user or reason if rejecting..."
+                      className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl p-3 text-xs text-white placeholder:text-slate-500 focus:outline-none resize-none"
+                    />
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {[
+                        'Name matches ID correctly',
+                        'Name mismatch on document',
+                        'Document is blurry/unclear',
+                        'Expired or invalid document'
+                      ].map((tag, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setKycAdminNote(tag)}
+                          className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-md border border-slate-700 transition-colors"
+                        >
+                          + {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Review Action Buttons */}
+                <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleReviewKyc('approve')}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-600/30 transition-all active:scale-95"
+                  >
+                    <FaCheck /> Approve & Verify
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleReviewKyc('reject')}
+                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-red-600/30 transition-all active:scale-95"
+                  >
+                    <FaBan /> Reject Request
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Uploaded Document Viewer */}
+              <div className="lg:col-span-7 flex flex-col">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Uploaded Document Image
+                  </span>
+                  {selectedKyc.documentImage && (
+                    <a 
+                      href={selectedKyc.documentImage.startsWith('http') ? selectedKyc.documentImage : `${SOCKET_BASE_URL}${selectedKyc.documentImage}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
+                    >
+                      <FaExternalLinkAlt className="text-[10px]" /> Open Original Full Size
+                    </a>
+                  )}
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 flex-1 flex items-center justify-center min-h-[320px] max-h-[440px] overflow-hidden group relative">
+                  {selectedKyc.documentImage ? (
+                    <img 
+                      src={selectedKyc.documentImage.startsWith('http') ? selectedKyc.documentImage : `${SOCKET_BASE_URL}${selectedKyc.documentImage}`} 
+                      alt="KYC Document Preview"
+                      className="w-full h-full object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://placehold.co/600x400/1e293b/94a3b8?text=Image+Unavailable';
+                      }}
+                    />
+                  ) : (
+                    <div className="text-center p-8 text-slate-500">
+                      <FaIdCard className="text-4xl mx-auto mb-2 text-slate-600" />
+                      <p className="text-xs font-medium">No document image attached to this request</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       )}
