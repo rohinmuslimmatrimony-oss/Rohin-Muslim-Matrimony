@@ -613,7 +613,23 @@ exports.deleteFreeInterest = async (req, res) => {
 exports.getKycRequests = async (req, res) => {
   try {
     const { status = 'pending' } = req.query;
-    const filter = status === 'all' ? {} : { status };
+    let filter = {};
+
+    if (status && status !== 'all') {
+      const normalized = status.toLowerCase();
+      if (normalized === 'pending') {
+        filter = {
+          $or: [
+            { status: { $regex: /^pending$/i } },
+            { status: null },
+            { status: { $exists: false } },
+            { status: '' }
+          ]
+        };
+      } else {
+        filter = { status: { $regex: new RegExp(`^${normalized}$`, 'i') } };
+      }
+    }
 
     const requests = await KycRequest.find(filter)
       .populate('user', 'email plan isManuallyVerified')
@@ -624,7 +640,7 @@ exports.getKycRequests = async (req, res) => {
         const profile = await Profile.findOne({ user: item.user?._id }).select('name city profession age profilePhoto');
         return {
           _id: item._id,
-          status: item.status,
+          status: item.status ? item.status.toLowerCase() : 'pending',
           idType: item.idType,
           idNumber: item.idNumber,
           fullNameOnId: item.fullNameOnId,
@@ -676,41 +692,51 @@ exports.reviewKycRequest = async (req, res) => {
     kycRequest.reviewedAt = new Date();
     await kycRequest.save();
 
+    const targetUserId = kycRequest.user?._id || kycRequest.user;
+
     // If approved, set isManuallyVerified on user
-    if (action === 'approve') {
-      await User.findByIdAndUpdate(kycRequest.user._id, { isManuallyVerified: true });
-    } else {
-      // If rejected, unset verification
-      await User.findByIdAndUpdate(kycRequest.user._id, { isManuallyVerified: false });
-    }
+    if (targetUserId) {
+      if (action === 'approve') {
+        await User.findByIdAndUpdate(targetUserId, { isManuallyVerified: true });
+      } else {
+        await User.findByIdAndUpdate(targetUserId, { isManuallyVerified: false });
+      }
 
-    // Send in-app notification to user
-    const profile = await Profile.findOne({ user: kycRequest.user._id }).select('name');
-    await Notification.create({
-      recipient: kycRequest.user._id,
-      sender: req.user.id,
-      type: 'kyc_review',
-      title: action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Review Update',
-      message: action === 'approve'
-        ? 'Congratulations! Your identity has been verified. Your profile now shows a verified badge.'
-        : `Your KYC submission was not approved. Reason: ${adminNote || 'Please resubmit with a clearer document.'}`,
-      url: '/edit-profile'
-    });
+      // Send in-app notification to user
+      try {
+        await Notification.create({
+          recipient: targetUserId,
+          sender: req.user?.id || req.user?._id,
+          type: 'kyc_review',
+          title: action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Review Update',
+          message: action === 'approve'
+            ? 'Congratulations! Your identity has been verified. Your profile now shows a verified badge.'
+            : `Your KYC submission was not approved. Reason: ${adminNote || 'Please resubmit with a clearer document.'}`,
+          url: '/edit-profile'
+        });
+      } catch (notifErr) {
+        console.error('KYC notification create error:', notifErr);
+      }
 
-    // Send push notification
-    const sendPushNotification = require('../utils/pushNotifier');
-    sendPushNotification(
-      kycRequest.user._id.toString(),
-      action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Not Approved',
-      action === 'approve' ? 'Your profile is now verified!' : `Reason: ${adminNote || 'Please resubmit.'}`,
-      '/edit-profile'
-    ).catch(err => console.error('KYC push notification error:', err));
+      // Send push notification
+      try {
+        const sendPushNotification = require('../utils/pushNotifier');
+        sendPushNotification(
+          targetUserId.toString(),
+          action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Not Approved',
+          action === 'approve' ? 'Your profile is now verified!' : `Reason: ${adminNote || 'Please resubmit.'}`,
+          '/edit-profile'
+        ).catch(err => console.error('KYC push notification error:', err));
+      } catch (pushErr) {
+        console.error('Push notifier error:', pushErr);
+      }
 
-    // Emit socket notification
-    if (req.io) {
-      req.io.to(kycRequest.user._id.toString()).emit('new_notification', {
-        title: action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Review Update',
-      });
+      // Emit socket notification
+      if (req.io) {
+        req.io.to(targetUserId.toString()).emit('new_notification', {
+          title: action === 'approve' ? '✅ Identity Verified!' : '❌ KYC Review Update',
+        });
+      }
     }
 
     return res.status(200).json({

@@ -9,11 +9,22 @@ const NotificationSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   },
   type: {
     type: String,
-    enum: ['interest_sent', 'interest_accepted', 'message_received', 'gallery_request_sent', 'gallery_request_accepted'],
+    enum: [
+      'interest_sent',
+      'interest_accepted',
+      'message_received',
+      'gallery_request_sent',
+      'gallery_request_accepted',
+      'kyc_review',
+      'kyc_approved',
+      'kyc_rejected',
+      'admin_match_suggestion',
+      'system'
+    ],
     required: true
   },
   title: {

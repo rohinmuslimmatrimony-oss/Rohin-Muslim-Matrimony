@@ -89,8 +89,8 @@ const Navbar = () => {
 
 
   return (
-    <nav className="w-full bg-[#faf9f6] border-b border-[#d4af37]/35 py-3.5 px-4 md:px-8 transition-colors shadow-lg">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <nav className="w-full bg-[#faf9f6] border-b border-[#d4af37]/35 h-16 md:h-20 px-4 md:px-8 transition-colors shadow-lg flex items-center">
+      <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
 
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2 group">

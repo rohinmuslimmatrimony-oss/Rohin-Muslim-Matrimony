@@ -247,29 +247,35 @@ export const AuthProvider = ({ children }) => {
   const subscribeToPushNotifications = async () => {
     if ('serviceWorker' in navigator && 'PushManager' in window && user?._id) {
       try {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        
         // Wait until service worker is ready
-        await navigator.serviceWorker.ready;
+        const registration = await navigator.serviceWorker.ready;
 
         const keyRes = await api.get('/auth/vapid-public-key');
-        if (!keyRes.data.success || !keyRes.data.publicKey) {
-          console.warn('VAPID public key not configured on server.');
+        if (!keyRes.data?.success || !keyRes.data?.publicKey) {
           return;
         }
         
         const vapidPublicKey = keyRes.data.publicKey;
         const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
 
-        const subscription = await registration.pushManager.subscribe({
+        // Check if an existing subscription exists with old server key
+        let subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          try {
+            await subscription.unsubscribe();
+          } catch (unsubErr) {
+            console.warn('Unsubscribe previous push error:', unsubErr);
+          }
+        }
+
+        subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
         });
 
         await api.post('/auth/subscribe', subscription);
-        console.log('Web Push subscription registered successfully.');
       } catch (error) {
-        console.error('Failed to subscribe to Web Push notifications:', error);
+        console.warn('Web Push subscription notice:', error?.message || error);
       }
     }
   };
