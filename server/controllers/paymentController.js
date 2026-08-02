@@ -1,22 +1,32 @@
-const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 
-// Initialize Razorpay instance lazily or safely
+// Lazy / safe Razorpay SDK loader (so missing npm package won't crash Express startup)
+let RazorpaySDK = null;
+try {
+  RazorpaySDK = require('razorpay');
+} catch (e) {
+  // SDK not installed, will use native REST API
+}
+
 const getRazorpayInstance = () => {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-  if (!keyId || !keySecret) {
+  if (!keyId || !keySecret || !RazorpaySDK) {
     return null;
   }
 
-  return new Razorpay({
-    key_id: keyId,
-    key_secret: keySecret
-  });
+  try {
+    return new RazorpaySDK({
+      key_id: keyId,
+      key_secret: keySecret
+    });
+  } catch (err) {
+    return null;
+  }
 };
 
 // @desc    Create Razorpay Order
@@ -38,8 +48,11 @@ exports.createOrder = async (req, res) => {
     const price = plan === 'elite' ? (settings.elitePrice || 1999) : (settings.premiumPrice || 999);
     const mode = settings.paymentGatewayMode || process.env.PAYMENT_GATEWAY_MODE || 'live';
 
-    // If payment gateway mode is mock, return mock order indicator
-    if (mode === 'mock') {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    // If payment gateway mode is mock or live keys missing, fallback to mock mode
+    if (mode === 'mock' || !keyId || !keySecret) {
       return res.status(200).json({
         success: true,
         mode: 'mock',
@@ -49,20 +62,7 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const razorpay = getRazorpayInstance();
-    if (!razorpay) {
-      // Fallback to mock mode if keys are missing
-      console.warn('Razorpay keys missing in .env. Falling back to mock mode.');
-      return res.status(200).json({
-        success: true,
-        mode: 'mock',
-        plan,
-        amount: price,
-        message: 'Razorpay credentials not configured, falling back to mock payment'
-      });
-    }
-
-    const amountInPaise = price * 100;
+    const amountInPaise = Math.round(price * 100);
     const options = {
       amount: amountInPaise,
       currency: 'INR',
@@ -73,13 +73,41 @@ exports.createOrder = async (req, res) => {
       }
     };
 
-    const order = await razorpay.orders.create(options);
+    let order = null;
+
+    // Try creating order via Razorpay SDK first
+    const rzp = getRazorpayInstance();
+    if (rzp) {
+      try {
+        order = await rzp.orders.create(options);
+      } catch (sdkErr) {
+        console.warn('Razorpay SDK order creation error, trying REST API:', sdkErr.message);
+      }
+    }
+
+    // Direct REST API fallback (works even if SDK package is not installed)
+    if (!order) {
+      const authHeader = 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+      const apiRes = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify(options)
+      });
+      const data = await apiRes.json();
+      if (!apiRes.ok || !data.id) {
+        throw new Error(data.error?.description || 'Razorpay order creation failed');
+      }
+      order = data;
+    }
 
     return res.status(200).json({
       success: true,
       mode: 'live',
       order,
-      keyId: process.env.RAZORPAY_KEY_ID,
+      keyId: keyId,
       plan,
       amount: price
     });

@@ -44,26 +44,41 @@ const PlansPage = () => {
       // Step 1: Create Order via backend API
       const orderRes = await api.post('/payment/create-order', { plan: planName });
       
-      if (!orderRes.data.success) {
-        throw new Error(orderRes.data.message || 'Failed to create payment order');
+      if (!orderRes.data || !orderRes.data.success) {
+        throw new Error(orderRes.data?.message || 'Failed to create payment order');
       }
 
       const { mode, order, keyId } = orderRes.data;
 
       // Mock Mode Fallback (if live keys missing or mode is set to mock)
-      if (mode === 'mock' || !window.Razorpay || !keyId) {
+      if (mode === 'mock' || !keyId) {
         toast.loading('Processing payment (Mock Gateway)...', { id: 'payment' });
         await new Promise(resolve => setTimeout(resolve, 1200));
 
         const verifyRes = await api.post('/payment/verify-payment', { plan: planName });
-        if (verifyRes.data.success) {
+        if (verifyRes.data && verifyRes.data.success) {
           toast.success(`Payment Successful! Upgraded to ${planName.toUpperCase()} plan.`, { id: 'payment' });
           await refreshUser();
           navigate('/dashboard');
         } else {
-          throw new Error(verifyRes.data.message || 'Payment upgrade failed');
+          throw new Error(verifyRes.data?.message || 'Payment upgrade failed');
         }
         return;
+      }
+
+      // Ensure Razorpay SDK script is ready
+      if (!window.Razorpay) {
+        const loadScript = () => new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+        const isLoaded = await loadScript();
+        if (!isLoaded || !window.Razorpay) {
+          throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+        }
       }
 
       // Live Razorpay Modal Flow
@@ -95,12 +110,12 @@ const PlansPage = () => {
               plan: planName
             });
 
-            if (verifyRes.data.success) {
+            if (verifyRes.data && verifyRes.data.success) {
               toast.success(`Payment Successful! Upgraded to ${planName.toUpperCase()} plan.`, { id: 'payment-verify' });
               await refreshUser();
               navigate('/dashboard');
             } else {
-              toast.error(verifyRes.data.message || 'Payment verification failed', { id: 'payment-verify' });
+              toast.error(verifyRes.data?.message || 'Payment verification failed', { id: 'payment-verify' });
             }
           } catch (verifyError) {
             console.error('Payment Verification Error:', verifyError);
@@ -111,7 +126,7 @@ const PlansPage = () => {
         },
         modal: {
           ondismiss: function () {
-            toast.error('Payment cancelled by user', { id: 'payment' });
+            toast.error('Payment cancelled', { id: 'payment' });
             setLoading(false);
           }
         }
