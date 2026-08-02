@@ -271,7 +271,7 @@ const SearchProfiles = () => {
                     <option value="All">All Sects</option>
                     <option value="Sunni">Sunni</option>
                     <option value="Shia">Shia</option>
-                    <option value="Sufi">Sufi</option>
+                    <option value="Ahle Hadees">Ahle Hadees</option>
                     <option value="No Preference">No Preference</option>
                   </select>
                   {!isPremium && <div className="absolute inset-0 cursor-pointer" onClick={(e) => handlePremiumClick(e, 'Sect Filter')}></div>}

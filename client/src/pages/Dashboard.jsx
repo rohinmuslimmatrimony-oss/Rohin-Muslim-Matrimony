@@ -120,17 +120,27 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    if (typeof refreshUser === 'function') {
+      refreshUser();
+    }
+  }, []);
+
+  useEffect(() => {
     if (user && user.role !== 'admin') {
       fetchDailyRecommendations();
       fetchMyRequests();
     }
-  }, [user]);
+  }, [user?._id]);
 
   const recordDailyView = (profileUserId) => {
     if (!profileUserId || recordedViewsRef.current.has(profileUserId)) return;
     recordedViewsRef.current.add(profileUserId);
     if (user?._id) addDailyViewedId(user._id, profileUserId);
-    api.post(`/profiles/daily-recommendations/view/${profileUserId}`).catch(console.error);
+    api.post(`/profiles/daily-recommendations/view/${profileUserId}`)
+      .then(() => {
+        if (typeof refreshUser === 'function') refreshUser();
+      })
+      .catch(console.error);
   };
 
   const handleSkipDaily = (profileId) => {
@@ -478,33 +488,39 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
+          {(() => {
+            const viewedCount = user?.viewedCount ?? (Array.isArray(user?.viewedProfiles) ? user.viewedProfiles.length : 0);
+            const viewLimit = user?.viewLimit || (user?.plan === 'elite' ? 99999 : (user?.plan === 'premium' ? 30 : 5));
+            const isUnlimited = viewLimit > 9000;
 
-          {/* View Limit Card */}
-          <div className="unique-card-crimson p-4 md:py-3 md:px-4 md:h-[165px] flex flex-col justify-between">
-            <div>
-              <h3 className="text-[#4f080e] text-sm font-bold uppercase tracking-wider mb-2">Daily Profile Views</h3>
-              <div className="flex items-end justify-between mb-1.5">
-                <span className="text-3xl md:text-4xl font-bold text-crimson-950">
-                  {user.viewLimit > 9000 ? 'Unlimited' : `${user.viewedCount || 0} / ${user.viewLimit}`}
-                </span>
+            return (
+              <div className="unique-card-crimson p-4 md:py-3 md:px-4 md:h-[165px] flex flex-col justify-between">
+                <div>
+                  <h3 className="text-[#4f080e] text-sm font-bold uppercase tracking-wider mb-2">Daily Profile Views</h3>
+                  <div className="flex items-end justify-between mb-1.5">
+                    <span className="text-3xl md:text-4xl font-bold text-crimson-950">
+                      {isUnlimited ? 'Unlimited' : `${viewedCount} / ${viewLimit}`}
+                    </span>
+                  </div>
+                </div>
+                {!isUnlimited ? (
+                  <div className="w-full">
+                    <div className="w-full bg-slate-200 rounded-full h-2 mb-1.5 overflow-hidden shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-crimson-600 to-gold-400 h-2 rounded-full transition-all duration-500" 
+                        style={{ width: `${Math.min((viewedCount / viewLimit) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-slate-500">Limits reset at midnight.</p>
+                  </div>
+                ) : (
+                  <p className="text-sm font-medium text-crimson-700 bg-crimson-50 px-2.5 py-1.5 rounded-md inline-block border border-crimson-200 w-full text-center">
+                    You have unrestricted browsing access.
+                  </p>
+                )}
               </div>
-            </div>
-            {user.viewLimit < 9000 ? (
-               <div className="w-full">
-                 <div className="w-full bg-slate-200 rounded-full h-2 mb-1.5 overflow-hidden shadow-inner">
-                   <div 
-                     className="bg-gradient-to-r from-crimson-600 to-gold-400 h-2 rounded-full" 
-                     style={{ width: `${Math.min(((user.viewedCount || 0) / user.viewLimit) * 100, 100)}%` }}
-                   ></div>
-                 </div>
-                 <p className="text-sm text-slate-500">Limits reset at midnight.</p>
-               </div>
-            ) : (
-               <p className="text-sm font-medium text-crimson-700 bg-crimson-50 px-2.5 py-1.5 rounded-md inline-block border border-crimson-200 w-full text-center">
-                 You have unrestricted browsing access.
-               </p>
-            )}
-          </div>
+            );
+          })()}
           
           {/* Profile Status Card */}
           <div className="unique-card-hybrid p-4 md:py-3 md:px-4 md:h-[165px] flex flex-col justify-between">

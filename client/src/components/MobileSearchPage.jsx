@@ -349,7 +349,7 @@ const MobileSearchPage = ({ onApplyFilters }) => {
   // Option Lists
   const maritalOptions = ['Any', 'Never Married', 'Divorced', 'Separated', 'Widowed', 'Annulled'];
   const tongueOptions = ['Any', 'Urdu', 'Hindi', 'Telugu', 'Tamil', 'Malayalam', 'Kannada', 'Bengali', 'English', 'Arabic'];
-  const sectOptions = ['Any', 'Sunni', 'Shia', 'Open to all'];
+  const sectOptions = ['Any', 'Sunni', 'Shia', 'Ahle Hadees', 'Open to all'];
   const casteOptions = ['Any', 'Syed', 'Sheikh', 'Pathan', 'Ansari', 'Qureshi', 'Mughal', 'Mirza', 'No caste', 'Others'];
   
   // Real world data

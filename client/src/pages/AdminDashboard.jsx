@@ -2002,91 +2002,202 @@ const AdminDashboard = () => {
 
       {/* OFFLINE USER REGISTRATION MODAL */}
       {isOfflineModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-750 rounded-2xl p-6 w-full max-w-2xl shadow-2xl my-8 text-slate-200">
-            <h3 className="text-xl font-serif font-bold text-white mb-2 flex items-center gap-2"><FaPlus /> Offline User Registration</h3>
-            <p className="text-xs text-slate-400 mb-6">Manually setup a walking or phone-in customer profile. This automatically verifies their account.</p>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl p-6 md:p-8 w-full max-w-4xl shadow-2xl my-8 text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+              <div>
+                <h3 className="text-2xl font-serif font-bold text-white flex items-center gap-2.5">
+                  <span className="w-8 h-8 rounded-lg bg-crimson-600/20 border border-crimson-500/30 flex items-center justify-center text-crimson-400 text-sm">
+                    <FaPlus />
+                  </span>
+                  Offline User Registration
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">Manually setup a walk-in or phone-in customer profile. This automatically verifies their account.</p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsOfflineModalOpen(false)} 
+                className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors text-lg"
+              >
+                ✕
+              </button>
+            </div>
             
-            <form onSubmit={handleCreateOfflineUser} className="space-y-4">
+            <form onSubmit={handleCreateOfflineUser} className="space-y-6">
               
-              <div className="bg-slate-850 p-4 rounded-xl border border-slate-800 space-y-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-850 pb-1">1. Credentials & Plan Settings</span>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
-                    <input required type="email" value={offlineForm.email} onChange={(e) => setOfflineForm({...offlineForm, email: e.target.value})} placeholder="user@gmail.com" className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+              {/* SECTION 1 */}
+              <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4 shadow-inner">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-widest block border-b border-slate-800 pb-2">
+                  1. Credentials & Plan Settings
+                </span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Email Address *</label>
+                    <input 
+                      required 
+                      type="email" 
+                      value={offlineForm.email} 
+                      onChange={(e) => setOfflineForm({...offlineForm, email: e.target.value})} 
+                      placeholder="user@gmail.com" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Temporary Password</label>
-                    <input required type="text" value={offlineForm.password} onChange={(e) => setOfflineForm({...offlineForm, password: e.target.value})} placeholder="Pass1234" className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Temporary Password *</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={offlineForm.password} 
+                      onChange={(e) => setOfflineForm({...offlineForm, password: e.target.value})} 
+                      placeholder="Pass1234" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Plan Tier Selection</label>
-                    <select value={offlineForm.plan} onChange={(e) => setOfflineForm({...offlineForm, plan: e.target.value})} className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-                      <option value="free">Free Tier</option>
-                      <option value="premium">Premium Tier</option>
-                      <option value="elite">Elite Tier</option>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Plan Tier Selection *</label>
+                    <select 
+                      value={offlineForm.plan} 
+                      onChange={(e) => setOfflineForm({...offlineForm, plan: e.target.value})} 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white focus:outline-none shadow-sm cursor-pointer transition-all"
+                    >
+                      <option value="free" className="bg-slate-900 text-white py-2 text-[15px]">Free Tier</option>
+                      <option value="premium" className="bg-slate-900 text-white py-2 text-[15px]">Premium Tier</option>
+                      <option value="elite" className="bg-slate-900 text-white py-2 text-[15px]">Elite Tier</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-850 p-4 rounded-xl border border-slate-800 space-y-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-850 pb-1">2. Biodata & Personal Profile Details</span>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Full Name</label>
-                    <input required type="text" value={offlineForm.name} onChange={(e) => setOfflineForm({...offlineForm, name: e.target.value})} placeholder="Member Name" className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+              {/* SECTION 2 */}
+              <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-5 shadow-inner">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-widest block border-b border-slate-800 pb-2">
+                  2. Biodata & Personal Profile Details
+                </span>
+
+                {/* Row 1 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                  <div className="space-y-1.5 sm:col-span-2 md:col-span-1">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Full Name *</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={offlineForm.name} 
+                      onChange={(e) => setOfflineForm({...offlineForm, name: e.target.value})} 
+                      placeholder="e.g. Mohammed Farooq" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Age</label>
-                    <input required type="number" value={offlineForm.age} onChange={(e) => setOfflineForm({...offlineForm, age: e.target.value})} placeholder="25" className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Age *</label>
+                    <input 
+                      required 
+                      type="number" 
+                      value={offlineForm.age} 
+                      onChange={(e) => setOfflineForm({...offlineForm, age: e.target.value})} 
+                      placeholder="25" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
-                    <select value={offlineForm.gender} onChange={(e) => setOfflineForm({...offlineForm, gender: e.target.value})} className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Gender *</label>
+                    <select 
+                      value={offlineForm.gender} 
+                      onChange={(e) => setOfflineForm({...offlineForm, gender: e.target.value})} 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white focus:outline-none shadow-sm cursor-pointer transition-all"
+                    >
+                      <option value="male" className="bg-slate-900 text-white py-2 text-[15px]">Male</option>
+                      <option value="female" className="bg-slate-900 text-white py-2 text-[15px]">Female</option>
                     </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sect</label>
-                    <select value={offlineForm.sect} onChange={(e) => setOfflineForm({...offlineForm, sect: e.target.value})} className="w-full bg-slate-850 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
-                      <option value="Sunni">Sunni</option>
-                      <option value="Shia">Shia</option>
-                      <option value="Other">Other / Any</option>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Sect / Category *</label>
+                    <select 
+                      value={offlineForm.sect} 
+                      onChange={(e) => setOfflineForm({...offlineForm, sect: e.target.value})} 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white focus:outline-none shadow-sm cursor-pointer transition-all"
+                    >
+                      <option value="Sunni" className="bg-slate-900 text-white py-2 text-[15px]">Sunni</option>
+                      <option value="Shia" className="bg-slate-900 text-white py-2 text-[15px]">Shia</option>
+                      <option value="Ahle Hadees" className="bg-slate-900 text-white py-2 text-[15px]">Ahle Hadees</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">City Location</label>
-                    <input required type="text" value={offlineForm.city} onChange={(e) => setOfflineForm({...offlineForm, city: e.target.value})} placeholder="e.g. Hyderabad" className="w-full bg-slate-855 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+                {/* Row 2 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">City Location *</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={offlineForm.city} 
+                      onChange={(e) => setOfflineForm({...offlineForm, city: e.target.value})} 
+                      placeholder="e.g. Hyderabad" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Profession</label>
-                    <input required type="text" value={offlineForm.profession} onChange={(e) => setOfflineForm({...offlineForm, profession: e.target.value})} placeholder="Software Engineer" className="w-full bg-slate-855 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Profession *</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={offlineForm.profession} 
+                      onChange={(e) => setOfflineForm({...offlineForm, profession: e.target.value})} 
+                      placeholder="e.g. Software Engineer" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Highest Education</label>
-                    <input required type="text" value={offlineForm.education} onChange={(e) => setOfflineForm({...offlineForm, education: e.target.value})} placeholder="B.Tech" className="w-full bg-slate-855 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Highest Education *</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={offlineForm.education} 
+                      onChange={(e) => setOfflineForm({...offlineForm, education: e.target.value})} 
+                      placeholder="e.g. B.Tech / MBA" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Phone / Wali Contact</label>
-                    <input required type="text" value={offlineForm.phoneNumber} onChange={(e) => setOfflineForm({...offlineForm, phoneNumber: e.target.value})} placeholder="+91 90000 00000" className="w-full bg-slate-855 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Phone / Wali Contact *</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={offlineForm.phoneNumber} 
+                      onChange={(e) => setOfflineForm({...offlineForm, phoneNumber: e.target.value})} 
+                      placeholder="+91 98765 43210" 
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl px-4 py-3 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none shadow-sm transition-all" 
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Short description (About profile)</label>
-                  <textarea rows={2} value={offlineForm.about} onChange={(e) => setOfflineForm({...offlineForm, about: e.target.value})} placeholder="Write details about physical build, deen level, and background..." className="w-full bg-slate-850 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none resize-none" />
+                {/* Row 3 */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Short Description (About Profile)</label>
+                  <textarea 
+                    rows={3} 
+                    value={offlineForm.about} 
+                    onChange={(e) => setOfflineForm({...offlineForm, about: e.target.value})} 
+                    placeholder="Write details about physical build, deen level, family background, and expectations..." 
+                    className="w-full bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl p-4 text-[15px] font-medium text-white placeholder:text-slate-500 focus:outline-none resize-none shadow-sm transition-all" 
+                  />
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 animate-fadeIn">
-                <button type="button" onClick={() => setIsOfflineModalOpen(false)} className="px-4 py-2 text-slate-400 font-bold hover:bg-slate-800 rounded-lg text-sm">Cancel</button>
-                <button type="submit" className="px-6 py-2 bg-crimson-600 hover:bg-crimson-500 text-white font-bold rounded-lg text-sm transition-colors">Register User</button>
+              <div className="flex gap-4 justify-end pt-3 border-t border-slate-800 animate-fadeIn">
+                <button 
+                  type="button" 
+                  onClick={() => setIsOfflineModalOpen(false)} 
+                  className="px-6 py-3 text-slate-400 font-bold hover:bg-slate-800 rounded-xl text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-8 py-3 bg-crimson-600 hover:bg-crimson-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-crimson-600/30 active:scale-95"
+                >
+                  Register User
+                </button>
               </div>
             </form>
           </div>

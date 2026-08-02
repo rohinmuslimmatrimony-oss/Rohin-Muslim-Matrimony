@@ -287,3 +287,24 @@
 .animate-fadeIn {
   animation: fadeIn 0.25s ease-out forwards;
 }
+
+/* Elevated Dropdown & Select Options Styling */
+select {
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+select option:hover,
+select option:checked {
+  background-color: #7a0e19 !important;
+  color: #ffffff !important;
+}
+

@@ -454,9 +454,8 @@ const EditProfile = () => {
                     <select name="sect" value={formData.sect} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#fffdfa]/60 border border-[#d4af37]/25 text-slate-800 focus:border-[#d4af37] focus:bg-white focus:outline-none transition-all text-sm font-semibold shadow-sm">
                       <option value="Sunni" className="bg-white text-slate-800">Sunni</option>
                       <option value="Shia" className="bg-white text-slate-800">Shia</option>
-                      <option value="Sufi" className="bg-white text-slate-800">Sufi</option>
+                      <option value="Ahle Hadees" className="bg-white text-slate-800">Ahle Hadees</option>
                       <option value="Other" className="bg-white text-slate-800">Other</option>
-                      <option value="No Preference" className="bg-white text-slate-800">No Preference</option>
                     </select>
                   </div>
                   <div className="space-y-1.5">
@@ -679,7 +678,7 @@ const EditProfile = () => {
                     <option value="No Preference" className="bg-[#4f080e] text-white">No Preference</option>
                     <option value="Sunni" className="bg-[#4f080e] text-white">Sunni</option>
                     <option value="Shia" className="bg-[#4f080e] text-white">Shia</option>
-                    <option value="Sufi" className="bg-[#4f080e] text-white">Sufi</option>
+                    <option value="Ahle Hadees" className="bg-[#4f080e] text-white">Ahle Hadees</option>
                   </select>
                 </div>
                 <div className="space-y-1.5 bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-sm">

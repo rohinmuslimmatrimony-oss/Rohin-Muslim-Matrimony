@@ -1,8 +1,24 @@
 const User = require('../models/User');
 const Profile = require('../models/Profile');
+const Settings = require('../models/Settings');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 const Transaction = require('../models/Transaction');
+
+// Helper to get plan features
+const getPlanFeatures = async (plan) => {
+  let settings = await Settings.findOne();
+  if (!settings) {
+    settings = {
+      freePlanFeatures: { viewFullBio: false, viewContactDetails: false, chat: false, shortlist: false, dailyViewLimit: 5 },
+      premiumPlanFeatures: { viewFullBio: true, viewContactDetails: true, chat: true, shortlist: true, dailyViewLimit: 30 },
+      elitePlanFeatures: { viewFullBio: true, viewContactDetails: true, chat: true, shortlist: true, dailyViewLimit: 99999 }
+    };
+  }
+  if (plan === 'premium') return settings.premiumPlanFeatures;
+  if (plan === 'elite') return settings.elitePlanFeatures;
+  return settings.freePlanFeatures;
+};
 
 // Helper to generate token
 const generateToken = (id) => {
@@ -11,7 +27,6 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register a new user & create initial profile
 // @desc    Register a new user & create initial profile
 // @route   POST /api/auth/register
 // @access  Public
@@ -64,7 +79,8 @@ exports.register = async (req, res) => {
       maritalStatus: maritalStatus || 'Never Married',
       height: height || '5\'6"',
       motherTongue: motherTongue || 'Urdu',
-      namazFrequency: namazFrequency || 'Usually Praying',
+      namazFrequency: namazFrequency || 'Sometimes',
+      phoneNumber: waliContact || '',
       waliContact: waliContact || '',
       familyDetails: {
         fatherOccupation: fatherOccupation || '',
@@ -72,10 +88,11 @@ exports.register = async (req, res) => {
         siblingsCount: siblingsCount ? parseInt(siblingsCount) : 0
       },
       partnerPreferences: {
-        ageRange: partnerAgeRange || '18-30',
+        ageRange: partnerAgeRange || '20-30',
         sectPreference: partnerSect || 'No Preference',
         educationPreference: partnerEducation || "Doesn't Matter"
-      }
+      },
+      isPhotoPublic: true
     });
 
     // Generate JWT
@@ -103,11 +120,14 @@ exports.register = async (req, res) => {
           <p style="font-size: 12px; color: #666666; text-align: center; margin-top: 30px; border-top: 1px solid #e6dccf; padding-top: 15px;">
             <strong>Rohin Muslim Matrimony Office Address:</strong><br>
             D.No.12-13-86, Abdulkhader Street, Islampet, Vijayawada-1<br>
-            Contact: 7386083446, 7075900448 | Email: shaikhabeebiti@gmail.com
+            Opp. Masjid-E-Al-Huda | Contact: +91 91771 03522 / +91 93902 38812
           </p>
         </div>
       `
     }).catch(err => console.error('Failed to trigger email asynchronously:', err));
+
+    const planFeatures = await getPlanFeatures(user.plan);
+    const limit = planFeatures?.dailyViewLimit || user.viewLimit || 5;
 
     return res.status(201).json({
       success: true,
@@ -117,7 +137,10 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         plan: user.plan,
-        viewLimit: user.viewLimit,
+        viewLimit: limit,
+        viewedCount: 0,
+        viewedProfiles: [],
+        viewedContacts: [],
         isManuallyVerified: user.isManuallyVerified,
       },
       profile,
@@ -170,6 +193,9 @@ exports.login = async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
+    const planFeatures = await getPlanFeatures(user.plan);
+    const limit = planFeatures?.dailyViewLimit || user.viewLimit || (user.plan === 'elite' ? 99999 : (user.plan === 'premium' ? 30 : 5));
+
     return res.status(200).json({
       success: true,
       token,
@@ -178,7 +204,10 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         plan: user.plan,
-        viewLimit: user.viewLimit,
+        viewLimit: limit,
+        viewedCount: (user.viewedProfiles || []).length,
+        viewedProfiles: user.viewedProfiles || [],
+        viewedContacts: user.viewedContacts || [],
         isManuallyVerified: user.isManuallyVerified,
       },
       profile,
@@ -211,6 +240,9 @@ exports.getMe = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    const planFeatures = await getPlanFeatures(user.plan);
+    const limit = planFeatures?.dailyViewLimit || user.viewLimit || (user.plan === 'elite' ? 99999 : (user.plan === 'premium' ? 30 : 5));
+
     return res.status(200).json({
       success: true,
       user: {
@@ -218,10 +250,11 @@ exports.getMe = async (req, res) => {
         email: user.email,
         role: user.role,
         plan: user.plan,
-        viewLimit: user.viewLimit,
-        isManuallyVerified: user.isManuallyVerified,
+        viewLimit: limit,
+        viewedCount: (user.viewedProfiles || []).length,
         viewedProfiles: user.viewedProfiles || [],
         viewedContacts: user.viewedContacts || [],
+        isManuallyVerified: user.isManuallyVerified,
       },
       profile,
     });

@@ -50,7 +50,7 @@ const ProfileSchema = new mongoose.Schema(
     sect: {
       type: String,
       default: 'Sunni',
-      enum: ['Sunni', 'Shia', 'Sufi', 'Other', 'No Preference'],
+      enum: ['Sunni', 'Shia', 'Ahle Hadees', 'Sufi', 'Other', 'No Preference'],
     },
     namazFrequency: {
       type: String,

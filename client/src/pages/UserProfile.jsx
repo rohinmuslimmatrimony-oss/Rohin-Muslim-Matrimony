@@ -15,7 +15,7 @@ import DefaultAvatar from '../components/DefaultAvatar';
 const UserProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, getCompleteness } = useContext(AuthContext);
+  const { user, refreshUser, getCompleteness } = useContext(AuthContext);
   
   const [profile, setProfile] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -41,6 +41,9 @@ const UserProfile = () => {
         setProfile(profData);
         setIsConnected(res.data.isConnected);
         setGalleryRequestStatus(res.data.galleryRequestStatus);
+        if (typeof refreshUser === 'function') {
+          refreshUser();
+        }
 
         // Fetch interest request status
         try {

@@ -186,12 +186,12 @@ exports.getProfiles = async (req, res) => {
   }
 };
 
-// @desc    Get a single profile by ID (Enforces view limits & masks content for Free tier)
+// @desc    Get single profile details (with plan & privacy checks)
 // @route   GET /api/profiles/:id
 // @access  Private
 exports.getProfileById = async (req, res) => {
   try {
-    const targetUserId = req.params.id;
+    const rawId = req.params.id;
     const currentUserId = req.user.id;
 
     const viewer = await User.findById(currentUserId);
@@ -199,12 +199,29 @@ exports.getProfileById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Viewer account not found' });
     }
 
+    if (!viewer.viewedProfiles) {
+      viewer.viewedProfiles = [];
+    }
+
+    // Resolve profile by User ID or Profile _id
+    let profile = await Profile.findOne({ user: rawId }).populate('user', 'email role plan isManuallyVerified');
+    if (!profile) {
+      profile = await Profile.findById(rawId).populate('user', 'email role plan isManuallyVerified');
+    }
+
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    const targetUserId = (profile.user?._id ? profile.user._id : profile.user).toString();
     const isAdmin = viewer.role === 'admin';
-    const isOwnProfile = targetUserId === currentUserId;
+    const isOwnProfile = targetUserId === currentUserId.toString();
     const planFeatures = await getPlanFeatures(viewer.plan);
 
     if (!isAdmin && !isOwnProfile) {
-      const hasViewedBefore = viewer.viewedProfiles.includes(targetUserId);
+      const hasViewedBefore = viewer.viewedProfiles.some(
+        (id) => id && id.toString() === targetUserId
+      );
 
       if (!hasViewedBefore) {
         const currentViews = viewer.viewedProfiles.length;
@@ -223,14 +240,7 @@ exports.getProfileById = async (req, res) => {
       }
     }
 
-    const profile = await Profile.findOne({ user: targetUserId })
-      .populate('user', 'email role plan isManuallyVerified');
-
-    if (!profile) {
-      return res.status(404).json({ success: false, message: 'Profile not found' });
-    }
-
-    const isConnected = profile.connections.includes(currentUserId);
+    const isConnected = profile.connections && profile.connections.some(c => c.toString() === currentUserId.toString());
 
     // Enforce profile privacy settings
     if (!isOwnProfile && !isAdmin) {
@@ -310,7 +320,8 @@ exports.getProfileById = async (req, res) => {
         }
       } else {
         // They are allowed by plan and connection. Now check contactViewLimit.
-        const hasViewedContactBefore = viewer.viewedContacts.includes(targetUserId);
+        if (!viewer.viewedContacts) viewer.viewedContacts = [];
+        const hasViewedContactBefore = viewer.viewedContacts.some(id => id && id.toString() === targetUserId);
         if (!hasViewedContactBefore) {
           const contactLimit = planFeatures.contactViewLimit || 10;
           if (viewer.viewedContacts.length >= contactLimit) {
