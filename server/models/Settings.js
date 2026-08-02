@@ -5,12 +5,12 @@ const FeatureSchema = new mongoose.Schema({
   viewContactDetails: { type: Boolean, default: false },
   chat: { type: Boolean, default: false },
   shortlist: { type: Boolean, default: false },
-  dailyViewLimit: { type: Number, default: 5 },
-  dailyInterestLimit: { type: Number, default: 3 },
+  totalViewLimit: { type: Number, default: 10 },
+  totalInterestLimit: { type: Number, default: 5 },
   profileBoost: { type: Boolean, default: false },
   advancedFilters: { type: Boolean, default: false },
   contactViewLimit: { type: Number, default: 0 },
-  dailyRecommendationLimit: { type: Number, default: 5 }
+  totalRecommendationLimit: { type: Number, default: 10 }
 });
 
 const SettingsSchema = new mongoose.Schema(
@@ -35,12 +35,12 @@ const SettingsSchema = new mongoose.Schema(
         viewContactDetails: false,
         chat: false,
         shortlist: false,
-        dailyViewLimit: 5,
-        dailyInterestLimit: 3,
+        totalViewLimit: 10,
+        totalInterestLimit: 5,
         profileBoost: false,
         advancedFilters: false,
         contactViewLimit: 0,
-        dailyRecommendationLimit: 5
+        totalRecommendationLimit: 10
       })
     },
     premiumPlanFeatures: {
@@ -50,12 +50,12 @@ const SettingsSchema = new mongoose.Schema(
         viewContactDetails: true,
         chat: true,
         shortlist: true,
-        dailyViewLimit: 30,
-        dailyInterestLimit: 30,
+        totalViewLimit: 100,
+        totalInterestLimit: 50,
         profileBoost: true,
         advancedFilters: true,
-        contactViewLimit: 50,
-        dailyRecommendationLimit: 10
+        contactViewLimit: 30,
+        totalRecommendationLimit: 30
       })
     },
     elitePlanFeatures: {
@@ -65,12 +65,12 @@ const SettingsSchema = new mongoose.Schema(
         viewContactDetails: true,
         chat: true,
         shortlist: true,
-        dailyViewLimit: 99999,
-        dailyInterestLimit: 99999,
+        totalViewLimit: 99999,
+        totalInterestLimit: 99999,
         profileBoost: true,
         advancedFilters: true,
         contactViewLimit: 99999,
-        dailyRecommendationLimit: 14
+        totalRecommendationLimit: 99999
       })
     },
     // Support Contact Configuration

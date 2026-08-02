@@ -25,27 +25,14 @@ exports.sendInterest = async (req, res) => {
     }
 
     const senderUser = await User.findById(senderId);
-    let settings = await Settings.findOne();
-    if (!settings) {
-      settings = {
-        freePlanFeatures: { dailyInterestLimit: 3 },
-        premiumPlanFeatures: { dailyInterestLimit: 30 },
-        elitePlanFeatures: { dailyInterestLimit: 99999 }
-      };
-    }
-    
-    let planLimit = settings.freePlanFeatures.dailyInterestLimit;
-    if (senderUser.plan === 'premium') planLimit = settings.premiumPlanFeatures.dailyInterestLimit;
-    if (senderUser.plan === 'elite') planLimit = settings.elitePlanFeatures.dailyInterestLimit;
 
-    // Filter out interests sent older than 24 hours
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    senderUser.interestsSentToday = senderUser.interestsSentToday.filter(i => i.sentAt > oneDayAgo);
-    
-    if (senderUser.interestsSentToday.length >= planLimit) {
+    // Quota-based interest limit check
+    const remainingInterestQuota = senderUser.quotaInterests ?? 0;
+    if (remainingInterestQuota <= 0) {
       return res.status(403).json({
         success: false,
-        message: `Daily interest limit reached (${planLimit}). Upgrade your plan to send more interests!`
+        quotaExhausted: true,
+        message: `Interest quota exhausted. Please renew your plan to send more interests!`
       });
     }
 
@@ -74,8 +61,8 @@ exports.sendInterest = async (req, res) => {
       status: 'pending'
     });
 
-    // Record the interest sent today
-    senderUser.interestsSentToday.push({ targetUser: receiverId });
+    // Deduct 1 from quota
+    senderUser.quotaInterests = remainingInterestQuota - 1;
     await senderUser.save();
 
     const senderProfile = await Profile.findOne({ user: senderId });

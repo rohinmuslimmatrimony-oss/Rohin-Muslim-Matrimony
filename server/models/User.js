@@ -30,10 +30,27 @@ const UserSchema = new mongoose.Schema(
       enum: ['free', 'premium', 'elite'],
       default: 'free',
     },
+    // Legacy field kept for backward compat (admin UI may reference it)
     viewLimit: {
       type: Number,
-      default: 5,
+      default: 10,
     },
+    // ── Quota-Based Plan System ──────────────────────────────────────
+    // Remaining quota counts per plan cycle.
+    // Decremented on each action, reset to 0 on plan renew/upgrade.
+    quotaProfileViews: {
+      type: Number,
+      default: 10,   // Free default
+    },
+    quotaInterests: {
+      type: Number,
+      default: 5,    // Free default
+    },
+    quotaContactViews: {
+      type: Number,
+      default: 0,    // Free default (no contact access)
+    },
+    // ─────────────────────────────────────────────────────────────────
     viewedProfiles: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -45,12 +62,6 @@ const UserSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
       },
-    ],
-    interestsSentToday: [
-      {
-        targetUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        sentAt: { type: Date, default: Date.now }
-      }
     ],
     viewedContacts: [
       {

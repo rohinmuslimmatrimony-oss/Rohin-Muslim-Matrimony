@@ -8,9 +8,9 @@ const getPlanFeatures = async (plan) => {
   let settings = await Settings.findOne();
   if (!settings) {
     settings = {
-      freePlanFeatures: { viewFullBio: false, viewContactDetails: false, chat: false, shortlist: false, dailyViewLimit: 5 },
-      premiumPlanFeatures: { viewFullBio: true, viewContactDetails: true, chat: true, shortlist: true, dailyViewLimit: 30 },
-      elitePlanFeatures: { viewFullBio: true, viewContactDetails: true, chat: true, shortlist: true, dailyViewLimit: 99999 }
+      freePlanFeatures: { viewFullBio: false, viewContactDetails: false, chat: false, shortlist: false, totalViewLimit: 10 },
+      premiumPlanFeatures: { viewFullBio: true, viewContactDetails: true, chat: true, shortlist: true, totalViewLimit: 100 },
+      elitePlanFeatures: { viewFullBio: true, viewContactDetails: true, chat: true, shortlist: true, totalViewLimit: 99999 }
     };
   }
   if (plan === 'premium') return settings.premiumPlanFeatures;
@@ -224,17 +224,18 @@ exports.getProfileById = async (req, res) => {
       );
 
       if (!hasViewedBefore) {
-        const currentViews = viewer.viewedProfiles.length;
-        const allowedViews = planFeatures.dailyViewLimit;
-        
-        if (currentViews >= allowedViews) {
+        // Quota check — deduct 1 from remaining quota
+        const remainingQuota = viewer.quotaProfileViews ?? 0;
+        if (remainingQuota <= 0) {
           return res.status(403).json({
             success: false,
-            message: `Profile view limit reached (${allowedViews} profiles). Upgrade your plan to unlock more matches!`,
             limitExceeded: true,
+            quotaExhausted: true,
+            message: `Profile view quota exhausted. Please renew your plan to continue viewing profiles!`,
           });
         }
 
+        viewer.quotaProfileViews = remainingQuota - 1;
         viewer.viewedProfiles.push(targetUserId);
         await viewer.save();
       }
@@ -319,16 +320,17 @@ exports.getProfileById = async (req, res) => {
           profileData.user.email = '🔒 Email locked';
         }
       } else {
-        // They are allowed by plan and connection. Now check contactViewLimit.
+        // Contact allowed by plan — now check quota
         if (!viewer.viewedContacts) viewer.viewedContacts = [];
         const hasViewedContactBefore = viewer.viewedContacts.some(id => id && id.toString() === targetUserId);
         if (!hasViewedContactBefore) {
-          const contactLimit = planFeatures.contactViewLimit || 10;
-          if (viewer.viewedContacts.length >= contactLimit) {
-            profileData.phoneNumber = `🔒 Contact Limit Reached (${contactLimit} views). Upgrade to Elite!`;
-            profileData.waliContact = `🔒 Contact Limit Reached`;
-            if (profileData.user) profileData.user.email = `🔒 Contact Limit Reached`;
+          const remainingContactQuota = viewer.quotaContactViews ?? 0;
+          if (remainingContactQuota <= 0) {
+            profileData.phoneNumber = `🔒 Contact Quota Exhausted. Renew your plan to view more contacts!`;
+            profileData.waliContact = `🔒 Contact Quota Exhausted`;
+            if (profileData.user) profileData.user.email = `🔒 Contact Quota Exhausted`;
           } else {
+            viewer.quotaContactViews = remainingContactQuota - 1;
             viewer.viewedContacts.push(targetUserId);
             await viewer.save();
           }
@@ -344,7 +346,9 @@ exports.getProfileById = async (req, res) => {
       isConnected,
       galleryRequestStatus,
       viewedCount: viewer.viewedProfiles.length,
-      viewLimit: planFeatures.dailyViewLimit,
+      quotaProfileViews: viewer.quotaProfileViews ?? 0,
+      quotaContactViews: viewer.quotaContactViews ?? 0,
+      viewLimit: planFeatures.totalViewLimit,
       plan: viewer.plan
     });
   } catch (error) {

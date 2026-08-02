@@ -489,34 +489,53 @@ const Dashboard = () => {
             </div>
           </div>
           {(() => {
-            const viewedCount = user?.viewedCount ?? (Array.isArray(user?.viewedProfiles) ? user.viewedProfiles.length : 0);
-            const viewLimit = user?.viewLimit || (user?.plan === 'elite' ? 99999 : (user?.plan === 'premium' ? 30 : 5));
-            const isUnlimited = viewLimit > 9000;
+            const quotaProfileViews = user?.quotaProfileViews ?? 0;
+            const quotaInterests    = user?.quotaInterests ?? 0;
+            const quotaContactViews = user?.quotaContactViews ?? 0;
+            const isUnlimited = quotaProfileViews > 9000;
+            const quotaExhausted = !isUnlimited && quotaProfileViews <= 0 && quotaInterests <= 0;
 
             return (
               <div className="unique-card-crimson p-4 md:py-3 md:px-4 md:h-[165px] flex flex-col justify-between">
                 <div>
-                  <h3 className="text-[#4f080e] text-sm font-bold uppercase tracking-wider mb-2">Daily Profile Views</h3>
-                  <div className="flex items-end justify-between mb-1.5">
-                    <span className="text-3xl md:text-4xl font-bold text-crimson-950">
-                      {isUnlimited ? 'Unlimited' : `${viewedCount} / ${viewLimit}`}
-                    </span>
-                  </div>
-                </div>
-                {!isUnlimited ? (
-                  <div className="w-full">
-                    <div className="w-full bg-slate-200 rounded-full h-2 mb-1.5 overflow-hidden shadow-inner">
-                      <div 
-                        className="bg-gradient-to-r from-crimson-600 to-gold-400 h-2 rounded-full transition-all duration-500" 
-                        style={{ width: `${Math.min((viewedCount / viewLimit) * 100, 100)}%` }}
-                      ></div>
+                  <h3 className="text-[#4f080e] text-sm font-bold uppercase tracking-wider mb-2">Plan Quota Remaining</h3>
+                  {isUnlimited ? (
+                    <p className="text-sm font-medium text-crimson-700 bg-crimson-50 px-2.5 py-1.5 rounded-md inline-block border border-crimson-200 w-full text-center">
+                      ✨ Unlimited Access — Elite Plan
+                    </p>
+                  ) : quotaExhausted ? (
+                    <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center">
+                      <p className="text-red-700 font-bold text-xs">🔴 Quota Exhausted!</p>
+                      <p className="text-red-500 text-[10px] mt-0.5">Renew your plan to continue.</p>
+                      <button onClick={() => navigate('/plans')} className="mt-1.5 bg-crimson-700 hover:bg-crimson-800 text-white text-[10px] font-bold px-3 py-1 rounded-md transition-colors uppercase tracking-wider">
+                        Renew Plan →
+                      </button>
                     </div>
-                    <p className="text-sm text-slate-500">Limits reset at midnight.</p>
-                  </div>
-                ) : (
-                  <p className="text-sm font-medium text-crimson-700 bg-crimson-50 px-2.5 py-1.5 rounded-md inline-block border border-crimson-200 w-full text-center">
-                    You have unrestricted browsing access.
-                  </p>
+                  ) : (
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-600 font-semibold">👁️ Profile Views</span>
+                        <span className="font-bold text-crimson-800">{quotaProfileViews} left</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-gradient-to-r from-crimson-600 to-gold-400 h-1.5 rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min((quotaProfileViews / Math.max(quotaProfileViews + 1, 10)) * 100, 100)}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between text-xs mt-0.5">
+                        <span className="text-slate-600 font-semibold">💌 Interests</span>
+                        <span className="font-bold text-crimson-800">{quotaInterests} left</span>
+                      </div>
+                      {user?.plan !== 'free' && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-600 font-semibold">📞 Contact Views</span>
+                          <span className="font-bold text-crimson-800">{quotaContactViews} left</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {!isUnlimited && !quotaExhausted && (
+                  <p className="text-[10px] text-slate-400 font-medium mt-1">Quota resets on plan renewal.</p>
                 )}
               </div>
             );

@@ -5,6 +5,21 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 const Transaction = require('../models/Transaction');
 
+// Helper: get quota values from settings for a given plan
+const getPlanQuota = async (plan) => {
+  let settings = await Settings.findOne();
+  if (!settings) settings = await Settings.create({});
+  const features =
+    plan === 'elite' ? settings.elitePlanFeatures :
+    plan === 'premium' ? settings.premiumPlanFeatures :
+    settings.freePlanFeatures;
+  return {
+    quotaProfileViews: features.totalViewLimit ?? 10,
+    quotaInterests:    features.totalInterestLimit ?? 5,
+    quotaContactViews: features.contactViewLimit ?? 0,
+  };
+};
+
 // Helper to get plan features
 const getPlanFeatures = async (plan) => {
   let settings = await Settings.findOne();
@@ -95,6 +110,14 @@ exports.register = async (req, res) => {
       isPhotoPublic: true
     });
 
+    // Set initial quota from free plan settings
+    const freeQuota = await getPlanQuota('free');
+    user.quotaProfileViews = freeQuota.quotaProfileViews;
+    user.quotaInterests    = freeQuota.quotaInterests;
+    user.quotaContactViews = freeQuota.quotaContactViews;
+    user.viewLimit         = freeQuota.quotaProfileViews;
+    await user.save();
+
     // Generate JWT
     const token = generateToken(user._id);
 
@@ -126,9 +149,6 @@ exports.register = async (req, res) => {
       `
     }).catch(err => console.error('Failed to trigger email asynchronously:', err));
 
-    const planFeatures = await getPlanFeatures(user.plan);
-    const limit = planFeatures?.dailyViewLimit || user.viewLimit || 5;
-
     return res.status(201).json({
       success: true,
       token,
@@ -137,7 +157,10 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         plan: user.plan,
-        viewLimit: limit,
+        viewLimit: user.viewLimit,
+        quotaProfileViews: user.quotaProfileViews,
+        quotaInterests:    user.quotaInterests,
+        quotaContactViews: user.quotaContactViews,
         viewedCount: 0,
         viewedProfiles: [],
         viewedContacts: [],
@@ -193,9 +216,6 @@ exports.login = async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
-    const planFeatures = await getPlanFeatures(user.plan);
-    const limit = planFeatures?.dailyViewLimit || user.viewLimit || (user.plan === 'elite' ? 99999 : (user.plan === 'premium' ? 30 : 5));
-
     return res.status(200).json({
       success: true,
       token,
@@ -204,7 +224,10 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         plan: user.plan,
-        viewLimit: limit,
+        viewLimit: user.viewLimit,
+        quotaProfileViews: user.quotaProfileViews ?? 0,
+        quotaInterests:    user.quotaInterests ?? 0,
+        quotaContactViews: user.quotaContactViews ?? 0,
         viewedCount: (user.viewedProfiles || []).length,
         viewedProfiles: user.viewedProfiles || [],
         viewedContacts: user.viewedContacts || [],
@@ -240,9 +263,6 @@ exports.getMe = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const planFeatures = await getPlanFeatures(user.plan);
-    const limit = planFeatures?.dailyViewLimit || user.viewLimit || (user.plan === 'elite' ? 99999 : (user.plan === 'premium' ? 30 : 5));
-
     return res.status(200).json({
       success: true,
       user: {
@@ -250,7 +270,10 @@ exports.getMe = async (req, res) => {
         email: user.email,
         role: user.role,
         plan: user.plan,
-        viewLimit: limit,
+        viewLimit: user.viewLimit,
+        quotaProfileViews: user.quotaProfileViews ?? 0,
+        quotaInterests:    user.quotaInterests ?? 0,
+        quotaContactViews: user.quotaContactViews ?? 0,
         viewedCount: (user.viewedProfiles || []).length,
         viewedProfiles: user.viewedProfiles || [],
         viewedContacts: user.viewedContacts || [],
@@ -280,14 +303,17 @@ exports.upgradePlan = async (req, res) => {
     }
 
     user.plan = plan;
-    // Set default view limits
-    if (plan === 'free') {
-      user.viewLimit = 5;
-    } else if (plan === 'premium') {
-      user.viewLimit = 30;
-    } else {
-      user.viewLimit = 99999;
-    }
+
+    // Reset quota to new plan limits
+    const quota = await getPlanQuota(plan);
+    user.quotaProfileViews = quota.quotaProfileViews;
+    user.quotaInterests    = quota.quotaInterests;
+    user.quotaContactViews = quota.quotaContactViews;
+    user.viewLimit         = quota.quotaProfileViews;
+
+    // Fresh start: clear viewed history on renew/upgrade
+    user.viewedProfiles = [];
+    user.viewedContacts = [];
 
     await user.save();
 
@@ -312,6 +338,9 @@ exports.upgradePlan = async (req, res) => {
         role: user.role,
         plan: user.plan,
         viewLimit: user.viewLimit,
+        quotaProfileViews: user.quotaProfileViews,
+        quotaInterests:    user.quotaInterests,
+        quotaContactViews: user.quotaContactViews,
         isManuallyVerified: user.isManuallyVerified,
       }
     });

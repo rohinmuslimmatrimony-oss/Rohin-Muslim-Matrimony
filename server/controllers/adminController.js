@@ -6,6 +6,21 @@ const Settings = require('../models/Settings');
 const KycRequest = require('../models/KycRequest');
 const Notification = require('../models/Notification');
 
+// Helper: get quota values from settings for a given plan
+const getPlanQuota = async (plan) => {
+  let settings = await Settings.findOne();
+  if (!settings) settings = await Settings.create({});
+  const features =
+    plan === 'elite' ? settings.elitePlanFeatures :
+    plan === 'premium' ? settings.premiumPlanFeatures :
+    settings.freePlanFeatures;
+  return {
+    quotaProfileViews: features.totalViewLimit ?? 10,
+    quotaInterests:    features.totalInterestLimit ?? 5,
+    quotaContactViews: features.contactViewLimit ?? 0,
+  };
+};
+
 // @desc    Get Admin dashboard analytics metrics
 // @route   GET /api/admin/metrics
 // @access  Private/Admin
@@ -178,15 +193,17 @@ exports.changePlan = async (req, res) => {
 
     // Apply plan change
     user.plan = plan;
-    
-    // Automatically set default view limits if changed to Free, or clean it
-    if (plan === 'free') {
-      user.viewLimit = 5;
-    } else if (plan === 'premium') {
-      user.viewLimit = 30;
-    } else {
-      user.viewLimit = 99999; // Essentially unlimited
-    }
+
+    // Reset quota to new plan limits from settings
+    const quota = await getPlanQuota(plan);
+    user.quotaProfileViews = quota.quotaProfileViews;
+    user.quotaInterests    = quota.quotaInterests;
+    user.quotaContactViews = quota.quotaContactViews;
+    user.viewLimit         = quota.quotaProfileViews;
+
+    // Fresh start: clear viewed history
+    user.viewedProfiles = [];
+    user.viewedContacts = [];
 
     await user.save();
 
@@ -197,7 +214,10 @@ exports.changePlan = async (req, res) => {
         _id: user._id,
         email: user.email,
         plan: user.plan,
-        viewLimit: user.viewLimit
+        viewLimit: user.viewLimit,
+        quotaProfileViews: user.quotaProfileViews,
+        quotaInterests:    user.quotaInterests,
+        quotaContactViews: user.quotaContactViews,
       }
     });
   } catch (error) {
@@ -477,13 +497,8 @@ exports.createOfflineUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User with this email already exists.' });
     }
 
-    // Setup viewLimit according to selected plan
-    let viewLimit = 5;
-    if (plan === 'premium') {
-      viewLimit = 30;
-    } else if (plan === 'elite') {
-      viewLimit = 99999;
-    }
+    // Setup quota from plan settings
+    const quota = await getPlanQuota(plan);
 
     // Create user
     const user = await User.create({
@@ -491,7 +506,10 @@ exports.createOfflineUser = async (req, res) => {
       password,
       role: 'user',
       plan,
-      viewLimit,
+      viewLimit:         quota.quotaProfileViews,
+      quotaProfileViews: quota.quotaProfileViews,
+      quotaInterests:    quota.quotaInterests,
+      quotaContactViews: quota.quotaContactViews,
       isManuallyVerified: true
     });
 

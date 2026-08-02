@@ -146,7 +146,12 @@ exports.verifyPayment = async (req, res) => {
     // If Mock Payment
     if (!razorpay_signature || !razorpay_order_id) {
       user.plan = plan;
-      user.viewLimit = plan === 'elite' ? 99999 : 30;
+      const planConfig = plan === 'elite' ? settings.elitePlanFeatures : settings.premiumPlanFeatures;
+      user.quotaProfileViews = planConfig?.totalViewLimit || 100;
+      user.quotaInterests = planConfig?.totalInterestLimit || 30;
+      user.quotaContactViews = planConfig?.totalContactViewsLimit || 10;
+      user.viewedProfiles = [];
+      user.viewedContacts = [];
       await user.save();
 
       await Transaction.create({
@@ -188,10 +193,14 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    // Payment Verified Successfully! Upgrade User Plan
-    user.plan = plan;
-    user.viewLimit = plan === 'elite' ? 99999 : 30;
-    await user.save();
+      user.plan = plan;
+      const planConfig = plan === 'elite' ? settings.elitePlanFeatures : settings.premiumPlanFeatures;
+      user.quotaProfileViews = planConfig?.totalViewLimit || 100;
+      user.quotaInterests = planConfig?.totalInterestLimit || 30;
+      user.quotaContactViews = planConfig?.totalContactViewsLimit || 10;
+      user.viewedProfiles = [];
+      user.viewedContacts = [];
+      await user.save();
 
     // Create Transaction Record
     await Transaction.create({

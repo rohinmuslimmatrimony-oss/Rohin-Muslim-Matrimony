@@ -32,8 +32,8 @@ const PlansPage = () => {
       return;
     }
 
-    if (user.plan === planName) {
-      toast.error(`You are already on the ${planName} plan!`);
+    if (user.plan === planName && planName === 'free') {
+      toast.error('You cannot renew the Free plan. Please upgrade to a premium plan!');
       return;
     }
 
@@ -251,10 +251,11 @@ const PlansPage = () => {
             <DynamicFeatureList planKey="premiumPlanFeatures" theme="premium" />
             {user?.plan === 'premium' ? (
               <button 
-                disabled
-                className="relative z-10 w-full py-2.5 md:py-1.5 rounded-lg font-bold bg-gold-gradient text-crimson-950 transition-all disabled:opacity-60 mt-4 md:mt-1 text-sm md:text-xs"
+                onClick={() => handleUpgrade('premium')}
+                disabled={loading}
+                className="relative z-10 w-full py-2.5 md:py-1.5 rounded-lg font-bold bg-gold-gradient text-crimson-950 transition-all hover:scale-[1.01] hover:shadow-gold-500/20 disabled:opacity-60 mt-4 md:mt-1 text-sm md:text-xs"
               >
-                Current Plan
+                Renew Premium
               </button>
             ) : user?.plan === 'elite' ? (
               <div className="h-[44px] md:h-[32px] mt-4 md:mt-1"></div>
@@ -286,10 +287,11 @@ const PlansPage = () => {
             <DynamicFeatureList planKey="elitePlanFeatures" theme="elite" />
             {user?.plan === 'elite' ? (
               <button 
-                disabled
-                className="relative z-10 w-full py-2.5 md:py-1.5 rounded-lg font-bold bg-gradient-to-r from-[#4f080e] to-[#250305] text-white transition-all disabled:opacity-60 mt-4 md:mt-1 text-sm md:text-xs"
+                onClick={() => handleUpgrade('elite')}
+                disabled={loading}
+                className="relative z-10 w-full py-2.5 md:py-1.5 rounded-lg font-bold bg-gradient-to-r from-[#4f080e] to-[#250305] text-white transition-all hover:scale-[1.01] disabled:opacity-60 mt-4 md:mt-1 text-sm md:text-xs"
               >
-                Current Plan
+                Renew Elite
               </button>
             ) : (
               <button 
@@ -321,9 +323,9 @@ const DynamicFeatureList = ({ planKey, theme }) => {
         }
       } catch (err) {
         const defaults = {
-          freePlanFeatures:    { viewFullBio: false, viewContactDetails: false, chat: false, shortlist: false, dailyViewLimit: 5 },
-          premiumPlanFeatures: { viewFullBio: true,  viewContactDetails: true,  chat: true,  shortlist: true,  dailyViewLimit: 30 },
-          elitePlanFeatures:   { viewFullBio: true,  viewContactDetails: true,  chat: true,  shortlist: true,  dailyViewLimit: 99999 },
+          freePlanFeatures:    { viewFullBio: false, viewContactDetails: false, chat: false, shortlist: false, totalViewLimit: 10 },
+          premiumPlanFeatures: { viewFullBio: true,  viewContactDetails: true,  chat: true,  shortlist: true,  totalViewLimit: 100 },
+          elitePlanFeatures:   { viewFullBio: true,  viewContactDetails: true,  chat: true,  shortlist: true,  totalViewLimit: 99999 },
         };
         setFeatures(defaults[planKey]);
       }
@@ -378,9 +380,10 @@ const DynamicFeatureList = ({ planKey, theme }) => {
     );
   }
 
-  const viewLabel = features.dailyViewLimit >= 99999
+  const limit = features.totalViewLimit ?? features.dailyViewLimit ?? 0;
+  const viewLabel = limit >= 99999
     ? 'Unlimited profile views'
-    : `View up to ${features.dailyViewLimit} profiles daily`;
+    : `View up to ${limit} profiles per plan`;
 
   return (
     <ul className="flex-grow space-y-2 md:space-y-0.5">
