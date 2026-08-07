@@ -91,7 +91,7 @@ function AppContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream-50 text-slate-800">
+    <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden bg-cream-50 text-slate-800">
       {/* Toast notifications handler */}
       <Toaster
         position="top-center"

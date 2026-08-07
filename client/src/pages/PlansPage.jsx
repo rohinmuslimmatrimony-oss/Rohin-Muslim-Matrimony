@@ -147,20 +147,20 @@ const PlansPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-b from-[#55080f] via-[#4f080e] to-[#2b0306] pt-12 pb-20 md:pt-8 md:pb-16 px-4 md:px-8 relative flex flex-col justify-start">
+    <div className="min-h-[calc(100vh-80px)] w-full max-w-full overflow-x-hidden bg-gradient-to-b from-[#55080f] via-[#4f080e] to-[#2b0306] pt-8 pb-20 md:pt-8 md:pb-16 px-4 md:px-8 relative flex flex-col justify-start">
       {/* Golden Glowing Halo Decor */}
-      <div className="absolute top-[10%] left-[50%] -translate-x-1/2 w-full max-w-4xl h-[450px] bg-gradient-to-b from-gold-500/20 via-gold-600/5 to-transparent rounded-full blur-[120px] -z-10 animate-pulse-gold"></div>
+      <div className="absolute top-[10%] left-[50%] -translate-x-1/2 w-full max-w-4xl h-[450px] bg-gradient-to-b from-gold-500/20 via-gold-600/5 to-transparent rounded-full blur-[120px] -z-10 animate-pulse-gold pointer-events-none"></div>
 
-      <div className="max-w-6xl mx-auto text-center mb-6 md:mb-4 relative z-10 flex-shrink-0">
-        <h1 className="text-4xl md:text-5xl font-serif font-bold text-gold-400 mb-3 md:mb-1">
+      <div className="max-w-6xl w-full mx-auto text-center mb-6 md:mb-4 relative z-10 flex-shrink-0">
+        <h1 className="text-3xl md:text-5xl font-serif font-bold text-gold-400 mb-3 md:mb-1">
           Choose Your Halal Journey
         </h1>
-        <p className="text-rose-100/80 max-w-2xl mx-auto text-base md:text-sm">
+        <p className="text-rose-100/80 max-w-2xl mx-auto text-sm md:text-sm">
           Unlock premium features to find your life partner faster. Your privacy is guaranteed with our state-of-the-art security features.
         </p>
       </div>
 
-      <div className="max-w-6xl w-full mx-auto relative mt-4 md:mt-2 bg-[#faf6ee]/90 backdrop-blur-md rounded-lg p-6 md:p-8 border border-[#d4af37]/35 shadow-xl flex-grow-0">
+      <div className="max-w-6xl w-full mx-auto relative mt-4 md:mt-2 bg-[#faf6ee]/90 backdrop-blur-md rounded-2xl p-4 sm:p-6 md:p-8 border border-[#d4af37]/35 shadow-xl flex-grow-0 overflow-hidden">
         {/* Left Fanoos Lantern */}
         <div className="absolute top-[-40px] left-[-35px] hidden lg:block z-30 pointer-events-none">
           <svg width="60" height="150" viewBox="0 0 60 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_4px_8px_rgba(212,175,55,0.35)]">
