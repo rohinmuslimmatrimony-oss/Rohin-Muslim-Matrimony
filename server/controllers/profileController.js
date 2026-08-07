@@ -585,6 +585,14 @@ exports.getDailyRecommendations = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // --- Daily Reset: clear viewedRecommendations each new calendar day ---
+    const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    if (currentUser.viewedRecommendationsDate !== today) {
+      currentUser.viewedRecommendations = [];
+      currentUser.viewedRecommendationsDate = today;
+      await currentUser.save();
+    }
+
     // Determine dynamic limit based on setting controls
     const planFeatures = await getPlanFeatures(currentUser.plan);
     const limit = planFeatures.dailyRecommendationLimit || 5;
@@ -597,7 +605,7 @@ exports.getDailyRecommendations = async (req, res) => {
       ...(myProfile.connections || [])
     ];
 
-    // Exclude viewed daily recommendations
+    // Exclude already viewed today
     if (currentUser.viewedRecommendations && currentUser.viewedRecommendations.length > 0) {
       excludedUserIds.push(...currentUser.viewedRecommendations.map(id => id.toString()));
     }
@@ -737,14 +745,18 @@ exports.recordRecommendationView = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (!user.viewedRecommendations) {
+    // Daily reset check
+    const today = new Date().toISOString().slice(0, 10);
+    if (user.viewedRecommendationsDate !== today) {
       user.viewedRecommendations = [];
+      user.viewedRecommendationsDate = today;
     }
 
-    if (!user.viewedRecommendations.includes(targetUserId)) {
+    if (!user.viewedRecommendations.map(id => id.toString()).includes(targetUserId)) {
       user.viewedRecommendations.push(targetUserId);
-      await user.save();
     }
+
+    await user.save();
 
     return res.status(200).json({ success: true, message: 'Recommendation view recorded' });
   } catch (error) {

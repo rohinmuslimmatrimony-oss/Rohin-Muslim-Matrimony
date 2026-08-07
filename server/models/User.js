@@ -63,6 +63,10 @@ const UserSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    viewedRecommendationsDate: {
+      type: String, // stored as 'YYYY-MM-DD', used to reset list each day
+      default: '',
+    },
     viewedContacts: [
       {
         type: mongoose.Schema.Types.ObjectId,
