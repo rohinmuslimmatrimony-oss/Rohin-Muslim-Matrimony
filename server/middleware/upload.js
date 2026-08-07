@@ -22,14 +22,12 @@ const storage = multer.diskStorage({
 
 // Check file type
 function checkFileType(file, cb) {
-  // Allowed extensions
-  const filetypes = /jpeg|jpg|png|webp|gif|bmp|jfif|heic|avif/i;
-  // Check extension
+  // Broad regex for image types
+  const filetypes = /jpeg|jpg|png|webp|gif|bmp|jfif|heic|heif|avif|tiff|svg/i;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // Check mime
-  const mimetype = file.mimetype && (file.mimetype.startsWith('image/') || filetypes.test(file.mimetype));
+  const isImageMime = file.mimetype && (file.mimetype.startsWith('image/') || filetypes.test(file.mimetype) || file.mimetype === 'application/octet-stream');
 
-  if (mimetype || extname) {
+  if (isImageMime || extname || !path.extname(file.originalname)) {
     return cb(null, true);
   } else {
     cb(new Error('Only valid image files (JPG, PNG, WEBP, etc.) are allowed!'));
@@ -39,7 +37,10 @@ function checkFileType(file, cb) {
 // Init upload
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit per photo
+  limits: { 
+    fileSize: 25 * 1024 * 1024, // 25MB per photo for high-res phone cameras
+    fieldSize: 25 * 1024 * 1024
+  },
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },

@@ -131,8 +131,9 @@ const MyProfilePage = () => {
  
               {/* Profile Image with Progress Ring */}
               <div 
-                className={`relative w-44 h-44 mb-6 z-10 ${isAdmin ? 'cursor-pointer group' : ''}`}
-                onClick={() => isAdmin && fileInputRef.current?.click()}
+                className="relative w-44 h-44 mb-6 z-10 cursor-pointer group"
+                onClick={() => fileInputRef.current?.click()}
+                title="Click to upload or change profile photo"
               >
                 {!isAdmin && (
                   <svg viewBox="0 0 128 128" className="w-full h-full transform -rotate-90 absolute top-0 left-0">
@@ -158,12 +159,11 @@ const MyProfilePage = () => {
                   </div>
                 )}
                 
-                {isAdmin && (
-                  <div className="absolute inset-2 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                    <FaCamera className="text-white text-2xl mb-1.5" />
-                    <span className="text-[10px] text-gold-300 font-bold uppercase tracking-wider">Change Photo</span>
-                  </div>
-                )}
+                {/* Camera Overlay for quick change on hover/tap */}
+                <div className="absolute inset-2 bg-black/60 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                  <FaCamera className="text-white text-2xl mb-1.5" />
+                  <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">Change Photo</span>
+                </div>
  
                 {/* Percentage Badge */}
                 {!isAdmin && (
@@ -172,15 +172,14 @@ const MyProfilePage = () => {
                   </div>
                 )}
               </div>
-              {isAdmin && (
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handlePhotoChange} 
-                  accept="image/*" 
-                  className="hidden" 
-                />
-              )}
+
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoChange} 
+                accept="image/*" 
+                className="hidden" 
+              />
 
               {/* Name and Badge */}
               <div className="flex items-center gap-2 mb-2 flex-wrap justify-center z-10">

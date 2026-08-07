@@ -31,17 +31,32 @@ const PhotoGalleryManager = ({ profile, onUpdate }) => {
         formData.append('photos', file);
       });
 
-      const res = await api.post('/profiles/gallery', formData);
+      const res = await api.post('/profiles/gallery', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       if (res.data.success) {
         toast.success(res.data.message || 'Photos uploaded successfully!', { id: toastId });
-        if (onUpdate) onUpdate();
+        if (onUpdate) await onUpdate();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to upload photos', { id: toastId });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSetMainPhoto = async (photoUrl) => {
+    const toastId = toast.loading('Setting as main profile photo...');
+    try {
+      const res = await api.put('/profiles/gallery/set-main', { photoUrl });
+      if (res.data.success) {
+        toast.success('Profile photo updated!', { id: toastId });
+        if (onUpdate) await onUpdate();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update profile photo', { id: toastId });
     }
   };
 
@@ -53,7 +68,7 @@ const PhotoGalleryManager = ({ profile, onUpdate }) => {
       const res = await api.delete('/profiles/gallery', { data: { photoUrl } });
       if (res.data.success) {
         toast.success('Photo removed from gallery', { id: toastId });
-        if (onUpdate) onUpdate();
+        if (onUpdate) await onUpdate();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete photo', { id: toastId });
@@ -81,7 +96,7 @@ const PhotoGalleryManager = ({ profile, onUpdate }) => {
               type="file"
               ref={fileInputRef}
               multiple
-              accept="image/jpeg,image/png,image/webp,image/jpg"
+              accept="image/*"
               onChange={handleUploadPhotos}
               className="hidden"
             />
@@ -101,11 +116,12 @@ const PhotoGalleryManager = ({ profile, onUpdate }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-2">
         {gallery.map((photo, idx) => {
           const fullUrl = photo.startsWith('http') ? photo : `${SOCKET_BASE_URL}${photo}`;
+          const isMain = mainPhoto === photo;
 
           return (
             <div
               key={idx}
-              className="relative group rounded-2xl overflow-hidden aspect-square border-2 border-slate-200 bg-slate-100 shadow-sm"
+              className={`relative group rounded-2xl overflow-hidden aspect-square border-2 ${isMain ? 'border-amber-500 shadow-md ring-2 ring-amber-400/30' : 'border-slate-200'} bg-slate-100 shadow-sm`}
             >
               <img
                 src={fullUrl}
@@ -118,22 +134,39 @@ const PhotoGalleryManager = ({ profile, onUpdate }) => {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
 
+              {isMain && (
+                <div className="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm z-10">
+                  <FaCrown className="text-[8px]" /> Profile DP
+                </div>
+              )}
+
               {/* Hover / Overlay Actions */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-2">
                 <button
                   type="button"
                   onClick={() => setActivePreview(fullUrl)}
-                  title="View Photo"
-                  className="w-9 h-9 rounded-full bg-white/90 text-slate-700 hover:bg-white flex items-center justify-center text-sm shadow-md transition-all cursor-pointer hover:scale-110"
+                  title="View Full Photo"
+                  className="w-8 h-8 rounded-full bg-white/90 text-slate-700 hover:bg-white flex items-center justify-center text-xs shadow-md transition-all cursor-pointer hover:scale-110"
                 >
                   <FaEye />
                 </button>
+
+                {!isMain && (
+                  <button
+                    type="button"
+                    onClick={() => handleSetMainPhoto(photo)}
+                    title="Set as Main Profile DP"
+                    className="w-8 h-8 rounded-full bg-amber-500 text-white hover:bg-amber-600 flex items-center justify-center text-xs shadow-md transition-all cursor-pointer hover:scale-110"
+                  >
+                    <FaCrown />
+                  </button>
+                )}
 
                 <button
                   type="button"
                   onClick={() => handleDeletePhoto(photo)}
                   title="Delete Photo"
-                  className="w-9 h-9 rounded-full bg-rose-600 text-white hover:bg-rose-700 flex items-center justify-center text-sm shadow-md transition-all cursor-pointer hover:scale-110"
+                  className="w-8 h-8 rounded-full bg-rose-600 text-white hover:bg-rose-700 flex items-center justify-center text-xs shadow-md transition-all cursor-pointer hover:scale-110"
                 >
                   <FaTrash />
                 </button>

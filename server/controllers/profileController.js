@@ -894,7 +894,8 @@ exports.uploadGalleryPhotos = async (req, res) => {
       success: true,
       message: 'Photos uploaded to gallery successfully',
       gallery: profile.gallery,
-      profilePhoto: profile.profilePhoto
+      profilePhoto: profile.profilePhoto,
+      data: profile
     });
   } catch (error) {
     console.error('UploadGalleryPhotos Error:', error);
