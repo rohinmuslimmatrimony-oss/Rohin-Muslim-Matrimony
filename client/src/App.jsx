@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthContext, AuthProvider } from './context/AuthContext';
@@ -64,6 +64,10 @@ function AppContent() {
   const { user, profile, loading, getCompleteness } = useContext(AuthContext);
   const location = useLocation();
 
+  // Scroll to top on every route/tab change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.pathname]);
   if (loading) {
     const hasSeenSplash = localStorage.getItem('hasSeenSplash');
     if (hasSeenSplash) {

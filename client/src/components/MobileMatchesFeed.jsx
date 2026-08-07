@@ -38,6 +38,11 @@ const MobileMatchesFeed = () => {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Matches'); // 'Matches', 'Daily', or 'Online'
+
+  // Scroll to top when tab changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [activeTab]);
   const [sentRequests, setSentRequests] = useState([]);
   const [receivedRequests, setReceivedRequests] = useState([]);
   const [confirmCancelProfileId, setConfirmCancelProfileId] = useState(null);
