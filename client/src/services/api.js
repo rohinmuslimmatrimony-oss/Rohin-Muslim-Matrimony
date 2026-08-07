@@ -1,10 +1,18 @@
 import axios from 'axios';
 
-const isLocalDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const isLocalDev = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname.startsWith('10.') ||
+  window.location.hostname.startsWith('192.168.') ||
+  window.location.hostname.startsWith('172.')
+);
+
+const devHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 
 // In local dev, default to local backend port 5001; in production, use VITE_API_URL or live domain
 const rawUrl = isLocalDev 
-  ? (import.meta.env.VITE_DEV_API_URL || 'http://localhost:5001/api')
+  ? (import.meta.env.VITE_DEV_API_URL || `http://${devHost}:5001/api`)
   : (import.meta.env.VITE_API_URL || 'https://rohinmuslimmatrimony.com/api');
 
 // 1. Clean the root API server URL (remove trailing slashes and /api if present)
