@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaCheck, FaTimes, FaComment, FaEye, FaRegClock, FaStar, FaRegStar, FaLock, FaUserClock, FaEnvelope, FaMapMarkerAlt, FaBriefcase, FaHeart } from 'react-icons/fa';
 import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
+import DefaultAvatar from './DefaultAvatar';
 
 const MobileActivityPage = ({ 
   receivedRequests = [], 
@@ -34,14 +35,33 @@ const MobileActivityPage = ({
 
   const [allActivities, setAllActivities] = useState([]);
   const [allLoading, setAllLoading] = useState(false);
+
+  const [internalHandpicked, setInternalHandpicked] = useState([]);
+  const activeHandpickedMatches = (handpickedMatches && handpickedMatches.length > 0) ? handpickedMatches : internalHandpicked;
   
   const tabs = ['All', '👑 Handpicked', 'Interest', 'Visits', 'Gallery Requests', 'Contacts', 'Shortlisted'];
+
+  const fetchInternalHandpicked = async () => {
+    try {
+      const res = await api.get('/profiles/handpicked');
+      if (res.data && res.data.success) {
+        setInternalHandpicked(res.data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to load handpicked matches in mobile activity', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchInternalHandpicked();
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'All') {
       fetchAllActivities();
     } else if (activeTab === '👑 Handpicked') {
       if (fetchHandpicked) fetchHandpicked();
+      fetchInternalHandpicked();
     } else if (activeTab === 'Shortlisted') {
       fetchShortlisted();
     } else if (activeTab === 'Visits') {
@@ -379,9 +399,9 @@ const MobileActivityPage = ({
         {/* 👑 HANDPICKED MATCHES (24H) TAB */}
         {/* HANDPICKED TAB */}
         {activeTab === '👑 Handpicked' && (
-          handpickedMatches.length === 0 ? renderEmptyState('👑 Handpicked') : (
+          activeHandpickedMatches.length === 0 ? renderEmptyState('👑 Handpicked') : (
             <div className="space-y-4">
-              {handpickedMatches.map((m) => {
+              {activeHandpickedMatches.map((m) => {
                 const p = m.partner;
                 if (!p) return null;
                 const profileId = p.user?._id || p._id;
@@ -442,7 +462,21 @@ const MobileActivityPage = ({
                         </div>
                       ) : (
                         <button
-                          onClick={() => handleHandpickedInterest && handleHandpickedInterest(p._id, m.matchId)}
+                          onClick={async () => {
+                            if (handleHandpickedInterest) {
+                              handleHandpickedInterest(p._id, m.matchId);
+                            } else {
+                              try {
+                                const res = await api.post(`/interests/send/${p._id}`);
+                                if (res.data.success) {
+                                  toast.success('Interest sent successfully!');
+                                  setInternalHandpicked(prev => prev.map(item => item.matchId === m.matchId ? { ...item, isInterestSent: true } : item));
+                                }
+                              } catch (err) {
+                                toast.error(err.response?.data?.message || 'Failed to send interest');
+                              }
+                            }
+                          }}
                           className="flex-1 bg-crimson-950 text-amber-300 hover:bg-crimson-900 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                         >
                           <FaHeart className="text-rose-400 text-xs" /> Send Interest

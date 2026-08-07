@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'Rohin Matrimony',
         description: 'A trusted, premium matrimony platform designed exclusively for Muslims.',
         theme_color: '#8b0000',
-        background_color: '#0a0000',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',

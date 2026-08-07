@@ -105,17 +105,8 @@ const Login = () => {
             </div>
 
             {/* Password Input */}
-            <div className="space-y-[2px]">
-              <div className="flex justify-between items-center px-0.5">
-                <label className="text-[#5C4E4E] text-[9.5px] font-medium ml-0.5" htmlFor="mobile-password">Password</label>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotModal(true)}
-                  className="text-[#A11B32] hover:underline text-[9.5px] font-bold"
-                >
-                  Forgot Password?
-                </button>
-              </div>
+            <div className="space-y-[3px]">
+              <label className="text-[#5C4E4E] text-[9.5px] font-medium ml-0.5 block" htmlFor="mobile-password">Password</label>
               <div className="relative flex items-center bg-[#FDFBF7] border border-[#D4AF37]/50 rounded-[9px] overflow-hidden focus-within:border-[#D4AF37] transition-all h-[38px]">
                 <span className="absolute left-3 text-[#D4AF37]"><FaLock className="text-[12px]" /></span>
                 <input
@@ -129,6 +120,15 @@ const Login = () => {
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 text-[#D4AF37]">
                   {showPassword ? <FaEyeSlash className="text-[13px]" /> : <FaEye className="text-[13px]" />}
+                </button>
+              </div>
+              <div className="flex justify-end pt-1 pr-1">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(true)}
+                  className="text-[#A11B32] hover:underline text-[10.5px] font-bold py-0.5"
+                >
+                  Forgot Password?
                 </button>
               </div>
             </div>
@@ -208,18 +208,9 @@ const Login = () => {
 
             {/* Password Input */}
             <div className="space-y-1.5">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[#ffd666] text-[10px] sm:text-xs font-bold uppercase tracking-wider drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]" htmlFor="password">
-                  Password
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotModal(true)}
-                  className="text-[#ffd666] hover:text-white hover:underline text-[11px] font-bold transition-colors drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)] cursor-pointer"
-                >
-                  Forgot Password?
-                </button>
-              </div>
+              <label className="text-[#ffd666] text-[10px] sm:text-xs font-bold uppercase tracking-wider drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)] block px-1" htmlFor="password">
+                Password
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]">
                   <FaLock className="text-xs sm:text-sm" />
@@ -240,6 +231,15 @@ const Login = () => {
                   title={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <FaEyeSlash className="text-xs sm:text-sm" /> : <FaEye className="text-xs sm:text-sm" />}
+                </button>
+              </div>
+              <div className="flex justify-end pt-0.5 px-1">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(true)}
+                  className="text-[#ffd666] hover:text-white hover:underline text-[11px] font-bold transition-colors drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)] cursor-pointer"
+                >
+                  Forgot Password?
                 </button>
               </div>
             </div>
