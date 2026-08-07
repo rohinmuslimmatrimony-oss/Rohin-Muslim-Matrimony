@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import api from '../services/api';
+import api, { SOCKET_BASE_URL } from '../services/api';
 import ProfileCard from '../components/ProfileCard';
-import { FaFilter, FaSearch, FaTimes, FaCrown, FaLock } from 'react-icons/fa';
+import DefaultAvatar from '../components/DefaultAvatar';
+import { FaFilter, FaSearch, FaTimes, FaCrown, FaLock, FaClock, FaHeart, FaCheckCircle, FaStar, FaChevronRight } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import SimpleSpinner from '../components/SimpleSpinner';
 import MobileSearchPage from '../components/MobileSearchPage';
@@ -46,6 +47,7 @@ const SearchProfiles = () => {
   const [loading, setLoading] = useState(true);
   const [sentRequests, setSentRequests] = useState([]);
   const [receivedRequests, setReceivedRequests] = useState([]);
+  const [handpickedMatches, setHandpickedMatches] = useState([]);
   const [premiumModalFeature, setPremiumModalFeature] = useState(null);
 
   const isPremium = user?.plan === 'premium' || user?.plan === 'elite';
@@ -79,7 +81,19 @@ const SearchProfiles = () => {
   useEffect(() => {
     fetchProfiles(filters, 1);
     fetchMyRequests();
+    fetchHandpickedMatches();
   }, []);
+
+  const fetchHandpickedMatches = async () => {
+    try {
+      const res = await api.get('/profiles/handpicked');
+      if (res.data.success) {
+        setHandpickedMatches(res.data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to load handpicked matches in search:', err);
+    }
+  };
 
   const fetchProfiles = async (currentFilters = filters, page = 1) => {
     try {
@@ -316,7 +330,120 @@ const SearchProfiles = () => {
         </div>
 
         {/* Results Grid */}
-        <div className="lg:w-3/4 w-full">
+        <div className="lg:w-3/4 w-full space-y-6">
+          {/* HANDPICKED MATCHMAKER SUGGESTIONS (24H EXCLUSIVE) */}
+          {handpickedMatches.length > 0 && (
+            <div className="bg-gradient-to-r from-crimson-950 via-slate-900 to-crimson-900 rounded-3xl p-6 shadow-xl border-2 border-amber-400/40 relative overflow-hidden">
+              {/* Background ambient glow */}
+              <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-amber-400/20">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-lg">
+                    👑
+                  </span>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-serif font-bold text-amber-300 flex items-center gap-2">
+                      Handpicked by Matchmaker
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400 text-crimson-950 px-2.5 py-0.5 rounded-full shadow-sm">
+                        24h Exclusive
+                      </span>
+                    </h2>
+                    <p className="text-xs text-amber-200/70 font-medium">Personalized recommendations selected specifically for you</p>
+                  </div>
+                </div>
+
+                <span className="text-xs font-bold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-full w-fit">
+                  {handpickedMatches.length} Suggestion{handpickedMatches.length > 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Handpicked cards list */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {handpickedMatches.map((m) => {
+                  const p = m.partner;
+                  if (!p) return null;
+
+                  const isSent = m.isInterestSent || sentRequests.includes(p.user?._id || p.user);
+                  const fullPhotoUrl = p.profilePhoto && p.profilePhoto !== '/uploads/default-avatar.png' && p.profilePhoto !== '/uploads/blurred-avatar.png'
+                    ? (p.profilePhoto.startsWith('http') ? p.profilePhoto : `${SOCKET_BASE_URL}${p.profilePhoto}`)
+                    : null;
+
+                  return (
+                    <div 
+                      key={m.matchId} 
+                      className="bg-slate-900/90 border border-amber-400/30 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-400 transition-all shadow-md backdrop-blur-sm"
+                    >
+                      <div className="flex gap-3.5 items-start">
+                        {/* Avatar */}
+                        <div 
+                          onClick={() => navigate(`/profile/${p.user?._id || p._id}`)}
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-amber-400/50 flex-shrink-0 cursor-pointer relative bg-slate-800"
+                        >
+                          {fullPhotoUrl ? (
+                            <img src={fullPhotoUrl} alt={p.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <DefaultAvatar gender={p.gender} className="w-full h-full object-contain" />
+                          )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h3 
+                              onClick={() => navigate(`/profile/${p.user?._id || p._id}`)}
+                              className="text-base font-bold text-white font-serif hover:text-amber-300 transition-colors cursor-pointer truncate"
+                            >
+                              {p.name}
+                            </h3>
+                            <span className="text-[10px] font-black text-amber-300 bg-crimson-950 px-2 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1 flex-shrink-0">
+                              <FaClock className="text-amber-400 animate-pulse text-[9px]" /> {m.hoursLeft}h {m.minutesLeft}m left
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-amber-200/80 font-medium mt-0.5">
+                            {p.age} yrs • {p.sect || 'Sunni'} • {p.city || 'India'}
+                          </p>
+
+                          {m.message && (
+                            <div className="mt-2 bg-amber-500/10 border-l-2 border-amber-400 px-2.5 py-1 rounded-r-md">
+                              <p className="text-[11px] text-amber-100/90 italic line-clamp-2">
+                                "{m.message}"
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-800">
+                        <button
+                          onClick={() => navigate(`/profile/${p.user?._id || p._id}`)}
+                          className="flex-1 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold py-2 px-3 rounded-xl transition-all border border-slate-700 text-center cursor-pointer"
+                        >
+                          View Biodata
+                        </button>
+
+                        {isSent ? (
+                          <div className="flex-1 bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 text-center">
+                            <FaCheckCircle className="text-xs" /> Interest Sent
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleSendInterest(p.user?._id || p.user)}
+                            className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-crimson-950 text-xs font-black py-2 px-3 rounded-xl transition-all shadow flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <FaHeart className="text-xs text-crimson-950" /> Send Interest
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-serif font-bold text-crimson-950">Discover Matches</h1>
             <span className="text-slate-500 bg-crimson-900/10 px-3 py-1 rounded-full text-sm font-semibold">{totalProfiles} Found</span>

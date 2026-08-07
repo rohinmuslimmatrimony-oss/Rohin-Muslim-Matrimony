@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaCheck, FaTimes, FaComment, FaEye, FaRegClock, FaStar, FaRegStar, FaLock, FaUserClock, FaEnvelope, FaMapMarkerAlt, FaBriefcase } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaComment, FaEye, FaRegClock, FaStar, FaRegStar, FaLock, FaUserClock, FaEnvelope, FaMapMarkerAlt, FaBriefcase, FaHeart } from 'react-icons/fa';
 import api, { SOCKET_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 
-const MobileActivityPage = ({ receivedRequests = [], sentRequests = [], connections = [], handleAccept, handleReject, onCancelInterest, user }) => {
+const MobileActivityPage = ({ 
+  receivedRequests = [], 
+  sentRequests = [], 
+  connections = [], 
+  handleAccept, 
+  handleReject, 
+  onCancelInterest, 
+  user,
+  handpickedMatches = [],
+  fetchHandpicked,
+  handleHandpickedInterest
+}) => {
   const [activeTab, setActiveTab] = useState('All');
   const [confirmCancelReqId, setConfirmCancelReqId] = useState(null);
   
@@ -24,11 +35,13 @@ const MobileActivityPage = ({ receivedRequests = [], sentRequests = [], connecti
   const [allActivities, setAllActivities] = useState([]);
   const [allLoading, setAllLoading] = useState(false);
   
-  const tabs = ['All', 'Interest', 'Visits', 'Gallery Requests', 'Contacts', 'Shortlisted'];
+  const tabs = ['All', '👑 Handpicked', 'Interest', 'Visits', 'Gallery Requests', 'Contacts', 'Shortlisted'];
 
   useEffect(() => {
     if (activeTab === 'All') {
       fetchAllActivities();
+    } else if (activeTab === '👑 Handpicked') {
+      if (fetchHandpicked) fetchHandpicked();
     } else if (activeTab === 'Shortlisted') {
       fetchShortlisted();
     } else if (activeTab === 'Visits') {
@@ -241,6 +254,9 @@ const MobileActivityPage = ({ receivedRequests = [], sentRequests = [], connecti
     } else if (tabName === 'Shortlisted') {
       title = "No shortlisted profiles";
       desc = "View a profile and click ⭐ Shortlist. They will be saved here!";
+    } else if (tabName === '👑 Handpicked') {
+      title = "No handpicked matches";
+      desc = "Personalized recommendations from our team will appear here for 24 hours.";
     }
 
     return (
@@ -309,7 +325,7 @@ const MobileActivityPage = ({ receivedRequests = [], sentRequests = [], connecti
       {/* Content Area */}
       <div className="flex-1 px-4 py-4 space-y-3 flex flex-col">
         
-        {/* ALL TAB */}
+        {/* ALL ACTIVITIES TAB */}
         {activeTab === 'All' && (
           allLoading ? (
             <div className="flex-grow flex items-center justify-center py-16">
@@ -321,43 +337,127 @@ const MobileActivityPage = ({ receivedRequests = [], sentRequests = [], connecti
                 const profile = act.profile;
                 if (!profile) return null;
 
-                // Format action text/badge based on type
                 let actLabel = "";
                 let actionBadge = null;
 
                 if (act.type === 'interest_received') {
-                  actLabel = "Expressed Interest In You";
+                  actLabel = "Expressed Interest";
                   actionBadge = (
                     <div className="flex gap-1.5">
-                      <button onClick={() => handleAccept(act.raw._id)} className="bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-lg text-xs" title="Accept"><FaCheck /></button>
-                      <button onClick={() => handleReject(act.raw._id)} className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg text-xs" title="Decline"><FaTimes /></button>
+                      <button onClick={() => handleAccept(act.raw._id)} className="bg-emerald-600 text-white p-2 rounded-xl text-xs"><FaCheck /></button>
+                      <button onClick={() => handleReject(act.raw._id)} className="bg-rose-50 text-rose-600 p-2 rounded-xl text-xs border border-rose-200"><FaTimes /></button>
                     </div>
                   );
                 } else if (act.type === 'interest_sent') {
-                  actLabel = `Sent Interest (${act.raw.status})`;
-                  actionBadge = <span className="text-[10px] bg-amber-50 text-amber-700 font-extrabold px-2 py-0.5 rounded-full border border-amber-200 uppercase tracking-wider">{act.raw.status}</span>;
+                  actLabel = `Interest Sent (${act.raw.status})`;
+                  actionBadge = <span className="text-[10px] bg-amber-50 text-amber-700 font-extrabold px-2.5 py-0.5 rounded-full border border-amber-200 uppercase tracking-wider">{act.raw.status}</span>;
                 } else if (act.type === 'profile_visit') {
-                  actLabel = "Visited Your Profile";
-                  actionBadge = <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Visit</span>;
+                  actLabel = "Visited your profile";
+                  actionBadge = <span className="text-[10px] bg-slate-50 text-slate-500 font-bold px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">Visit</span>;
                 } else if (act.type === 'gallery_request_received') {
                   actLabel = "Requested photo access";
                   actionBadge = act.raw.status === 'pending' ? (
                     <div className="flex gap-1.5">
-                      <button onClick={() => handleAcceptGalleryRequest(act.raw._id)} className="bg-[#4f080e] text-white px-2.5 py-1 rounded-lg text-[10px] font-bold" title="Approve">Approve</button>
-                      <button onClick={() => handleRejectGalleryRequest(act.raw._id)} className="bg-slate-100 text-slate-600 px-2 py-1 rounded-lg text-[10px] font-bold" title="Decline">Decline</button>
+                      <button onClick={() => handleAcceptGalleryRequest(act.raw._id)} className="bg-crimson-850 text-white px-2.5 py-1 rounded-xl text-[10px] font-bold">Allow</button>
+                      <button onClick={() => handleRejectGalleryRequest(act.raw._id)} className="bg-slate-100 text-slate-500 px-2 py-1 rounded-xl text-[10px] font-bold">Deny</button>
                     </div>
-                  ) : (
-                    <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{act.raw.status}</span>
-                  );
+                  ) : <span className="text-[10px] text-slate-400 font-bold capitalize">{act.raw.status}</span>;
                 } else if (act.type === 'gallery_request_sent') {
-                  actLabel = `Requested their photos (${act.raw.status})`;
+                  actLabel = "You requested photo access";
                   actionBadge = <span className="text-[10px] bg-amber-50 text-amber-700 font-extrabold px-2 py-0.5 rounded-full border border-amber-200 uppercase tracking-wider">{act.raw.status}</span>;
                 } else if (act.type === 'contact_viewed') {
-                  actLabel = "Viewed Your Contact Info";
+                  actLabel = "Viewed your contacts";
                   actionBadge = <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full border border-emerald-200 uppercase tracking-wider">Contacts</span>;
                 }
 
                 return renderProfileRow(profile, actLabel, actionBadge, act.id);
+              })}
+            </div>
+          )
+        )}
+
+        {/* 👑 HANDPICKED MATCHES (24H) TAB */}
+        {/* HANDPICKED TAB */}
+        {activeTab === '👑 Handpicked' && (
+          handpickedMatches.length === 0 ? renderEmptyState('👑 Handpicked') : (
+            <div className="space-y-4">
+              {handpickedMatches.map((m) => {
+                const p = m.partner;
+                if (!p) return null;
+                const profileId = p.user?._id || p._id;
+                const fullPhoto = p.profilePhoto && p.profilePhoto !== '/uploads/blurred-avatar.png' && p.profilePhoto !== '/uploads/default-avatar.png'
+                  ? (p.profilePhoto.startsWith('http') ? p.profilePhoto : `${SOCKET_BASE_URL}${p.profilePhoto}`)
+                  : null;
+
+                return (
+                  <div key={m.matchId} className="bg-white rounded-2xl p-4 shadow-sm border-2 border-amber-400/40 relative overflow-hidden space-y-3">
+                    {/* Top Expiry Tag */}
+                    <div className="flex items-center justify-between text-xs font-black">
+                      <span className="text-amber-800 flex items-center gap-1 uppercase tracking-wider text-[10px] bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200">
+                        👑 Matchmaker Pick
+                      </span>
+                      <span className="text-crimson-950 bg-amber-200/90 border border-amber-300 font-bold px-2.5 py-0.5 rounded-full text-[11px] flex items-center gap-1">
+                        ⏳ {m.hoursLeft}h {m.minutesLeft}m left
+                      </span>
+                    </div>
+
+                    {/* Profile Row with Enlarged Image */}
+                    <div className="flex items-start gap-3.5 pt-1">
+                      <Link to={`/profile/${profileId}`} className="w-20 h-24 rounded-2xl overflow-hidden bg-slate-100 border-2 border-amber-400/50 flex-shrink-0 relative shadow-sm block">
+                        {fullPhoto ? (
+                          <img src={fullPhoto} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <DefaultAvatar gender={p.gender} className="w-full h-full object-contain" />
+                        )}
+                      </Link>
+
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <Link to={`/profile/${profileId}`} className="block">
+                          <h3 className="font-bold text-base text-slate-900 truncate font-serif flex items-center gap-1 hover:text-crimson-950">
+                            {p.name}
+                            {p.user?.isManuallyVerified && <FaCheck className="text-emerald-500 text-xs" />}
+                          </h3>
+                        </Link>
+                        <p className="text-xs text-slate-600 font-medium">
+                          {p.age} yrs • {p.sect || 'Sunni'} • {p.city || 'India'}
+                        </p>
+                        {p.profession ? (
+                          <p className="text-xs text-amber-800 font-semibold truncate flex items-center gap-1">
+                            <FaBriefcase className="text-[10px] text-amber-600" />
+                            {p.profession}
+                          </p>
+                        ) : p.education ? (
+                          <p className="text-xs text-amber-800 font-semibold truncate flex items-center gap-1">
+                            🎓 {p.education}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                      {m.isInterestSent ? (
+                        <div className="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 shadow-sm">
+                          <FaCheck className="text-xs" /> Interest Sent
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleHandpickedInterest && handleHandpickedInterest(p._id, m.matchId)}
+                          className="flex-1 bg-crimson-950 text-amber-300 hover:bg-crimson-900 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                        >
+                          <FaHeart className="text-rose-400 text-xs" /> Send Interest
+                        </button>
+                      )}
+
+                      <Link
+                        to={`/profile/${profileId}`}
+                        className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs border border-slate-200 text-center"
+                      >
+                        View Biodata
+                      </Link>
+                    </div>
+                  </div>
+                );
               })}
             </div>
           )

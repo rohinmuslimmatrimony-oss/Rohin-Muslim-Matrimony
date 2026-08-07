@@ -19,7 +19,9 @@ const {
   deleteFreeInterest,
   getKycRequests,
   reviewKycRequest,
-  suggestMatch
+  suggestMatch,
+  getHandpickedMatches,
+  deleteHandpickedMatch
 } = require('../controllers/adminController');
 
 
@@ -59,5 +61,7 @@ router.put('/kyc/:id', reviewKycRequest);
 
 // Admin Match Suggestion
 router.post('/suggest-match', suggestMatch);
+router.get('/handpicked-matches', getHandpickedMatches);
+router.delete('/handpicked-matches/:id', deleteHandpickedMatch);
 
 module.exports = router;

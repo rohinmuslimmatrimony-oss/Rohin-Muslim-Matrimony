@@ -7,7 +7,7 @@ import {
   FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaLock, 
   FaUserLock, FaHeart, FaExclamationTriangle, FaStar, 
   FaPhoneAlt, FaEnvelope, FaMosque, FaUsers, FaRulerVertical, FaLanguage,
-  FaCheckCircle, FaCrown, FaMoneyBillWave
+  FaCheckCircle, FaCrown, FaMoneyBillWave, FaImages, FaChevronLeft, FaChevronRight, FaTimes
 } from 'react-icons/fa';
 import SimpleSpinner from '../components/SimpleSpinner';
 import DefaultAvatar from '../components/DefaultAvatar';
@@ -27,6 +27,7 @@ const UserProfile = () => {
   const [hovered, setHovered] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [galleryRequestStatus, setGalleryRequestStatus] = useState(null);
+  const [selectedGalleryIdx, setSelectedGalleryIdx] = useState(null);
 
   useEffect(() => {
     fetchProfileData();
@@ -402,6 +403,43 @@ const UserProfile = () => {
               </div>
             </div>
 
+            {/* Photo Gallery (4-5 Photos) Section */}
+            {profile.gallery && profile.gallery.length > 0 && !profile.profilePhoto?.includes('blurred-avatar.png') && (
+              <div className="mt-6 p-5 rounded-2xl bg-white/5 border border-gold-500/20 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-3.5">
+                  <div className="flex items-center gap-2">
+                    <FaImages className="text-gold-400 text-base" />
+                    <h3 className="text-base font-serif font-bold text-white">
+                      Photo Gallery <span className="text-xs text-gold-300 font-sans font-normal">({profile.gallery.length} Photos)</span>
+                    </h3>
+                  </div>
+                  <span className="text-xs text-slate-400">Click any photo to view full size</span>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                  {profile.gallery.map((photo, idx) => {
+                    const fullUrl = photo.startsWith('http') ? photo : `${SOCKET_BASE_URL}${photo}`;
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => setSelectedGalleryIdx(idx)}
+                        className="group relative rounded-xl overflow-hidden aspect-square border border-gold-500/30 bg-slate-900 cursor-pointer shadow-md hover:border-gold-400 hover:scale-105 transition-all"
+                      >
+                        <img
+                          src={fullUrl}
+                          alt={`${profile.name} - Photo ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:brightness-110 transition-all"
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="bg-gold-500/90 text-crimson-950 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">View</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Grid Information Layout */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
               
@@ -599,6 +637,99 @@ const UserProfile = () => {
                 <button type="submit" className="px-6 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors">Submit Report</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Gallery Lightbox Modal */}
+      {selectedGalleryIdx !== null && profile.gallery && (
+        <div 
+          className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setSelectedGalleryIdx(null)}
+        >
+          <div 
+            className="relative max-w-4xl w-full flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Bar with counter & close */}
+            <div className="w-full flex items-center justify-between text-white mb-4 px-2">
+              <span className="text-sm font-semibold text-gold-300">
+                Photo {selectedGalleryIdx + 1} of {profile.gallery.length} • {profile.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedGalleryIdx(null)}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg transition-colors"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Main Photo Container */}
+            <div className="relative w-full max-h-[75vh] flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl border border-gold-500/20 bg-black">
+              <img
+                src={
+                  profile.gallery[selectedGalleryIdx].startsWith('http')
+                    ? profile.gallery[selectedGalleryIdx]
+                    : `${SOCKET_BASE_URL}${profile.gallery[selectedGalleryIdx]}`
+                }
+                alt={`${profile.name} full size`}
+                className="max-h-[75vh] max-w-full object-contain"
+              />
+
+              {/* Prev Button */}
+              {profile.gallery.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedGalleryIdx((prev) =>
+                      prev === 0 ? profile.gallery.length - 1 : prev - 1
+                    )
+                  }
+                  className="absolute left-3 w-12 h-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center text-xl transition-all hover:scale-110"
+                >
+                  <FaChevronLeft />
+                </button>
+              )}
+
+              {/* Next Button */}
+              {profile.gallery.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedGalleryIdx((prev) =>
+                      prev === profile.gallery.length - 1 ? 0 : prev + 1
+                    )
+                  }
+                  className="absolute right-3 w-12 h-12 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 flex items-center justify-center text-xl transition-all hover:scale-110"
+                >
+                  <FaChevronRight />
+                </button>
+              )}
+            </div>
+
+            {/* Thumbnail strip */}
+            {profile.gallery.length > 1 && (
+              <div className="flex gap-2 mt-4 overflow-x-auto p-1">
+                {profile.gallery.map((p, i) => {
+                  const url = p.startsWith('http') ? p : `${SOCKET_BASE_URL}${p}`;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedGalleryIdx(i)}
+                      className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                        selectedGalleryIdx === i
+                          ? 'border-gold-400 scale-105 shadow-md shadow-gold-500/20'
+                          : 'border-white/20 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={url} alt={`Thumb ${i + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -49,6 +49,7 @@ const AdminDashboard = () => {
   const [matchMessage, setMatchMessage] = useState('');
   const [matchSearchA, setMatchSearchA] = useState('');
   const [matchSearchB, setMatchSearchB] = useState('');
+  const [handpickedMatches, setHandpickedMatches] = useState([]);
 
   // Search & Filter States
   const [userSearch, setUserSearch] = useState('');
@@ -109,9 +110,16 @@ const AdminDashboard = () => {
       if (activeTab === 'metrics') {
         const res = await api.get('/admin/metrics');
         setMetrics(res.data.metrics);
-      } else if (activeTab === 'users' || activeTab === 'approvals' || activeTab === 'suggest-match') {
+      } else if (activeTab === 'users' || activeTab === 'approvals') {
         const res = await api.get('/admin/users');
         setUsers(res.data.data);
+      } else if (activeTab === 'suggest-match') {
+        const [usersRes, matchesRes] = await Promise.all([
+          api.get('/admin/users'),
+          api.get('/admin/handpicked-matches').catch(() => ({ data: { data: [] } }))
+        ]);
+        setUsers(usersRes.data.data);
+        setHandpickedMatches(matchesRes.data.data || []);
       } else if (activeTab === 'reports') {
         const res = await api.get('/admin/reports');
         setReports(res.data.data);
@@ -388,9 +396,25 @@ const AdminDashboard = () => {
         setMatchMessage('');
         setMatchSearchA('');
         setMatchSearchB('');
+        // Refresh handpicked matches list
+        const mRes = await api.get('/admin/handpicked-matches').catch(() => ({ data: { data: [] } }));
+        setHandpickedMatches(mRes.data.data || []);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to suggest match');
+    }
+  };
+
+  const handleDeleteHandpickedMatch = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this match suggestion?')) return;
+    try {
+      const res = await api.delete(`/admin/handpicked-matches/${id}`);
+      if (res.data.success) {
+        toast.success('Suggestion removed');
+        setHandpickedMatches(prev => prev.filter(m => m._id !== id));
+      }
+    } catch (error) {
+      toast.error('Failed to remove suggestion');
     }
   };
 
@@ -1892,16 +1916,109 @@ const AdminDashboard = () => {
                     />
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-end pt-2">
                     <button
                       type="submit"
                       disabled={!matchUserA || !matchUserB}
-                      className="bg-indigo-650 hover:bg-indigo-600 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg hover:scale-[1.01] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-base px-10 py-4 rounded-2xl shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-3 cursor-pointer border border-amber-200/50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
                     >
-                      Send Match Suggestion
+                      <FaCrown className="text-slate-950 text-lg" />
+                      <span>Send Match Suggestion (24h)</span>
+                      <FaHandshake className="text-slate-950 text-lg" />
                     </button>
                   </div>
                 </form>
+
+                {/* RECENT MATCH SUGGESTIONS LIST */}
+                <div className="mt-12 pt-8 border-t border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <span>👑</span> Recent Match Suggestions
+                      </h2>
+                      <p className="text-xs text-slate-400">Track sent suggestions. Matches remain active for 24 hours from creation.</p>
+                    </div>
+                    <span className="text-xs text-slate-400 font-bold bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+                      Total: {handpickedMatches.length}
+                    </span>
+                  </div>
+
+                  {handpickedMatches.length === 0 ? (
+                    <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-8 text-center text-slate-400 text-sm">
+                      No match suggestions sent yet. Select two members above to send your first handpicked match.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {handpickedMatches.map((m) => {
+                        return (
+                          <div 
+                            key={m._id} 
+                            className="bg-slate-800 border border-slate-700 hover:border-slate-600 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+                          >
+                            {/* Member Pair */}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              {/* Member A */}
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-10 h-10 rounded-full bg-crimson-900/80 text-crimson-300 font-bold flex items-center justify-center text-sm flex-shrink-0 border border-crimson-700">
+                                  {m.userA?.profile?.name?.[0] || 'A'}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-white truncate">{m.userA?.profile?.name || m.userA?.email}</p>
+                                  <p className="text-[11px] text-slate-400 truncate">{m.userA?.profile?.city || 'N/A'} • {m.userA?.profile?.age ? `${m.userA.profile.age} yrs` : ''}</p>
+                                </div>
+                              </div>
+
+                              {/* Arrow / Match Icon */}
+                              <div className="text-xs text-indigo-400 font-bold px-2 py-1 bg-slate-900 rounded-lg border border-slate-750 flex-shrink-0">
+                                💌 ➔
+                              </div>
+
+                              {/* Member B */}
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-10 h-10 rounded-full bg-indigo-900/80 text-indigo-300 font-bold flex items-center justify-center text-sm flex-shrink-0 border border-indigo-700">
+                                  {m.userB?.profile?.name?.[0] || 'B'}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-white truncate">{m.userB?.profile?.name || m.userB?.email}</p>
+                                  <p className="text-[11px] text-slate-400 truncate">{m.userB?.profile?.city || 'N/A'} • {m.userB?.profile?.age ? `${m.userB.profile.age} yrs` : ''}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Message / Info */}
+                            {m.message && (
+                              <div className="hidden lg:block max-w-xs text-xs text-slate-400 italic truncate bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                                "{m.message}"
+                              </div>
+                            )}
+
+                            {/* Status & Actions */}
+                            <div className="flex items-center gap-3 self-end md:self-center flex-shrink-0">
+                              {m.isActive ? (
+                                <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                  Active ({m.hoursLeft}h left)
+                                </span>
+                              ) : (
+                                <span className="bg-slate-900 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-bold">
+                                  ⚪ Expired
+                                </span>
+                              )}
+
+                              <button
+                                onClick={() => handleDeleteHandpickedMatch(m._id)}
+                                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-lg transition-colors text-xs font-bold"
+                                title="Delete suggestion"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

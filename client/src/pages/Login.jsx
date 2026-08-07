@@ -5,12 +5,14 @@ import { FaEnvelope, FaLock, FaArrowRight, FaEye, FaEyeSlash, FaRegUser } from '
 import logo3 from '../assets/logo3.png';
 import loginPageLogo from '../assets/login page logo.png';
 import islamicBg from '../assets/islamic_bg_login.png';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
 
 const Login = () => {
   const { login, user, loading } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -104,7 +106,16 @@ const Login = () => {
 
             {/* Password Input */}
             <div className="space-y-[2px]">
-              <label className="text-[#5C4E4E] text-[9.5px] font-medium ml-0.5" htmlFor="mobile-password">Password</label>
+              <div className="flex justify-between items-center px-0.5">
+                <label className="text-[#5C4E4E] text-[9.5px] font-medium ml-0.5" htmlFor="mobile-password">Password</label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(true)}
+                  className="text-[#A11B32] hover:underline text-[9.5px] font-bold"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="relative flex items-center bg-[#FDFBF7] border border-[#D4AF37]/50 rounded-[9px] overflow-hidden focus-within:border-[#D4AF37] transition-all h-[38px]">
                 <span className="absolute left-3 text-[#D4AF37]"><FaLock className="text-[12px]" /></span>
                 <input
@@ -201,6 +212,13 @@ const Login = () => {
                 <label className="text-[#ffd666] text-[10px] sm:text-xs font-bold uppercase tracking-wider drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]" htmlFor="password">
                   Password
                 </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(true)}
+                  className="text-[#ffd666] hover:text-white hover:underline text-[11px] font-bold transition-colors drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)] cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
               </div>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]">
@@ -253,6 +271,17 @@ const Login = () => {
         </div>
       </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        show={showForgotModal}
+        onClose={() => setShowForgotModal(false)}
+        defaultEmail={email}
+        onPasswordResetSuccess={(resetEmail) => {
+          setEmail(resetEmail);
+          setPassword('');
+        }}
+      />
     </>
   );
 };

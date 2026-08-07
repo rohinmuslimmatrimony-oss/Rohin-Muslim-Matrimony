@@ -2,6 +2,8 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
 const GalleryRequest = require('../models/GalleryRequest');
+const InterestRequest = require('../models/InterestRequest');
+const HandpickedMatch = require('../models/HandpickedMatch');
 const mongoose = require('mongoose');
 
 const getPlanFeatures = async (plan) => {
@@ -224,8 +226,15 @@ exports.getProfileById = async (req, res) => {
       );
 
       if (!hasViewedBefore) {
-        // Quota check — deduct 1 from remaining quota
-        const remainingQuota = viewer.quotaProfileViews ?? 0;
+        const planLimit = planFeatures?.totalViewLimit || 10;
+        const viewedCount = (viewer.viewedProfiles || []).length;
+
+        // Dynamic Quota check: if admin increased limit or quota was not set, adjust remainingQuota
+        let remainingQuota = viewer.quotaProfileViews;
+        if (remainingQuota === undefined || remainingQuota === null || (remainingQuota <= 0 && viewedCount < planLimit)) {
+          remainingQuota = Math.max(0, planLimit - viewedCount);
+        }
+
         if (remainingQuota <= 0) {
           return res.status(403).json({
             success: false,
@@ -235,7 +244,7 @@ exports.getProfileById = async (req, res) => {
           });
         }
 
-        viewer.quotaProfileViews = remainingQuota - 1;
+        viewer.quotaProfileViews = Math.max(0, remainingQuota - 1);
         viewer.viewedProfiles.push(targetUserId);
         await viewer.save();
       }
@@ -739,7 +748,223 @@ exports.recordRecommendationView = async (req, res) => {
 
     return res.status(200).json({ success: true, message: 'Recommendation view recorded' });
   } catch (error) {
-    console.error('RecordRecommendationView Error:', error);
+    console.error('recordRecommendationView Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get active 24-hour handpicked matches for the logged-in user
+// @route   GET /api/profiles/handpicked
+// @access  Private
+exports.getMyHandpickedMatches = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const now = new Date();
+
+    // Find active suggestions that haven't expired
+    const matches = await HandpickedMatch.find({
+      $or: [{ userA: userId }, { userB: userId }],
+      expiresAt: { $gt: now }
+    }).sort({ createdAt: -1 });
+
+    const enriched = await Promise.all(
+      matches.map(async (m) => {
+        const isUserA = m.userA.toString() === userId.toString();
+        const partnerUserId = isUserA ? m.userB : m.userA;
+        const myStatus = isUserA ? m.statusA : m.statusB;
+
+        // Skip if user explicitly declined
+        if (myStatus === 'declined') return null;
+
+        const partnerProfile = await Profile.findOne({ user: partnerUserId }).populate('user', 'email plan isManuallyVerified');
+        if (!partnerProfile) return null;
+
+        // Check if interest already sent
+        const sentRequest = await InterestRequest.findOne({ sender: userId, receiver: partnerUserId });
+        const receivedRequest = await InterestRequest.findOne({ sender: partnerUserId, receiver: userId });
+
+        const diffMs = new Date(m.expiresAt) - now;
+        const hoursLeft = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60)));
+        const minutesLeft = Math.max(0, Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60)));
+
+        const candObj = partnerProfile.toObject();
+
+        return {
+          matchId: m._id,
+          message: m.message,
+          expiresAt: m.expiresAt,
+          createdAt: m.createdAt,
+          hoursLeft,
+          minutesLeft,
+          myStatus,
+          isInterestSent: !!sentRequest,
+          isInterestReceived: !!receivedRequest,
+          isMutualConnected: (sentRequest?.status === 'accepted') || (receivedRequest?.status === 'accepted'),
+          partner: candObj
+        };
+      })
+    );
+
+    const validMatches = enriched.filter(Boolean);
+
+    return res.status(200).json({
+      success: true,
+      count: validMatches.length,
+      data: validMatches
+    });
+  } catch (error) {
+    console.error('GetMyHandpickedMatches Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Take action on handpicked match (view, decline)
+// @route   POST /api/profiles/handpicked/:id/action
+// @access  Private
+exports.actionHandpickedMatch = async (req, res) => {
+  try {
+    const { action } = req.body; // 'view' | 'decline'
+    const matchId = req.params.id;
+    const userId = req.user.id;
+
+    const match = await HandpickedMatch.findById(matchId);
+    if (!match) {
+      return res.status(404).json({ success: false, message: 'Handpicked match not found' });
+    }
+
+    const isUserA = match.userA.toString() === userId.toString();
+    const isUserB = match.userB.toString() === userId.toString();
+
+    if (!isUserA && !isUserB) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (action === 'view') {
+      if (isUserA && match.statusA === 'pending') match.statusA = 'viewed';
+      if (isUserB && match.statusB === 'pending') match.statusB = 'viewed';
+    } else if (action === 'decline') {
+      if (isUserA) match.statusA = 'declined';
+      if (isUserB) match.statusB = 'declined';
+    }
+
+    await match.save();
+
+    return res.status(200).json({ success: true, message: `Match updated with action: ${action}` });
+  } catch (error) {
+    console.error('ActionHandpickedMatch Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Upload multiple photos to user gallery (up to 5 photos total)
+// @route   POST /api/profiles/gallery
+// @access  Private
+exports.uploadGalleryPhotos = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let profile = await Profile.findOne({ user: userId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please select photos to upload' });
+    }
+
+    if (!profile.gallery) {
+      profile.gallery = [];
+    }
+
+    // Check max 5 photos limit
+    const currentCount = profile.gallery.length;
+    const newCount = req.files.length;
+    if (currentCount + newCount > 5) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `You can only have up to 5 photos in your gallery. You currently have ${currentCount}.` 
+      });
+    }
+
+    const newPhotoUrls = req.files.map(file => `/uploads/${file.filename}`);
+    profile.gallery.push(...newPhotoUrls);
+
+    await profile.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Photos uploaded to gallery successfully',
+      gallery: profile.gallery,
+      profilePhoto: profile.profilePhoto
+    });
+  } catch (error) {
+    console.error('UploadGalleryPhotos Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete a photo from gallery
+// @route   DELETE /api/profiles/gallery
+// @access  Private
+exports.deleteGalleryPhoto = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { photoUrl } = req.body;
+    if (!photoUrl) {
+      return res.status(400).json({ success: false, message: 'Photo URL is required' });
+    }
+
+    let profile = await Profile.findOne({ user: userId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    profile.gallery = (profile.gallery || []).filter(p => p !== photoUrl);
+
+    await profile.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Photo removed from gallery',
+      gallery: profile.gallery,
+      profilePhoto: profile.profilePhoto
+    });
+  } catch (error) {
+    console.error('DeleteGalleryPhoto Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Set a gallery photo as main profile DP
+// @route   PUT /api/profiles/gallery/set-main
+// @access  Private
+exports.setMainProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { photoUrl } = req.body;
+    if (!photoUrl) {
+      return res.status(400).json({ success: false, message: 'Photo URL is required' });
+    }
+
+    let profile = await Profile.findOne({ user: userId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    profile.profilePhoto = photoUrl;
+    if (!profile.gallery.includes(photoUrl)) {
+      profile.gallery.unshift(photoUrl);
+    }
+
+    await profile.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Main profile photo updated successfully',
+      profilePhoto: profile.profilePhoto,
+      gallery: profile.gallery
+    });
+  } catch (error) {
+    console.error('SetMainProfilePhoto Error:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

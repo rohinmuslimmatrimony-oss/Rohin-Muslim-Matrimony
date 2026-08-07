@@ -5,6 +5,7 @@ const Message = require('../models/Message');
 const Settings = require('../models/Settings');
 const KycRequest = require('../models/KycRequest');
 const Notification = require('../models/Notification');
+const HandpickedMatch = require('../models/HandpickedMatch');
 
 // Helper: get quota values from settings for a given plan
 const getPlanQuota = async (plan) => {
@@ -243,17 +244,20 @@ exports.updateLimit = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    user.viewLimit = parseInt(viewLimit);
+    const numLimit = parseInt(viewLimit);
+    user.viewLimit = numLimit;
+    user.quotaProfileViews = numLimit;
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: `User profile view limit updated to: ${viewLimit}`,
+      message: `User profile view limit updated to: ${numLimit}`,
       data: {
         _id: user._id,
         email: user.email,
         plan: user.plan,
-        viewLimit: user.viewLimit
+        viewLimit: user.viewLimit,
+        quotaProfileViews: user.quotaProfileViews
       }
     });
   } catch (error) {
@@ -767,7 +771,7 @@ exports.reviewKycRequest = async (req, res) => {
   }
 };
 
-// @desc    Admin suggests a match between two users
+// @desc    Admin suggests a 24-hour match between two users
 // @route   POST /api/admin/suggest-match
 // @access  Private/Admin
 exports.suggestMatch = async (req, res) => {
@@ -789,16 +793,28 @@ exports.suggestMatch = async (req, res) => {
       return res.status(404).json({ success: false, message: 'One or both user profiles not found.' });
     }
 
-    const adminMessage = message || 'Our team thinks you could be a great match!';
+    const adminMessage = message || 'Our matchmaking team personally recommends this profile based on matching preferences and family background.';
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Exactly 24 hours from now
+
+    // Create or replace HandpickedMatch record
+    const handpicked = await HandpickedMatch.create({
+      userA: userAId,
+      userB: userBId,
+      suggestedBy: req.user.id,
+      message: adminMessage,
+      expiresAt,
+      statusA: 'pending',
+      statusB: 'pending'
+    });
 
     // Notify User A about User B
     await Notification.create({
       recipient: userAId,
       sender: req.user.id,
       type: 'admin_match_suggestion',
-      title: '💌 Admin Match Suggestion',
-      message: `Our team suggests you check out ${profileB.name}'s profile. ${adminMessage}`,
-      url: `/profile/${userBId}`
+      title: '👑 Handpicked Match (24h Exclusive)',
+      message: `Our team suggested ${profileB.name}'s profile for you. Available for 24 hours! ${adminMessage}`,
+      url: `/activity`
     });
 
     // Notify User B about User A
@@ -806,28 +822,106 @@ exports.suggestMatch = async (req, res) => {
       recipient: userBId,
       sender: req.user.id,
       type: 'admin_match_suggestion',
-      title: '💌 Admin Match Suggestion',
-      message: `Our team suggests you check out ${profileA.name}'s profile. ${adminMessage}`,
-      url: `/profile/${userAId}`
+      title: '👑 Handpicked Match (24h Exclusive)',
+      message: `Our team suggested ${profileA.name}'s profile for you. Available for 24 hours! ${adminMessage}`,
+      url: `/activity`
     });
 
     // Push notifications
     const sendPushNotification = require('../utils/pushNotifier');
-    sendPushNotification(userAId, '💌 Admin Match Suggestion', `Check out ${profileB.name}'s profile!`, `/profile/${userBId}`).catch(() => {});
-    sendPushNotification(userBId, '💌 Admin Match Suggestion', `Check out ${profileA.name}'s profile!`, `/profile/${userAId}`).catch(() => {});
+    sendPushNotification(userAId, '👑 Handpicked Match (24h Exclusive)', `Check out ${profileB.name}'s profile in Activity!`, `/activity`).catch(() => {});
+    sendPushNotification(userBId, '👑 Handpicked Match (24h Exclusive)', `Check out ${profileA.name}'s profile in Activity!`, `/activity`).catch(() => {});
 
     // Socket notifications
     if (req.io) {
-      req.io.to(userAId).emit('new_notification', { title: '💌 Admin Match Suggestion', message: `Check out ${profileB.name}'s profile!` });
-      req.io.to(userBId).emit('new_notification', { title: '💌 Admin Match Suggestion', message: `Check out ${profileA.name}'s profile!` });
+      req.io.to(userAId.toString()).emit('new_notification', { title: '👑 Handpicked Match (24h Exclusive)', message: `Check out ${profileB.name}'s profile!` });
+      req.io.to(userBId.toString()).emit('new_notification', { title: '👑 Handpicked Match (24h Exclusive)', message: `Check out ${profileA.name}'s profile!` });
     }
 
     return res.status(200).json({
       success: true,
-      message: `Match suggested between ${profileA.name} and ${profileB.name} successfully!`,
+      message: `24-Hour match suggested between ${profileA.name} and ${profileB.name} successfully!`,
+      data: handpicked
     });
   } catch (error) {
     console.error('SuggestMatch Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get all handpicked match suggestions for Admin
+// @route   GET /api/admin/handpicked-matches
+// @access  Private/Admin
+exports.getHandpickedMatches = async (req, res) => {
+  try {
+    const matches = await HandpickedMatch.find()
+      .populate('userA', 'email plan isManuallyVerified')
+      .populate('userB', 'email plan isManuallyVerified')
+      .sort({ createdAt: -1 });
+
+    const now = new Date();
+
+    const enriched = await Promise.all(
+      matches.map(async (m) => {
+        const profileA = await Profile.findOne({ user: m.userA?._id }).select('name age city gender profession profilePhoto');
+        const profileB = await Profile.findOne({ user: m.userB?._id }).select('name age city gender profession profilePhoto');
+
+        const isActive = new Date(m.expiresAt) > now;
+        const diffMs = new Date(m.expiresAt) - now;
+        const hoursLeft = isActive ? Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60))) : 0;
+
+        return {
+          _id: m._id,
+          message: m.message,
+          expiresAt: m.expiresAt,
+          createdAt: m.createdAt,
+          isActive,
+          hoursLeft,
+          statusA: m.statusA,
+          statusB: m.statusB,
+          userA: {
+            _id: m.userA?._id,
+            email: m.userA?.email,
+            plan: m.userA?.plan,
+            profile: profileA
+          },
+          userB: {
+            _id: m.userB?._id,
+            email: m.userB?.email,
+            plan: m.userB?.plan,
+            profile: profileB
+          }
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: enriched.length,
+      data: enriched
+    });
+  } catch (error) {
+    console.error('GetHandpickedMatches Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete / Cancel a handpicked match suggestion
+// @route   DELETE /api/admin/handpicked-matches/:id
+// @access  Private/Admin
+exports.deleteHandpickedMatch = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await HandpickedMatch.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Suggestion not found' });
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Suggestion removed successfully'
+    });
+  } catch (error) {
+    console.error('DeleteHandpickedMatch Error:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -11,6 +11,7 @@ import SimpleSpinner from '../components/SimpleSpinner';
 import MobileMatchesFeed from '../components/MobileMatchesFeed';
 import SupportContactCard from '../components/SupportContactCard';
 import DesktopDailyRecommendationsModal from '../components/DesktopDailyRecommendationsModal';
+import HandpickedMatchModal from '../components/HandpickedMatchModal';
 
 // Helper: get today's localStorage key for daily viewed profiles
 const getDailyViewedKey = (userId) => {
@@ -71,6 +72,10 @@ const Dashboard = () => {
   const [sentRequests, setSentRequests] = useState([]);
   const recordedViewsRef = React.useRef(new Set());
 
+  // Handpicked Matches (24h) States
+  const [handpickedMatches, setHandpickedMatches] = useState([]);
+  const [showHandpickedModal, setShowHandpickedModal] = useState(false);
+
   // Fetch daily recommendations
   const fetchDailyRecommendations = async () => {
     try {
@@ -128,9 +133,44 @@ const Dashboard = () => {
   useEffect(() => {
     if (user && user.role !== 'admin') {
       fetchDailyRecommendations();
+      fetchHandpickedMatches();
       fetchMyRequests();
     }
   }, [user?._id]);
+
+  const fetchHandpickedMatches = async () => {
+    try {
+      const res = await api.get('/profiles/handpicked');
+      if (res.data.success && res.data.data && res.data.data.length > 0) {
+        setHandpickedMatches(res.data.data);
+        const dismissed = sessionStorage.getItem('handpicked_modal_dismissed');
+        if (!dismissed) {
+          setShowHandpickedModal(true);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load handpicked matches:', err);
+    }
+  };
+
+  const handleHandpickedInterest = async (profileId, matchId) => {
+    try {
+      const res = await api.post(`/requests/send/${profileId}`);
+      if (res.data.success) {
+        toast.success('Interest sent successfully!');
+        setSentRequests(prev => [...prev, profileId]);
+        setHandpickedMatches(prev => prev.map(m => m.matchId === matchId ? { ...m, isInterestSent: true } : m));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to send interest');
+    }
+  };
+
+  const handleHandpickedDecline = async (matchId) => {
+    try {
+      await api.post(`/profiles/handpicked/${matchId}/action`, { action: 'view' });
+    } catch (e) {}
+  };
 
   const recordDailyView = (profileUserId) => {
     if (!profileUserId || recordedViewsRef.current.has(profileUserId)) return;
@@ -787,6 +827,21 @@ const Dashboard = () => {
           onSkip={handleSkipDaily}
           onInterest={handleInterestDaily}
           sentRequests={sentRequests}
+          user={user}
+          profile={profile}
+          getCompleteness={getCompleteness}
+        />
+
+        {/* MODAL 5: 24-HOUR HANDPICKED MATCH RECOMMENDATION */}
+        <HandpickedMatchModal
+          show={showHandpickedModal}
+          onClose={() => {
+            setShowHandpickedModal(false);
+            sessionStorage.setItem('handpicked_modal_dismissed', 'true');
+          }}
+          matches={handpickedMatches}
+          onInterest={handleHandpickedInterest}
+          onDecline={handleHandpickedDecline}
           user={user}
           profile={profile}
           getCompleteness={getCompleteness}

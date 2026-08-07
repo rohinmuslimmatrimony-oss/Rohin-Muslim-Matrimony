@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 import DefaultAvatar from '../components/DefaultAvatar';
+import PhotoGalleryManager from '../components/PhotoGalleryManager';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -228,6 +229,13 @@ const MyProfilePage = () => {
 
           {/* Right Column: Menus & Other Info */}
           <div className={isAdmin ? "lg:w-[65%] flex-col flex" : "w-full"}>
+            {/* Photo Gallery (Up to 5 Photos) */}
+            {!isAdmin && (
+              <div className="mb-6">
+                <PhotoGalleryManager profile={profile} onUpdate={refreshUser} />
+              </div>
+            )}
+
             {/* Verification Card */}
             {!isAdmin && (
               <Link to="/verify-identity" className="block mb-6 hover:-translate-y-0.5 transition-transform">

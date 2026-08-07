@@ -33,6 +33,8 @@ const InterestsPage = () => {
   const [galleryRequestsLoading, setGalleryRequestsLoading] = useState(false);
   const [contactsViewed, setContactsViewed] = useState([]);
   const [contactsViewedLoading, setContactsViewedLoading] = useState(false);
+  const [handpickedMatches, setHandpickedMatches] = useState([]);
+  const [handpickedLoading, setHandpickedLoading] = useState(false);
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -103,6 +105,8 @@ const InterestsPage = () => {
   useEffect(() => {
     if (activeTab === 'all') {
       fetchAllActivities();
+    } else if (activeTab === 'handpicked') {
+      fetchHandpicked();
     } else if (activeTab === 'shortlisted') {
       fetchShortlisted();
     } else if (activeTab === 'visits') {
@@ -220,6 +224,33 @@ const InterestsPage = () => {
       console.error('Failed to load all activities', err);
     } finally {
       setAllLoading(false);
+    }
+  };
+
+  const fetchHandpicked = async () => {
+    setHandpickedLoading(true);
+    try {
+      const res = await api.get('/profiles/handpicked');
+      if (res.data.success) {
+        setHandpickedMatches(res.data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to load handpicked matches', err);
+    } finally {
+      setHandpickedLoading(false);
+    }
+  };
+
+  const handleHandpickedInterest = async (profileId, matchId) => {
+    try {
+      const res = await api.post(`/requests/send/${profileId}`);
+      if (res.data.success) {
+        toast.success('Interest sent successfully!');
+        setHandpickedMatches(prev => prev.map(m => m.matchId === matchId ? { ...m, isInterestSent: true } : m));
+        fetchRequests();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send interest');
     }
   };
 
@@ -460,6 +491,7 @@ const InterestsPage = () => {
 
   const tabs = [
     { id: 'all', label: 'All Activities', count: allActivities.length },
+    { id: 'handpicked', label: '👑 Handpicked (24h)', count: handpickedMatches.length },
     { id: 'interests', label: 'Interests (Received/Sent)', count: receivedRequests.length + sentRequests.length },
     { id: 'matches', label: 'Mutual Connections (Chat)', count: connections.length },
     { id: 'visits', label: 'Profile Visits', count: profileVisits.length },
@@ -480,6 +512,9 @@ const InterestsPage = () => {
           handleReject={handleReject}
           onCancelInterest={handleCancelSentRequest}
           user={user}
+          handpickedMatches={handpickedMatches}
+          fetchHandpicked={fetchHandpicked}
+          handleHandpickedInterest={handleHandpickedInterest}
         />
       </div>
 
@@ -574,6 +609,119 @@ const InterestsPage = () => {
                         }
 
                         return renderProfileCard(profile, actLabel, actionBadge, act.id);
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* HANDPICKED MATCHES (24H) TAB */}
+              {activeTab === 'handpicked' && (
+                <div className="animate-fadeIn space-y-4">
+                  <div className="border-b border-amber-200 pb-3 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-serif font-bold text-crimson-950 flex items-center gap-2">
+                        <span>👑</span> Handpicked Matches (24-Hour Exclusive)
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Hand-selected recommendations suggested by our matchmaking team. Active for 24 hours only.
+                      </p>
+                    </div>
+                    <span className="text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1 rounded-full">
+                      {handpickedMatches.length} Active
+                    </span>
+                  </div>
+
+                  {handpickedLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-10 h-10 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin"></div>
+                    </div>
+                  ) : handpickedMatches.length === 0 ? (
+                    <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+                      <span className="text-4xl block">👑</span>
+                      <h4 className="font-serif font-bold text-slate-800 text-lg">No Active Handpicked Matches</h4>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        When our matchmaking team personally suggests a profile for you, it will appear here for 24 hours. Check back soon!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {handpickedMatches.map((m) => {
+                        const p = m.partner;
+                        if (!p) return null;
+
+                        const action = (
+                          <div className="flex items-center gap-2">
+                            {m.isInterestSent ? (
+                              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+                                <FaCheckCircle className="text-emerald-600" /> Interest Sent
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleHandpickedInterest(p._id, m.matchId)}
+                                className="bg-gradient-to-r from-crimson-900 to-crimson-950 hover:from-crimson-800 hover:to-crimson-900 text-amber-300 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md hover:scale-105 transition-all"
+                              >
+                                <FaHeart className="text-rose-400 text-xs" /> Send Interest
+                              </button>
+                            )}
+                            <Link
+                              to={`/profile/${p.user?._id || p._id}`}
+                              className="text-xs font-bold text-slate-700 hover:text-crimson-900 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl border border-slate-200 transition-colors"
+                            >
+                              View Biodata
+                            </Link>
+                          </div>
+                        );
+
+                        return (
+                          <div key={m.matchId} className="bg-white rounded-3xl p-5 border-2 border-amber-400/40 shadow-md relative overflow-hidden transition-all hover:border-amber-400">
+                            {/* Top Badge Banner */}
+                            <div className="flex items-center justify-between mb-3 bg-amber-50 -mx-5 -mt-5 px-5 py-2.5 border-b border-amber-200/80">
+                              <span className="text-xs font-black text-amber-900 flex items-center gap-1.5 uppercase tracking-wider">
+                                <FaStar className="text-amber-500" /> Matchmaker's Pick
+                              </span>
+                              <span className="text-xs font-black text-crimson-950 bg-amber-200/80 border border-amber-400/60 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                ⏳ {m.hoursLeft}h {m.minutesLeft}m remaining
+                              </span>
+                            </div>
+
+                            {/* Matchmaker Note */}
+                            {m.message && (
+                              <div className="bg-amber-50/60 border-l-4 border-amber-500 p-3 rounded-r-xl mb-4 text-xs text-slate-700 italic">
+                                "{m.message}"
+                              </div>
+                            )}
+
+                            {/* Profile Details Card */}
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
+                                  {p.profilePhoto && p.profilePhoto !== '/uploads/default-avatar.png' && p.profilePhoto !== '/uploads/blurred-avatar.png' ? (
+                                    <img src={`${SOCKET_BASE_URL}${p.profilePhoto}`} alt={p.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">
+                                      {p.name?.[0] || 'U'}
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                    {p.name}
+                                    {p.user?.isManuallyVerified && <FaCheckCircle className="text-emerald-500 text-xs" />}
+                                  </h4>
+                                  <p className="text-xs text-slate-500 mt-0.5">
+                                    {p.age} yrs • {p.sect || 'Muslim'} • {p.city || 'India'}
+                                  </p>
+                                  <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
+                                    {p.profession || 'Profession Not Listed'} • {p.education || 'Graduate'}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {action}
+                            </div>
+                          </div>
+                        );
                       })}
                     </div>
                   )}

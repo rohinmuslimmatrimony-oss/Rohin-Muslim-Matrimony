@@ -263,6 +263,18 @@ exports.getMe = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // Auto-sync quota if admin increased plan limits
+    const planFeatures = await getPlanFeatures(user.plan);
+    const planLimit = planFeatures?.totalViewLimit || 10;
+    const viewedCount = (user.viewedProfiles || []).length;
+    let effectiveQuota = user.quotaProfileViews;
+    if (effectiveQuota === undefined || effectiveQuota === null || (effectiveQuota <= 0 && viewedCount < planLimit)) {
+      effectiveQuota = Math.max(0, planLimit - viewedCount);
+      user.quotaProfileViews = effectiveQuota;
+      user.viewLimit = planLimit;
+      await user.save();
+    }
+
     return res.status(200).json({
       success: true,
       user: {
@@ -433,6 +445,133 @@ exports.getMyTransactions = async (req, res) => {
     return res.status(200).json({ success: true, data: transactions });
   } catch (error) {
     console.error('GetTransactions Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Request password reset OTP
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    if (!normalizedEmail) {
+      return res.status(400).json({ success: false, message: 'Please provide your registered email address' });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No account found with this email address' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordOtp = otp;
+    user.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // Send email with OTP
+    const emailHtml = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 540px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+        <div style="background: linear-gradient(135deg, #700c18 0%, #3b050b 100%); padding: 30px 20px; text-align: center;">
+          <h1 style="color: #ffd666; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 1px;">Rohin Muslim Matrimony</h1>
+          <p style="color: #ffffff; margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Halal Matchmaking Services</p>
+        </div>
+        <div style="padding: 30px 25px; color: #334155; line-height: 1.6;">
+          <h2 style="color: #1e293b; font-size: 18px; margin-top: 0;">Password Reset Code</h2>
+          <p style="font-size: 14px; margin-bottom: 20px;">Assalamu Alaikum, you recently requested to reset your password. Use the 6-digit verification code below to reset your password:</p>
+          <div style="background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 18px; text-align: center; margin: 25px 0;">
+            <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #850f1d; font-family: monospace;">${otp}</span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin-top: 15px;">⏳ This verification code is valid for <strong>10 minutes</strong>. If you did not request this, you can safely ignore this email.</p>
+        </div>
+        <div style="background-color: #f1f5f9; padding: 15px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
+          &copy; ${new Date().getFullYear()} Rohin Muslim Matrimony. All rights reserved.
+        </div>
+      </div>
+    `;
+
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Verification Code - Rohin Muslim Matrimony',
+      html: emailHtml
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset OTP has been sent to your email.'
+    });
+  } catch (error) {
+    console.error('ForgotPassword Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to send reset code. Please try again.' });
+  }
+};
+
+// @desc    Verify reset OTP code
+// @route   POST /api/auth/verify-reset-otp
+// @access  Public
+exports.verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    if (!normalizedEmail || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP code are required' });
+    }
+
+    const user = await User.findOne({
+      email: normalizedEmail,
+      resetPasswordOtp: otp,
+      resetPasswordExpire: { $gt: new Date() }
+    }).select('+resetPasswordOtp +resetPasswordExpire');
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP code' });
+    }
+
+    return res.status(200).json({ success: true, message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('VerifyResetOtp Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Reset password with OTP
+// @route   POST /api/auth/reset-password
+// @access  Public
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    if (!normalizedEmail || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const user = await User.findOne({
+      email: normalizedEmail,
+      resetPasswordOtp: otp,
+      resetPasswordExpire: { $gt: new Date() }
+    }).select('+password +resetPasswordOtp +resetPasswordExpire');
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP code' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successful! Please log in with your new password.'
+    });
+  } catch (error) {
+    console.error('ResetPassword Error:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
