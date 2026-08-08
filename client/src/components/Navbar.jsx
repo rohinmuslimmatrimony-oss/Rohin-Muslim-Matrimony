@@ -89,7 +89,7 @@ const Navbar = () => {
 
 
   return (
-    <nav className="w-full bg-[#faf9f6] border-b border-[#d4af37]/35 h-16 md:h-20 px-4 md:px-8 transition-colors shadow-lg flex items-center">
+    <nav className="w-full bg-[#faf9f6] border-b border-[#d4af37]/35 h-16 md:h-20 px-4 md:px-8 transition-colors shadow-lg flex items-center relative">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
 
         {/* Brand Logo */}
@@ -362,86 +362,98 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Slider */}
+      {/* Mobile Menu Dropdown — absolute so it's not clipped by nav's fixed height */}
       {isOpen && (
-        <div className="md:hidden mt-4 pt-4 border-t border-slate-200 flex flex-col gap-4 font-medium animate-fadeIn">
-          {(!user || user.role !== 'admin') && (
-            <>
-              <Link to="/" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1 transition-colors">Home</Link>
-              <Link to="/plans" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1 transition-colors">Plans</Link>
-            </>
-          )}
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 md:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute top-full left-0 right-0 z-50 md:hidden bg-[#faf9f6] border-b border-[#d4af37]/35 shadow-xl animate-fadeIn">
+            <div className="px-4 py-4 flex flex-col gap-3 font-medium">
 
-          {user && user.role !== 'admin' && (
-            <>
-              <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1 transition-colors">Dashboard</Link>
-              <Link to="/search" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1 transition-colors">Search Matches</Link>
-              <Link to="/activity" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1 transition-colors">Activity</Link>
-            </>
-          )}
+              {(!user || user.role !== 'admin') && (
+                <>
+                  <Link to="/" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Home</Link>
+                  <Link to="/plans" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Plans</Link>
+                </>
+              )}
 
-          {user && user.role === 'admin' && (
-            <Link to="/admin" onClick={() => setIsOpen(false)} className="bg-gradient-to-r from-gold-400 to-gold-600 text-crimson-950 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 my-2 shadow-md">
-              <FaShieldAlt className="text-crimson-950 text-sm" /> Admin Dashboard
-            </Link>
-          )}
+              {user && user.role !== 'admin' && (
+                <>
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Dashboard</Link>
+                  <Link to="/search" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Search Matches</Link>
+                  <Link to="/activity" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Activity</Link>
+                </>
+              )}
 
-          {!isStandalone && (
-            <button
-              onClick={() => {
-                alert("To install: Tap your browser menu (⋮) or the 'Share' icon and select 'Install App' or 'Add to Home Screen'.");
-                setIsOpen(false);
-              }}
-              className="text-left text-[#4f080e] hover:text-[#7f181e] font-bold py-1 flex items-center gap-1.5 transition-colors border-t border-slate-200 mt-1 pt-3"
-            >
-              <FaDownload /> Install App
-            </button>
-          )}
+              {user && user.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className="bg-gradient-to-r from-gold-400 to-gold-600 text-crimson-950 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md"
+                >
+                  <FaShieldAlt className="text-crimson-950 text-sm" /> Admin Dashboard
+                </Link>
+              )}
 
-          {user ? (
-            <div className="border-t border-slate-200 pt-4 mt-2 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Link to="/my-profile" onClick={() => setIsOpen(false)} className={`block w-11 h-11 rounded-full overflow-hidden border-2 bg-crimson-950 flex items-center justify-center ${user.plan === 'elite' ? 'border-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.6)]' : user.plan === 'premium' ? 'border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'border-slate-300'}`}>
-                    {profile?.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
-                      <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <DefaultAvatar gender={profile?.gender} className="w-full h-full object-contain bg-[#e2e8f0]" />
-                    )}
-                  </Link>
-                  {user.isManuallyVerified && (
-                    <FaCheckCircle className="absolute -bottom-0.5 -right-0.5 text-blue-500 bg-white rounded-full text-[14px] border-2 border-white" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col text-left">
-                    <span className="text-slate-800 text-sm font-bold flex items-center gap-1.5">
-                      {user?.role === 'admin' && (
-                        <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white shadow-sm flex items-center gap-1">
-                          <FaShieldAlt className="text-crimson-500 text-[9px]" />
-                          ADMIN
-                        </span>
+              {!isStandalone && user?.role !== 'admin' && (
+                <button
+                  onClick={() => {
+                    alert("To install: Tap your browser menu (⋮) or the 'Share' icon and select 'Install App' or 'Add to Home Screen'.");
+                    setIsOpen(false);
+                  }}
+                  className="text-left text-[#4f080e] hover:text-[#7f181e] font-bold py-1.5 flex items-center gap-1.5 transition-colors border-t border-slate-200 pt-3 mt-1"
+                >
+                  <FaDownload /> Install App
+                </button>
+              )}
+
+              {user ? (
+                <div className="border-t border-slate-200 pt-3 mt-1 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Link to="/my-profile" onClick={() => setIsOpen(false)} className={`block w-11 h-11 rounded-full overflow-hidden border-2 bg-crimson-950 flex items-center justify-center ${user.plan === 'elite' ? 'border-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.6)]' : user.plan === 'premium' ? 'border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'border-slate-300'}`}>
+                        {profile?.profilePhoto && profile.profilePhoto !== '/uploads/default-avatar.png' ? (
+                          <img src={`${SOCKET_BASE_URL}${profile.profilePhoto}`} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <DefaultAvatar gender={profile?.gender} className="w-full h-full object-contain bg-[#e2e8f0]" />
+                        )}
+                      </Link>
+                      {user.isManuallyVerified && (
+                        <FaCheckCircle className="absolute -bottom-0.5 -right-0.5 text-blue-500 bg-white rounded-full text-[14px] border-2 border-white" />
                       )}
-                      {user?.role === 'admin' ? 'Administrator' : (profile?.name || 'Member')}
-                    </span>
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-slate-800 text-sm font-bold flex items-center gap-1.5">
+                        {user?.role === 'admin' && (
+                          <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white shadow-sm flex items-center gap-1">
+                            <FaShieldAlt className="text-crimson-500 text-[9px]" />
+                            ADMIN
+                          </span>
+                        )}
+                        {user?.role === 'admin' ? 'Administrator' : (profile?.name || 'Member')}
+                      </span>
+                    </div>
                   </div>
+                  <button onClick={handleLogout} className="flex items-center gap-1.5 text-slate-700 hover:text-red-600 font-semibold py-1.5 transition-colors">
+                    <FaSignOutAlt /> Logout
+                  </button>
                 </div>
-              </div>
-              <button onClick={handleLogout} className="flex items-center gap-1.5 text-slate-700 hover:text-red-600 font-semibold py-1.5 transition-colors">
-                <FaSignOutAlt /> Logout
-              </button>
+              ) : (
+                <div className="border-t border-slate-200 pt-3 mt-1 flex flex-col gap-2.5">
+                  <Link to="/login" onClick={() => setIsOpen(false)} className="text-center text-slate-700 hover:text-crimson-900 font-semibold py-2 border border-slate-200 rounded-full transition-colors">
+                    Sign In
+                  </Link>
+                  <Link to="/register" onClick={() => setIsOpen(false)} className="text-center bg-gold-gradient text-crimson-950 font-bold py-2.5 rounded-full transition-all">
+                    Register Free
+                  </Link>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="border-t border-slate-200 pt-4 mt-2 flex flex-col gap-2.5">
-              <Link to="/login" onClick={() => setIsOpen(false)} className="text-center text-slate-700 hover:text-crimson-900 font-semibold py-2 border border-slate-200 rounded-full transition-colors">
-                Sign In
-              </Link>
-              <Link to="/register" onClick={() => setIsOpen(false)} className="text-center bg-gold-gradient text-crimson-950 font-bold py-2.5 rounded-full transition-all">
-                Register Free
-              </Link>
-            </div>
-          )}
-        </div>
+          </div>
+        </>
       )}
     </nav>
   );

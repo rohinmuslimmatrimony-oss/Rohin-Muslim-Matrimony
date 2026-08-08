@@ -52,6 +52,7 @@ const MobileMatchesFeed = () => {
   const [dailyProfiles, setDailyProfiles] = useState([]);
   const [currentDailyIdx, setCurrentDailyIdx] = useState(0);
   const [loadingDaily, setLoadingDaily] = useState(false);
+  const [isBatchComplete, setIsBatchComplete] = useState(false);
   // Track which profiles were recorded as viewed in this session
   const recordedViewsRef = React.useRef(new Set());
 
@@ -59,7 +60,7 @@ const MobileMatchesFeed = () => {
     fetchProfiles();
     fetchMyRequests();
     fetchDailyRecommendations();
-  }, []);
+  }, [user?._id]);
 
   const fetchProfiles = async () => {
     try {
@@ -92,19 +93,14 @@ const MobileMatchesFeed = () => {
       setLoadingDaily(true);
       const res = await api.get('/profiles/daily-recommendations');
       if (res.data.success) {
-        // Filter out profiles already viewed today (localStorage check)
-        const viewedIds = user?._id ? getDailyViewedIds(user._id) : [];
-        const filtered = res.data.data.filter(p => {
-          const pUserId = p.user?._id || p.user;
-          return !viewedIds.includes(pUserId);
-        });
-        setDailyProfiles(filtered);
-        // If all were filtered out (all viewed today), show batch complete
-        setCurrentDailyIdx(0);
-        if (filtered.length === 0 && res.data.data.length > 0) {
-          // All already viewed today — jump to batch complete
-          setCurrentDailyIdx(res.data.data.length);
-          setDailyProfiles(res.data.data);
+        if (res.data.batchComplete || (res.data.data.length === 0 && res.data.totalBatchCount > 0)) {
+          setDailyProfiles([]);
+          setIsBatchComplete(true);
+          setCurrentDailyIdx(0);
+        } else {
+          setDailyProfiles(res.data.data || []);
+          setIsBatchComplete(false);
+          setCurrentDailyIdx(0);
         }
       }
     } catch (error) {

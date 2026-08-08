@@ -22,6 +22,59 @@ const getPlanQuota = async (plan) => {
   };
 };
 
+// Helper: sync ALL users quota to current settings (called on startup & settings save)
+const syncAllUserQuotas = async () => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) return;
+
+    const plans = [
+      {
+        plan: 'free',
+        viewLimit: settings.freePlanFeatures?.totalViewLimit ?? 10,
+        quotaInterests: settings.freePlanFeatures?.totalInterestLimit ?? 5,
+        quotaContactViews: settings.freePlanFeatures?.contactViewLimit ?? 0,
+      },
+      {
+        plan: 'premium',
+        viewLimit: settings.premiumPlanFeatures?.totalViewLimit ?? 100,
+        quotaInterests: settings.premiumPlanFeatures?.totalInterestLimit ?? 50,
+        quotaContactViews: settings.premiumPlanFeatures?.contactViewLimit ?? 30,
+      },
+      {
+        plan: 'elite',
+        viewLimit: settings.elitePlanFeatures?.totalViewLimit ?? 99999,
+        quotaInterests: settings.elitePlanFeatures?.totalInterestLimit ?? 99999,
+        quotaContactViews: settings.elitePlanFeatures?.contactViewLimit ?? 99999,
+      },
+    ];
+
+    for (const { plan, viewLimit, quotaInterests, quotaContactViews } of plans) {
+      await User.updateMany(
+        { plan, role: 'user' },
+        { $set: { viewLimit, quotaProfileViews: viewLimit, quotaInterests, quotaContactViews } }
+      );
+    }
+    console.log('[Quota Sync] All users quota synced to current settings.');
+  } catch (err) {
+    console.error('[Quota Sync] Error syncing user quotas:', err.message);
+  }
+};
+
+exports.syncAllUserQuotas = syncAllUserQuotas;
+
+// @desc  Admin manually triggers quota sync for all users
+// @route POST /api/admin/sync-quotas
+// @access Private/Admin
+exports.syncQuotas = async (req, res) => {
+  try {
+    await syncAllUserQuotas();
+    return res.status(200).json({ success: true, message: 'All user quotas synced to current plan settings successfully.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get Admin dashboard analytics metrics
 // @route   GET /api/admin/metrics
 // @access  Private/Admin
@@ -110,6 +163,7 @@ exports.getAllUsers = async (req, res) => {
           plan: userItem.plan,
           viewLimit: userItem.viewLimit,
           viewedCount: userItem.viewedProfiles.length,
+          isManuallyVerified: userItem.isManuallyVerified,
           createdAt: userItem.createdAt,
           profile: profile || null,
         };
@@ -356,7 +410,45 @@ exports.updateSettings = async (req, res) => {
     if (req.body.eliteManagerPhone !== undefined) settings.eliteManagerPhone = req.body.eliteManagerPhone;
 
     await settings.save();
-    return res.status(200).json({ success: true, data: settings, message: 'Settings updated successfully' });
+
+    // ── Retroactively apply new quota to ALL existing users by plan ──
+    // Ensures old users & new users always get the same admin-configured limits.
+    const planUpdates = [
+      {
+        plan: 'free',
+        viewLimit: settings.freePlanFeatures?.totalViewLimit ?? 10,
+        quotaInterests: settings.freePlanFeatures?.totalInterestLimit ?? 5,
+        quotaContactViews: settings.freePlanFeatures?.contactViewLimit ?? 0,
+      },
+      {
+        plan: 'premium',
+        viewLimit: settings.premiumPlanFeatures?.totalViewLimit ?? 100,
+        quotaInterests: settings.premiumPlanFeatures?.totalInterestLimit ?? 50,
+        quotaContactViews: settings.premiumPlanFeatures?.contactViewLimit ?? 30,
+      },
+      {
+        plan: 'elite',
+        viewLimit: settings.elitePlanFeatures?.totalViewLimit ?? 99999,
+        quotaInterests: settings.elitePlanFeatures?.totalInterestLimit ?? 99999,
+        quotaContactViews: settings.elitePlanFeatures?.contactViewLimit ?? 99999,
+      },
+    ];
+
+    for (const { plan, viewLimit, quotaInterests, quotaContactViews } of planUpdates) {
+      await User.updateMany(
+        { plan, role: 'user' },
+        {
+          $set: {
+            viewLimit,
+            quotaProfileViews: viewLimit,
+            quotaInterests,
+            quotaContactViews,
+          },
+        }
+      );
+    }
+
+    return res.status(200).json({ success: true, data: settings, message: 'Settings updated and applied to all users successfully' });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

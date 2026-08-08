@@ -67,6 +67,16 @@ const UserSchema = new mongoose.Schema(
       type: String, // stored as 'YYYY-MM-DD', used to reset list each day
       default: '',
     },
+    dailyRecommendationsBatch: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    dailyRecommendationsBatchDate: {
+      type: String, // stored as 'YYYY-MM-DD', tracks when current batch was generated
+      default: '',
+    },
     viewedContacts: [
       {
         type: mongoose.Schema.Types.ObjectId,

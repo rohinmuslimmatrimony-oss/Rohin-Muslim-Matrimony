@@ -11,7 +11,15 @@ const connectDB = require('./config/db');
 dotenv.config();
 
 // Connect to Database
-connectDB();
+// Connect to Database and auto-sync user quotas to current settings
+connectDB().then(async () => {
+  try {
+    const { syncAllUserQuotas } = require('./controllers/adminController');
+    await syncAllUserQuotas();
+  } catch (e) {
+    console.error('[Startup] Quota sync failed:', e.message);
+  }
+});
 
 const app = express();
 const server = http.createServer(app);

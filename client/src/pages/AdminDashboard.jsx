@@ -593,12 +593,12 @@ const AdminDashboard = () => {
                     </div>
                   )}
 
-                  <div className="lg:col-span-4 bg-slate-800 p-6 rounded-2xl border border-slate-700 flex justify-between items-center">
-                    <div>
+                  <div className="lg:col-span-4 bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 overflow-hidden">
+                    <div className="min-w-0">
                       <h3 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Network Connections</h3>
                       <p className="text-xs text-slate-500">Total connection requests across the platform.</p>
                     </div>
-                    <div className="flex gap-8 text-center">
+                    <div className="flex gap-6 text-center flex-shrink-0">
                       <div>
                         <p className="text-2xl font-bold text-white">{metrics.requests.total}</p>
                         <p className="text-xs text-slate-400">Total</p>
@@ -905,14 +905,15 @@ const AdminDashboard = () => {
                         </table>
                       </div>
                       {payTotalPages > 1 && (
-                        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700">
-                          <p className="text-xs text-slate-500">Showing {(safePay - 1) * PAY_PER_PAGE + 1}–{Math.min(safePay * PAY_PER_PAGE, paidUsers.length)} of {paidUsers.length}</p>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setPayPage(p => Math.max(1, p - 1))} disabled={safePay === 1} className="px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40">← Prev</button>
-                            {Array.from({ length: payTotalPages }, (_, i) => i + 1).map(pg => (
-                              <button key={pg} onClick={() => setPayPage(pg)} className={`w-8 h-8 text-xs font-bold rounded-lg ${pg === safePay ? 'bg-emerald-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}>{pg}</button>
-                            ))}
-                            <button onClick={() => setPayPage(p => Math.min(payTotalPages, p + 1))} disabled={safePay === payTotalPages} className="px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40">Next →</button>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-4 border-t border-slate-700">
+                          <p className="text-xs text-slate-500 flex-shrink-0">Showing {(safePay - 1) * PAY_PER_PAGE + 1}–{Math.min(safePay * PAY_PER_PAGE, paidUsers.length)} of {paidUsers.length}</p>
+                          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-0.5">
+                            <button onClick={() => setPayPage(p => Math.max(1, p - 1))} disabled={safePay === 1} className="flex-shrink-0 px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40">← Prev</button>
+                            {Array.from({ length: payTotalPages }, (_, i) => i + 1)
+                              .filter(pg => pg === 1 || pg === payTotalPages || Math.abs(pg - safePay) <= 1)
+                              .reduce((acc, pg, idx, arr) => { if (idx > 0 && pg - arr[idx-1] > 1) acc.push('...'); acc.push(pg); return acc; }, [])
+                              .map((pg, idx) => pg === '...' ? <span key={`ep-${idx}`} className="flex-shrink-0 w-6 text-center text-slate-500 text-xs">…</span> : <button key={pg} onClick={() => setPayPage(pg)} className={`flex-shrink-0 w-8 h-8 text-xs font-bold rounded-lg ${pg === safePay ? 'bg-emerald-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}>{pg}</button>)}
+                            <button onClick={() => setPayPage(p => Math.min(payTotalPages, p + 1))} disabled={safePay === payTotalPages} className="flex-shrink-0 px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40">Next →</button>
                           </div>
                         </div>
                       )}
@@ -981,14 +982,15 @@ const AdminDashboard = () => {
                 </div>
                 {/* Pagination */}
                 {appTotalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6">
-                    <p className="text-xs text-slate-500">Showing {(safeApp - 1) * APPROVAL_PER_PAGE + 1}–{Math.min(safeApp * APPROVAL_PER_PAGE, unverified.length)} of {unverified.length} pending</p>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setApprovalPage(p => Math.max(1, p - 1))} disabled={safeApp === 1} className="px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed">← Prev</button>
-                      {Array.from({ length: appTotalPages }, (_, i) => i + 1).map(pg => (
-                        <button key={pg} onClick={() => setApprovalPage(pg)} className={`w-8 h-8 text-xs font-bold rounded-lg transition-colors ${pg === safeApp ? 'bg-amber-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}>{pg}</button>
-                      ))}
-                      <button onClick={() => setApprovalPage(p => Math.min(appTotalPages, p + 1))} disabled={safeApp === appTotalPages} className="px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed">Next →</button>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-6">
+                    <p className="text-xs text-slate-500 flex-shrink-0">Showing {(safeApp - 1) * APPROVAL_PER_PAGE + 1}–{Math.min(safeApp * APPROVAL_PER_PAGE, unverified.length)} of {unverified.length} pending</p>
+                    <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-0.5">
+                      <button onClick={() => setApprovalPage(p => Math.max(1, p - 1))} disabled={safeApp === 1} className="flex-shrink-0 px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed">← Prev</button>
+                      {Array.from({ length: appTotalPages }, (_, i) => i + 1)
+                        .filter(pg => pg === 1 || pg === appTotalPages || Math.abs(pg - safeApp) <= 1)
+                        .reduce((acc, pg, idx, arr) => { if (idx > 0 && pg - arr[idx-1] > 1) acc.push('...'); acc.push(pg); return acc; }, [])
+                        .map((pg, idx) => pg === '...' ? <span key={`ea-${idx}`} className="flex-shrink-0 w-6 text-center text-slate-500 text-xs">…</span> : <button key={pg} onClick={() => setApprovalPage(pg)} className={`flex-shrink-0 w-8 h-8 text-xs font-bold rounded-lg transition-colors ${pg === safeApp ? 'bg-amber-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}>{pg}</button>)}
+                      <button onClick={() => setApprovalPage(p => Math.min(appTotalPages, p + 1))} disabled={safeApp === appTotalPages} className="flex-shrink-0 px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed">Next →</button>
                     </div>
                   </div>
                 )}
@@ -1151,35 +1153,46 @@ const AdminDashboard = () => {
 
                   {/* Pagination Controls */}
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700">
-                      <p className="text-xs text-slate-500">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-4 border-t border-slate-700">
+                      <p className="text-xs text-slate-500 flex-shrink-0">
                         Showing {(safePage - 1) * USERS_PER_PAGE + 1}–{Math.min(safePage * USERS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-0.5">
                         <button
                           onClick={() => setUserPage(p => Math.max(1, p - 1))}
                           disabled={safePage === 1}
-                          className="px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          className="flex-shrink-0 px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                           ← Prev
                         </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(pg => (
-                          <button
-                            key={pg}
-                            onClick={() => setUserPage(pg)}
-                            className={`w-8 h-8 text-xs font-bold rounded-lg transition-colors ${
-                              pg === safePage
-                                ? 'bg-crimson-600 text-white'
-                                : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
-                            }`}
-                          >
-                            {pg}
-                          </button>
-                        ))}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter(pg => pg === 1 || pg === totalPages || Math.abs(pg - safePage) <= 1)
+                          .reduce((acc, pg, idx, arr) => {
+                            if (idx > 0 && pg - arr[idx - 1] > 1) acc.push('...');
+                            acc.push(pg);
+                            return acc;
+                          }, [])
+                          .map((pg, idx) =>
+                            pg === '...' ? (
+                              <span key={`ellipsis-${idx}`} className="flex-shrink-0 w-6 text-center text-slate-500 text-xs">…</span>
+                            ) : (
+                              <button
+                                key={pg}
+                                onClick={() => setUserPage(pg)}
+                                className={`flex-shrink-0 w-8 h-8 text-xs font-bold rounded-lg transition-colors ${
+                                  pg === safePage
+                                    ? 'bg-crimson-600 text-white'
+                                    : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
+                                }`}
+                              >
+                                {pg}
+                              </button>
+                            )
+                          )}
                         <button
                           onClick={() => setUserPage(p => Math.min(totalPages, p + 1))}
                           disabled={safePage === totalPages}
-                          className="px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          className="flex-shrink-0 px-3 py-1.5 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                           Next →
                         </button>
@@ -1953,16 +1966,16 @@ const AdminDashboard = () => {
                         return (
                           <div 
                             key={m._id} 
-                            className="bg-slate-800 border border-slate-700 hover:border-slate-600 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+                            className="bg-slate-800 border border-slate-700 hover:border-slate-600 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all overflow-hidden"
                           >
                             {/* Member Pair */}
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                               {/* Member A */}
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 rounded-full bg-crimson-900/80 text-crimson-300 font-bold flex items-center justify-center text-sm flex-shrink-0 border border-crimson-700">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="w-9 h-9 rounded-full bg-crimson-900/80 text-crimson-300 font-bold flex items-center justify-center text-sm flex-shrink-0 border border-crimson-700">
                                   {m.userA?.profile?.name?.[0] || 'A'}
                                 </div>
-                                <div className="min-w-0">
+                                <div className="min-w-0 overflow-hidden">
                                   <p className="text-sm font-bold text-white truncate">{m.userA?.profile?.name || m.userA?.email}</p>
                                   <p className="text-[11px] text-slate-400 truncate">{m.userA?.profile?.city || 'N/A'} • {m.userA?.profile?.age ? `${m.userA.profile.age} yrs` : ''}</p>
                                 </div>
@@ -1974,11 +1987,11 @@ const AdminDashboard = () => {
                               </div>
 
                               {/* Member B */}
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 rounded-full bg-indigo-900/80 text-indigo-300 font-bold flex items-center justify-center text-sm flex-shrink-0 border border-indigo-700">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="w-9 h-9 rounded-full bg-indigo-900/80 text-indigo-300 font-bold flex items-center justify-center text-sm flex-shrink-0 border border-indigo-700">
                                   {m.userB?.profile?.name?.[0] || 'B'}
                                 </div>
-                                <div className="min-w-0">
+                                <div className="min-w-0 overflow-hidden">
                                   <p className="text-sm font-bold text-white truncate">{m.userB?.profile?.name || m.userB?.email}</p>
                                   <p className="text-[11px] text-slate-400 truncate">{m.userB?.profile?.city || 'N/A'} • {m.userB?.profile?.age ? `${m.userB.profile.age} yrs` : ''}</p>
                                 </div>
@@ -2125,7 +2138,7 @@ const AdminDashboard = () => {
       {/* KYC REVIEW MODAL */}
       {selectedKyc && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-4xl shadow-2xl my-8 text-slate-100 overflow-hidden animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-4xl shadow-2xl my-8 text-slate-100 overflow-y-auto max-h-[90vh] animate-fadeIn">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-800 p-6 bg-slate-950/40">

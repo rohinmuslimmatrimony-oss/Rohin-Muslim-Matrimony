@@ -21,7 +21,8 @@ const {
   reviewKycRequest,
   suggestMatch,
   getHandpickedMatches,
-  deleteHandpickedMatch
+  deleteHandpickedMatch,
+  syncQuotas
 } = require('../controllers/adminController');
 
 
@@ -63,5 +64,8 @@ router.put('/kyc/:id', reviewKycRequest);
 router.post('/suggest-match', suggestMatch);
 router.get('/handpicked-matches', getHandpickedMatches);
 router.delete('/handpicked-matches/:id', deleteHandpickedMatch);
+
+// Sync all user quotas to current plan settings
+router.post('/sync-quotas', syncQuotas);
 
 module.exports = router;
