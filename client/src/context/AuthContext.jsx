@@ -336,6 +336,7 @@ export const AuthProvider = ({ children }) => {
   // Logout handler
   const logout = () => {
     localStorage.removeItem('token');
+    sessionStorage.removeItem('handpicked_modal_dismissed'); // Ensure modal shows on next login
     setUser(null);
     setProfile(null);
     toast.success('Logged out successfully.');

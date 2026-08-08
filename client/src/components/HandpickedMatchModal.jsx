@@ -67,7 +67,7 @@ const HandpickedMatchModal = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 sm:p-6 md:p-8 overflow-y-auto transition-all duration-300 animate-fadeIn">
       {/* Modal Card */}
-      <div className="w-full max-w-4xl bg-[#fffdfa] rounded-[28px] border-2 border-gold-500/40 shadow-2xl overflow-hidden relative animate-scaleUp flex flex-col md:flex-row my-auto max-h-[85vh] border-amber-400/40">
+      <div className="w-full max-w-3xl bg-[#fffdfa] rounded-[24px] border-2 border-gold-500/40 shadow-2xl overflow-hidden relative animate-scaleUp flex flex-col md:flex-row my-auto max-h-[85vh] border-amber-400/40">
         
         {/* Close Button */}
         <button 

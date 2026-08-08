@@ -145,7 +145,9 @@ const Dashboard = () => {
         setHandpickedMatches(res.data.data);
         const dismissed = sessionStorage.getItem('handpicked_modal_dismissed');
         if (!dismissed) {
-          setShowHandpickedModal(true);
+          setTimeout(() => {
+            setShowHandpickedModal(true);
+          }, 5000);
         }
       }
     } catch (err) {
@@ -832,23 +834,23 @@ const Dashboard = () => {
           getCompleteness={getCompleteness}
         />
 
-        {/* MODAL 5: 24-HOUR HANDPICKED MATCH RECOMMENDATION */}
-        <HandpickedMatchModal
-          show={showHandpickedModal}
-          onClose={() => {
-            setShowHandpickedModal(false);
-            sessionStorage.setItem('handpicked_modal_dismissed', 'true');
-          }}
-          matches={handpickedMatches}
-          onInterest={handleHandpickedInterest}
-          onDecline={handleHandpickedDecline}
-          user={user}
-          profile={profile}
-          getCompleteness={getCompleteness}
-        />
-
         </div>
       </div>
+
+      {/* MODAL 5: 24-HOUR HANDPICKED MATCH RECOMMENDATION (Shows on both Mobile & Desktop) */}
+      <HandpickedMatchModal
+        show={showHandpickedModal}
+        onClose={() => {
+          setShowHandpickedModal(false);
+          sessionStorage.setItem('handpicked_modal_dismissed', 'true');
+        }}
+        matches={handpickedMatches}
+        onInterest={handleHandpickedInterest}
+        onDecline={handleHandpickedDecline}
+        user={user}
+        profile={profile}
+        getCompleteness={getCompleteness}
+      />
     </>
 
   );
