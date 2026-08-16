@@ -7,7 +7,7 @@ import {
   FaUsers, FaChartPie, FaExclamationTriangle, FaTrash, 
   FaCheckCircle, FaEdit, FaCrown, FaStar, FaCog, FaRupeeSign,
   FaHeart, FaPlus, FaMoneyBillWave, FaIdCard, FaHandshake, FaSignOutAlt, FaCopy,
-  FaTimes, FaExternalLinkAlt, FaCheck, FaBan
+  FaTimes, FaExternalLinkAlt, FaCheck, FaBan, FaEye
 } from 'react-icons/fa';
 import SimpleSpinner from '../components/SimpleSpinner';
 
@@ -19,6 +19,7 @@ const AdminDashboard = () => {
   const [metrics, setMetrics] = useState(null);
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
+  const [selectedUserForView, setSelectedUserForView] = useState(null);
   const [freeTierInterests, setFreeTierInterests] = useState([]);
   const [settings, setSettings] = useState({
     premiumPrice: 999,
@@ -1128,6 +1129,13 @@ const AdminDashboard = () => {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <div className="flex justify-end gap-1.5">
+                                <button
+                                  onClick={() => setSelectedUserForView(u)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md hover:shadow-indigo-500/40 hover:-translate-y-0.5 rounded-lg transition-all text-xs font-bold"
+                                  title="View User Details"
+                                >
+                                  <FaEye /> View
+                                </button>
                                 <button
                                   onClick={() => handleChangePlan(u._id, u.plan)}
                                   className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700 hover:bg-gold-600 text-gold-400 hover:text-white rounded-lg transition-colors text-xs font-bold"
@@ -2536,6 +2544,116 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* User Details Modal */}
+      {selectedUserForView && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-fadeIn">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900">
+              <h2 className="text-xl font-bold text-white font-serif flex items-center gap-2">
+                <FaEye className="text-blue-500" /> User Details
+              </h2>
+              <button onClick={() => setSelectedUserForView(null)} className="text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-lg transition-colors">
+                <FaTimes />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* Basic Info */}
+              <div className="flex items-start gap-4 pb-6 border-b border-slate-800">
+                <div className="w-16 h-16 rounded-full bg-crimson-900 flex items-center justify-center font-bold text-crimson-400 text-2xl flex-shrink-0">
+                  {selectedUserForView.profile ? selectedUserForView.profile.name[0] : selectedUserForView.email[0].toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{selectedUserForView.profile?.name || 'No Profile'}</h3>
+                  <p className="text-slate-400">{selectedUserForView.email}</p>
+                  <p className="text-sm text-slate-500">Phone: {selectedUserForView.profile?.phoneNumber || 'N/A'}</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className="px-2 py-1 bg-slate-800 rounded text-xs font-bold text-slate-300 border border-slate-700">
+                      ID: {selectedUserForView._id}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs font-bold border capitalize ${selectedUserForView.plan === 'elite' ? 'bg-gold-500/10 text-gold-400 border-gold-500/30' : selectedUserForView.plan === 'premium' ? 'bg-crimson-500/10 text-crimson-400 border-crimson-500/30' : 'bg-slate-800 text-slate-300 border-slate-700'}`}>
+                      {selectedUserForView.plan} Plan
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs font-bold border ${selectedUserForView.profile?.user?.isManuallyVerified || selectedUserForView.isManuallyVerified ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800' : 'bg-amber-900/30 text-amber-400 border-amber-800'}`}>
+                      {selectedUserForView.profile?.user?.isManuallyVerified || selectedUserForView.isManuallyVerified ? 'Verified' : 'Pending Verification'}
+                    </span>
+                    <span className="px-2 py-1 bg-slate-800 rounded text-xs font-bold text-slate-300 border border-slate-700">
+                      View Limit: {selectedUserForView.viewLimit} (Used: {selectedUserForView.viewedCount})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Profile Details Grid */}
+              {selectedUserForView.profile ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Personal Details</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between"><span className="text-slate-500">Age</span> <span className="text-white font-medium">{selectedUserForView.profile.age || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Gender</span> <span className="text-white font-medium capitalize">{selectedUserForView.profile.gender || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Height</span> <span className="text-white font-medium">{selectedUserForView.profile.height || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Marital Status</span> <span className="text-white font-medium capitalize">{selectedUserForView.profile.maritalStatus || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Complexion</span> <span className="text-white font-medium capitalize">{selectedUserForView.profile.complexion || 'N/A'}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Religious Background</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between"><span className="text-slate-500">Sect</span> <span className="text-white font-medium">{selectedUserForView.profile.sect || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Mother Tongue</span> <span className="text-white font-medium">{selectedUserForView.profile.motherTongue || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Religiousness</span> <span className="text-white font-medium">{selectedUserForView.profile.religiousness || 'N/A'}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Location</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between"><span className="text-slate-500">City</span> <span className="text-white font-medium">{selectedUserForView.profile.city || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">State</span> <span className="text-white font-medium">{selectedUserForView.profile.state || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Country</span> <span className="text-white font-medium">{selectedUserForView.profile.country || 'N/A'}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Education & Career</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between"><span className="text-slate-500">Education</span> <span className="text-white font-medium">{selectedUserForView.profile.education || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Profession</span> <span className="text-white font-medium">{selectedUserForView.profile.profession || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Income</span> <span className="text-white font-medium">{selectedUserForView.profile.income || 'N/A'}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Bio */}
+                  <div className="md:col-span-2 bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">About</h4>
+                    <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{selectedUserForView.profile.about || 'No bio provided.'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-10 text-slate-500 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                  <p>This user has not set up their profile yet.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-slate-800 flex justify-end gap-3 bg-slate-900">
+              <button 
+                onClick={() => setSelectedUserForView(null)} 
+                className="px-6 py-2 rounded-xl font-bold text-sm bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
