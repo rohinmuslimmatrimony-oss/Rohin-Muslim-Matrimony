@@ -11,7 +11,8 @@ const {
   changePassword,
   forgotPassword,
   verifyResetOtp,
-  resetPassword
+  resetPassword,
+  updateEmail
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -27,5 +28,6 @@ router.post('/subscribe', protect, saveSubscription);
 router.get('/vapid-public-key', protect, getVapidPublicKey);
 router.get('/transactions', protect, getMyTransactions);
 router.put('/change-password', protect, changePassword);
+router.put('/update-email', protect, updateEmail);
 
 module.exports = router;

@@ -72,9 +72,18 @@ exports.getProfiles = async (req, res) => {
       }
 
       if (ageMin || ageMax) {
-        query.age = {};
-        if (ageMin) query.age.$gte = parseInt(ageMin);
-        if (ageMax) query.age.$lte = parseInt(ageMax);
+        query.dob = {};
+        const today = new Date();
+        if (ageMin) {
+          // Max DOB (born on or before this date)
+          const maxDob = new Date(today.getFullYear() - parseInt(ageMin), today.getMonth(), today.getDate());
+          query.dob.$lte = maxDob;
+        }
+        if (ageMax) {
+          // Min DOB (born on or after this date to not exceed ageMax)
+          const minDob = new Date(today.getFullYear() - parseInt(ageMax) - 1, today.getMonth(), today.getDate() + 1);
+          query.dob.$gte = minDob;
+        }
       }
     }
 

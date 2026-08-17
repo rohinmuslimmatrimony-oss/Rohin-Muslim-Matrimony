@@ -14,10 +14,9 @@ const ProfileSchema = new mongoose.Schema(
       required: [true, 'Please provide a name'],
       trim: true,
     },
-    age: {
-      type: Number,
-      required: [true, 'Please provide an age'],
-      min: [18, 'Must be at least 18 years old'],
+    dob: {
+      type: Date,
+      required: [true, 'Please provide a date of birth'],
     },
     gender: {
       type: String,
@@ -165,7 +164,19 @@ const ProfileSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+// Virtual for dynamic age calculation
+ProfileSchema.virtual('age').get(function () {
+  if (!this.dob) return 0;
+  const today = new Date();
+  let calculatedAge = today.getFullYear() - this.dob.getFullYear();
+  const m = today.getMonth() - this.dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < this.dob.getDate())) {
+    calculatedAge--;
+  }
+  return calculatedAge;
+});
 
 module.exports = mongoose.model('Profile', ProfileSchema);

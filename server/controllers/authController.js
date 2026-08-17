@@ -47,7 +47,7 @@ const generateToken = (id) => {
 // @access  Public
 exports.register = async (req, res) => {
   const { 
-    email, password, name, age, gender, profession, education, city, about, sect,
+    email, password, name, dob, gender, profession, education, city, about, sect,
     profileCreatedBy, maritalStatus, height, motherTongue, namazFrequency,
     waliContact, fatherOccupation, motherOccupation, siblingsCount,
     partnerAgeRange, partnerSect, partnerEducation
@@ -59,6 +59,20 @@ exports.register = async (req, res) => {
     const normalizedEmail = email ? email.toLowerCase().trim() : '';
     if (!normalizedEmail || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
+    let dobDate = null;
+    if (dob) {
+      dobDate = new Date(dob);
+      if (isNaN(dobDate.getTime())) {
+        return res.status(400).json({ success: false, message: 'Invalid Date of Birth' });
+      }
+      const ageDiff = Date.now() - dobDate.getTime();
+      const ageDate = new Date(ageDiff);
+      const calculatedAge = Math.abs(ageDate.getUTCFullYear() - 1970);
+      if (calculatedAge < 18) {
+        return res.status(400).json({ success: false, message: 'User must be at least 18 years old' });
+      }
     }
 
     // Check if user already exists
@@ -83,7 +97,7 @@ exports.register = async (req, res) => {
     const profile = await Profile.create({
       user: user._id,
       name: (name && name.trim()) ? name.trim() : 'Matrimony Member',
-      age: age ? parseInt(age) : 25,
+      dob: dobDate,
       gender: gender || 'male',
       sect: sect || 'Sunni',
       profession: profession || '',
@@ -573,5 +587,39 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     console.error('ResetPassword Error:', error);
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update user email
+// @route   PUT /api/auth/update-email
+// @access  Private
+exports.updateEmail = async (req, res) => {
+  try {
+    const { newEmail } = req.body;
+    
+    if (!newEmail) {
+      return res.status(400).json({ success: false, message: 'Please provide a new email address' });
+    }
+
+    const normalizedEmail = newEmail.toLowerCase().trim();
+
+    // Check if email is already in use
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Email is already registered by another account' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.email = normalizedEmail;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Email updated successfully', email: user.email });
+  } catch (err) {
+    console.error('UpdateEmail Error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

@@ -24,7 +24,7 @@ const Register = () => {
     password: '',
     name: '',
     gender: 'male',
-    age: 25,
+    dob: '',
     city: '',
     // Preset defaults for backend
     profileCreatedBy: 'Self',
@@ -44,6 +44,22 @@ const Register = () => {
     partnerSect: 'No Preference',
     partnerEducation: "Doesn't Matter"
   });
+
+  const calculateAge = (dobString) => {
+    if (!dobString) return null;
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const currentAge = calculateAge(formData.dob);
+  const isUnderage = currentAge !== null && currentAge < 18;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -166,12 +182,17 @@ const Register = () => {
                     <svg className="absolute right-1.5 w-2.5 h-2.5 text-[#D4AF37] pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                   </div>
                 </div>
-                <div>
-                  <label className="text-[#5C4E4E] text-[9px] font-medium ml-0.5">Age</label>
+                <div className="flex flex-col">
+                  <label className="text-[#5C4E4E] text-[9px] font-medium ml-0.5">Date of Birth</label>
                   <div className="relative flex items-center bg-transparent border border-[#D4AF37]/50 rounded-[8px] overflow-hidden focus-within:border-[#D4AF37] h-[30px]">
                     <span className="absolute left-2.5 text-[#D4AF37]"><FaCalendarAlt className="text-[11px]" /></span>
-                    <input type="number" required min={18} max={70} name="age" value={formData.age} onChange={handleChange} className="w-full h-full pl-[26px] pr-1 bg-transparent text-[11px] font-bold text-[#5C4E4E] focus:outline-none" />
+                    <input type="date" required name="dob" value={formData.dob} onChange={handleChange} className="w-full h-full pl-[26px] pr-1 bg-transparent text-[10px] font-bold text-[#5C4E4E] focus:outline-none" />
                   </div>
+                  {currentAge !== null && (
+                    <span className={`text-[9px] mt-0.5 ml-0.5 font-bold ${isUnderage ? 'text-red-500' : 'text-green-600'}`}>
+                      {isUnderage ? 'Must be 18+' : `Age: ${currentAge} years`}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -186,7 +207,7 @@ const Register = () => {
 
               {/* Submit Button */}
               <div className="pt-1">
-                <button type="submit" disabled={isSubmitting || loading} className="w-full bg-[#A11B32] hover:bg-[#8F172B] text-white font-semibold py-[8px] rounded-[10px] shadow-sm transition-all flex items-center justify-center text-[12px] tracking-wide">
+                <button type="submit" disabled={isSubmitting || loading || isUnderage} className="w-full bg-[#A11B32] hover:bg-[#8F172B] text-white font-semibold py-[8px] rounded-[10px] shadow-sm transition-all flex items-center justify-center text-[12px] tracking-wide disabled:opacity-50 disabled:cursor-not-allowed">
                   {isSubmitting ? <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> : <>Create Free Profile <span className="ml-1 text-[12px] leading-none">→</span></>}
                 </button>
               </div>
@@ -306,21 +327,24 @@ const Register = () => {
                   </select>
                 </div>
               </div>
-              <div className="space-y-0.5">
-                <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Age</label>
+              <div className="space-y-0.5 relative">
+                <label className="text-[#ffd666] text-[9px] sm:text-xs font-bold uppercase tracking-wider pl-1 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]">Date of Birth</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[#ffd666]"><FaCalendarAlt className="text-xs sm:text-sm" /></span>
                   <input 
-                    type="number" 
+                    type="date" 
                     required 
-                    min={18} 
-                    max={70} 
-                    name="age" 
-                    value={formData.age} 
+                    name="dob" 
+                    value={formData.dob} 
                     onChange={handleChange} 
                     className="w-full pl-10 pr-4 py-1 sm:py-1.5 rounded-xl bg-black/35 border border-gold-500/35 hover:border-gold-500/60 focus:border-gold-400 focus:ring-1 focus:ring-gold-400 focus:outline-none transition-all text-xs sm:text-sm text-white placeholder-white/40 font-bold shadow-inner focus:shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
                   />
                 </div>
+                {currentAge !== null && (
+                  <div className={`absolute -bottom-4 right-1 text-[9px] font-bold ${isUnderage ? 'text-red-400' : 'text-green-400'} drop-shadow-md`}>
+                    {isUnderage ? 'Must be 18+' : `Age: ${currentAge} yrs`}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -342,16 +366,21 @@ const Register = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-1">
-              <button
-                type="submit"
-                disabled={isSubmitting || loading}
-                className="w-full bg-gold-gradient text-crimson-950 font-bold py-1.5 sm:py-2 rounded-xl shadow-lg hover:shadow-gold-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+            <div className="pt-2 sm:pt-3 pb-1">
+              <button 
+                type="submit" 
+                disabled={isSubmitting || loading || isUnderage} 
+                className="w-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600 hover:from-gold-500 hover:via-gold-300 hover:to-gold-500 text-crimson-950 font-extrabold py-2 sm:py-2.5 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.5)] transition-all flex items-center justify-center text-xs sm:text-sm tracking-widest uppercase hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isSubmitting ? (
-                  <span className="w-5 h-5 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-crimson-950 border-t-transparent rounded-full animate-spin"></span>
+                    CREATING...
+                  </span>
                 ) : (
-                  'Create Free Profile'
+                  <span className="flex items-center gap-1.5">
+                    CREATE FREE PROFILE <span className="text-base leading-none pb-0.5">→</span>
+                  </span>
                 )}
               </button>
             </div>

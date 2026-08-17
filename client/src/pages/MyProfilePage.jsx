@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   FaCheckCircle, FaChevronRight, FaPen, 
-  FaCreditCard, FaCrown, FaBan, FaInfoCircle, FaSignOutAlt, FaLock, FaShieldAlt, FaCamera, FaUserShield
+  FaCreditCard, FaCrown, FaBan, FaInfoCircle, FaSignOutAlt, FaLock, FaShieldAlt, FaCamera, FaUserShield, FaEnvelope
 } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 import DefaultAvatar from '../components/DefaultAvatar';
@@ -15,10 +15,28 @@ const MyProfilePage = () => {
   const { user, profile, getCompleteness, logout, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailForm, setEmailForm] = useState({ newEmail: '' });
+  const [emailLoading, setEmailLoading] = useState(false);
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [pwLoading, setPwLoading] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [prices, setPrices] = useState({ premium: 999, elite: 1999 });
   const fileInputRef = useRef(null);
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await api.get('/settings');
+        if (res.data.success && res.data.data) {
+          setPrices({ premium: res.data.data.premiumPrice, elite: res.data.data.elitePrice });
+        }
+      } catch (error) {
+        console.error('Failed to load dynamic pricing');
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handlePhotoChange = async (e) => {
     const file = e.target.files[0];
@@ -81,6 +99,26 @@ const MyProfilePage = () => {
     }
   };
 
+  const handleChangeEmail = async (e) => {
+    e.preventDefault();
+    setEmailLoading(true);
+    try {
+      const res = await api.put('/auth/update-email', {
+        newEmail: emailForm.newEmail,
+      });
+      if (res.data.success) {
+        toast.success('Email updated successfully!');
+        setShowEmailModal(false);
+        setEmailForm({ newEmail: '' });
+        await refreshUser();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update email');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   const allMenuItems = [
     { icon: <FaPen className="text-[15px]" />, label: 'Edit Profile', action: () => navigate('/edit-profile'), adminOnly: false },
     { icon: <FaCreditCard className="text-[15px]" />, label: 'Payment & Invoices', action: () => navigate('/payment-info'), adminOnly: false, hideForAdmin: true },
@@ -88,23 +126,18 @@ const MyProfilePage = () => {
     { icon: <FaShieldAlt className="text-[15px]" />, label: 'Admin Dashboard', action: () => navigate('/admin'), adminOnly: true },
     { icon: <FaBan className="text-[15px]" />, label: 'Blocked Users', action: () => navigate('/blocked-users'), adminOnly: false, hideForAdmin: true },
     { icon: <FaUserShield className="text-[15px]" />, label: 'Privacy Settings', action: () => navigate('/privacy-settings'), adminOnly: false, hideForAdmin: true },
+    { icon: <FaEnvelope className="text-[15px]" />, label: 'Change Email', action: () => setShowEmailModal(true), adminOnly: false },
     { icon: <FaLock className="text-[15px]" />, label: 'Change Password', action: () => setShowPasswordModal(true), adminOnly: false },
     { icon: <FaSignOutAlt className="text-red-500 text-[15px]" />, label: 'Logout', action: () => { logout(); navigate('/'); }, danger: true }
   ];
 
   const menuItems = allMenuItems.filter(item => {
     if (isAdmin) {
-      return item.label === 'Admin Dashboard' || item.label === 'Change Password';
+      return item.label === 'Admin Dashboard' || item.label === 'Change Password' || item.label === 'Change Email';
     }
     if (item.adminOnly) return false;
     return true;
   });
-
-  const premiumPlans = [
-    { name: 'BASIC PLAN', price: '₹261', features: 'Unlimited Messaging', gradient: 'from-[#f8e9de] to-[#e8d2c0]', border: 'border-[#e3d1c5]', btnGradient: 'from-[#9b664d] to-[#80503a]' },
-    { name: 'SILVER PLAN', price: '₹392', features: 'View 10 Contact Numbers', gradient: 'from-[#f3f4f6] to-[#e5e7eb]', border: 'border-[#d1d5db]', btnGradient: 'from-[#6b7280] to-[#4b5563]' },
-    { name: 'GOLD PLAN', price: '₹458', features: 'View 15 Contact Numbers', gradient: 'from-[#fef3c7] to-[#fde68a]', border: 'border-[#fcd34d]', btnGradient: 'from-[#d97706] to-[#b45309]' }
-  ];
 
   return (
     <div className="min-h-screen flex flex-col font-outfit pt-6 lg:pt-8 pb-32 relative overflow-hidden bg-cream-50 text-slate-800">
@@ -254,35 +287,6 @@ const MyProfilePage = () => {
               </Link>
             )}
 
-            {/* Premium Plans Section - Only show for free members */}
-            {(!user?.plan || user.plan === 'free') && (
-              <div className="mb-8">
-                <h3 className="text-lg font-serif font-bold text-crimson-950 mb-4">Recommended Plans</h3>
-              
-              <div className="flex overflow-x-auto gap-4 snap-x hide-scrollbar pb-4 -mx-5 px-5 md:mx-0 md:px-0">
-                {premiumPlans.map((plan, idx) => (
-                  <div key={idx} className={`min-w-[280px] snap-center bg-gradient-to-br ${plan.gradient} rounded-2xl p-6 shadow-xl border ${plan.border} hover:-translate-y-1 transition-transform`}>
-                    <h4 className="text-[13px] font-bold text-slate-800 tracking-widest uppercase mb-1">{plan.name}</h4>
-                    <div className="flex items-end gap-1 mb-6">
-                      <span className="text-3xl font-extrabold text-slate-950">{plan.price}</span>
-                      <span className="text-[13px] font-medium text-slate-700 mb-1">onwards</span>
-                    </div>
-
-                    <div className={`border-t border-black/10 pt-4 flex items-center justify-between`}>
-                      <div className="flex items-center gap-2">
-                        <FaCheckCircle className="text-slate-800 text-[10px]" />
-                        <span className="text-[13px] font-semibold text-slate-900">{plan.features}</span>
-                      </div>
-                      <Link to="/plans" className={`bg-gradient-to-r ${plan.btnGradient} text-white text-[11px] font-bold px-4 py-2 rounded-full shadow-md whitespace-nowrap hover:scale-105 transition-transform`}>
-                        Upgrade Now
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            )}
-
             {/* Settings Menu List */}
             <div className={isAdmin ? "flex flex-col gap-6 w-full justify-center h-full" : "glass-card border border-[#d4af37]/25 rounded-2xl overflow-hidden shadow-lg mb-6"}>
               {menuItems.map((item, index) => (
@@ -367,6 +371,51 @@ const MyProfilePage = () => {
                   className="flex-1 py-3 rounded-xl bg-gold-gradient hover:scale-[1.02] text-crimson-950 font-bold text-sm transition-all disabled:opacity-60 cursor-pointer"
                 >
                   {pwLoading ? 'Saving...' : 'Save Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="glass-card border border-[#d4af37]/35 rounded-2xl shadow-2xl w-full max-w-md p-8 relative text-slate-850">
+            <h2 className="text-2xl font-serif font-bold text-crimson-950 mb-1">Change Email</h2>
+            <p className="text-sm text-slate-500 mb-6">Update your account email address.</p>
+            <form onSubmit={handleChangeEmail} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider mb-1.5">Current Email</label>
+                <div className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-500 bg-slate-100 cursor-not-allowed mb-2">
+                  {user?.email}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider mb-1.5">New Email Address</label>
+                <input
+                  type="email"
+                  value={emailForm.newEmail}
+                  onChange={e => setEmailForm({ newEmail: e.target.value })}
+                  required
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-[#d4af37] bg-slate-50/50"
+                  placeholder="Enter new email"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowEmailModal(false); setEmailForm({ newEmail: '' }); }}
+                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-sm hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={emailLoading}
+                  className="flex-1 py-3 rounded-xl bg-gold-gradient hover:scale-[1.02] text-crimson-950 font-bold text-sm transition-all disabled:opacity-60 cursor-pointer"
+                >
+                  {emailLoading ? 'Saving...' : 'Save Email'}
                 </button>
               </div>
             </form>

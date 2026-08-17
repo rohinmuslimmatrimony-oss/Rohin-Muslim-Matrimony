@@ -13,6 +13,7 @@ const EditProfile = () => {
   const [formData, setFormData] = useState({
     name: '',
     age: '',
+    dob: '',
     gender: '',
     sect: '',
     profession: '',
@@ -46,6 +47,7 @@ const EditProfile = () => {
       setFormData({
         name: profile.name || '',
         age: profile.age || '',
+        dob: profile.dob ? new Date(profile.dob).toLocaleDateString('en-GB') : 'N/A',
         gender: profile.gender || '',
         sect: profile.sect || '',
         profession: profile.profession || '',
@@ -414,9 +416,9 @@ const EditProfile = () => {
                     <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">Full Name</label>
                     <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-[#fffdfa]/60 border border-[#d4af37]/25 text-slate-800 focus:border-[#d4af37] focus:bg-white focus:outline-none transition-all text-sm font-semibold shadow-sm" />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">Age</label>
-                    <input type="number" name="age" value={formData.age} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-[#fffdfa]/60 border border-[#d4af37]/25 text-slate-800 focus:border-[#d4af37] focus:bg-white focus:outline-none transition-all text-sm font-semibold shadow-sm" />
+                  <div className="space-y-1.5 opacity-75">
+                    <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">DOB & Age (Read Only)</label>
+                    <input type="text" value={formData.age ? `${formData.dob} (${formData.age} Years)` : ''} disabled className="w-full px-4 py-3 rounded-xl bg-slate-100/80 border border-slate-200 text-slate-500 focus:outline-none cursor-not-allowed transition-all text-sm font-semibold shadow-sm" title="DOB cannot be changed after registration. Contact support to update." />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">Gender</label>
