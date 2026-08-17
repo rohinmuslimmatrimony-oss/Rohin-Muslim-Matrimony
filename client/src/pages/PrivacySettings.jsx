@@ -10,7 +10,7 @@ const PrivacySettings = () => {
   const { profile, refreshUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('MOBILE'); // 'MOBILE', 'PHOTO', 'HOROSCOPE', 'PROFILE'
+  const [activeTab, setActiveTab] = useState('PHOTO'); // 'PHOTO', 'HOROSCOPE', 'PROFILE'
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -89,7 +89,6 @@ const PrivacySettings = () => {
 
   // Tabs structure
   const tabs = [
-    { id: 'MOBILE', label: 'MOBILE', icon: <FaMobileAlt className="text-xs" /> },
     { id: 'PHOTO', label: 'PHOTO', icon: <FaImage className="text-xs" /> },
     { id: 'PROFILE', label: 'PROFILE', icon: <FaUserLock className="text-xs" /> }
   ];
@@ -142,75 +141,6 @@ const PrivacySettings = () => {
         {/* Tab Content Box */}
         <div className="bg-white border-x border-b border-[#d4af37]/20 rounded-b-2xl p-6 md:p-8 shadow-xl mb-8 min-h-[300px]">
           
-          {/* MOBILE TAB */}
-          {activeTab === 'MOBILE' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div>
-                <h3 className="text-lg font-serif font-bold text-[#4f080e] mb-1">Show mobile number only to:</h3>
-                <p className="text-xs text-slate-500">Configure access level for your contact details, including Wali details.</p>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    value: 'all_paid',
-                    label: 'All paid members',
-                    desc: 'Any Premium or Elite subscribed member can view your contact details.',
-                    recommended: true
-                  },
-                  {
-                    value: 'community_paid',
-                    label: 'Paid members from my community',
-                    desc: 'Only paid members of the same Islamic sect (e.g. Sunni, Shia) can view.',
-                    recommended: false
-                  },
-                  {
-                    value: 'contacted_paid',
-                    label: 'Paid members whom I contacted/responded to',
-                    desc: 'Only paid members with whom you have a mutual accepted connection.',
-                    recommended: false
-                  },
-                  {
-                    value: 'hidden',
-                    label: "Don't show phone number (Hide contact details)",
-                    desc: 'No members can see your phone number. They must request it directly.',
-                    recommended: false
-                  }
-                ].map((option) => (
-                  <label 
-                    key={option.value}
-                    className={`flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer hover:bg-slate-50 ${
-                      settings.mobile === option.value 
-                        ? 'border-orange-500 bg-orange-50/10' 
-                        : 'border-slate-200'
-                    }`}
-                  >
-                    <div className="pt-0.5">
-                      <input 
-                        type="radio"
-                        name="mobilePrivacy"
-                        checked={settings.mobile === option.value}
-                        onChange={() => handleOptionChange('mobile', option.value)}
-                        className="w-4 h-4 accent-orange-500 cursor-pointer"
-                      />
-                    </div>
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-slate-800 text-sm">{option.label}</span>
-                        {option.recommended && (
-                          <span className="bg-emerald-50 text-emerald-700 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded border border-emerald-200 tracking-wider">
-                            Recommended
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{option.desc}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* PHOTO TAB */}
           {activeTab === 'PHOTO' && (
             <div className="space-y-6 animate-fadeIn">

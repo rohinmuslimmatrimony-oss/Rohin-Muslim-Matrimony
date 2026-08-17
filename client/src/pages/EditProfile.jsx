@@ -47,7 +47,7 @@ const EditProfile = () => {
       setFormData({
         name: profile.name || '',
         age: profile.age || '',
-        dob: profile.dob ? new Date(profile.dob).toLocaleDateString('en-GB') : 'N/A',
+        dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : '',
         gender: profile.gender || '',
         sect: profile.sect || '',
         profession: profile.profession || '',
@@ -162,6 +162,22 @@ const EditProfile = () => {
   const isEducationEmpty = !formData.education || formData.education.trim() === '' || formData.education === 'Not Specified';
   const isFatherOccupationEmpty = !formData.fatherOccupation || formData.fatherOccupation.trim() === '';
 
+  const calculateAge = (dobString) => {
+    if (!dobString) return null;
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const currentAge = calculateAge(formData.dob);
+  const isUnderage = currentAge !== null && currentAge < 18;
+
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({ ...formData, [e.target.name]: value });
@@ -224,6 +240,12 @@ const EditProfile = () => {
     }
     setIsSubmitting(true);
     
+    if (isUnderage) {
+      toast.error('You must be at least 18 years old.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const data = new FormData();
       Object.keys(formData).forEach(key => {
@@ -416,9 +438,14 @@ const EditProfile = () => {
                     <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">Full Name</label>
                     <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-[#fffdfa]/60 border border-[#d4af37]/25 text-slate-800 focus:border-[#d4af37] focus:bg-white focus:outline-none transition-all text-sm font-semibold shadow-sm" />
                   </div>
-                  <div className="space-y-1.5 opacity-75">
-                    <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">DOB & Age (Read Only)</label>
-                    <input type="text" value={formData.age ? `${formData.dob} (${formData.age} Years)` : ''} disabled className="w-full px-4 py-3 rounded-xl bg-slate-100/80 border border-slate-200 text-slate-500 focus:outline-none cursor-not-allowed transition-all text-sm font-semibold shadow-sm" title="DOB cannot be changed after registration. Contact support to update." />
+                  <div className="space-y-1.5 relative">
+                    <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">Date of Birth</label>
+                    <input type="date" name="dob" value={formData.dob} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-[#fffdfa]/60 border border-[#d4af37]/25 text-slate-800 focus:border-[#d4af37] focus:bg-white focus:outline-none transition-all text-sm font-semibold shadow-sm" />
+                    {currentAge !== null && (
+                      <div className={`absolute -bottom-4 right-1 text-[10px] font-bold ${isUnderage ? 'text-red-500' : 'text-green-600'}`}>
+                        {isUnderage ? 'Must be 18+' : `Age: ${currentAge} Years`}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#4f080e]/80 uppercase tracking-wider pl-0.5">Gender</label>
@@ -744,7 +771,7 @@ const EditProfile = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={!isFormDirty || isSubmitting || isUnderage}
                 className="bg-gold-gradient text-crimson-950 px-5 py-1.5 rounded-full font-bold shadow-md hover:scale-105 active:scale-95 transition-all text-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 {isSubmitting ? (

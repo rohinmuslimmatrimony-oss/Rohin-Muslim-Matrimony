@@ -315,20 +315,10 @@ exports.getProfileById = async (req, res) => {
         profileData.locked = false;
       }
 
-      // Check contact privacy rules
+      // Check contact privacy rules - Platform rule: ALWAYS requires accepted connection
       let contactAllowed = false;
       if (planFeatures.viewContactDetails) {
-        const mobilePrivacy = profileData.privacySettings?.mobile || 'all_paid';
-        if (mobilePrivacy === 'all_paid') {
-          contactAllowed = true;
-        } else if (mobilePrivacy === 'community_paid') {
-          const viewerProfile = await Profile.findOne({ user: currentUserId });
-          if (viewerProfile && viewerProfile.sect === profileData.sect) {
-            contactAllowed = true;
-          }
-        } else if (mobilePrivacy === 'contacted_paid') {
-          contactAllowed = isConnected;
-        }
+        contactAllowed = isConnected;
       }
 
       if (!contactAllowed) {
