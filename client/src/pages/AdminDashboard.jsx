@@ -1281,7 +1281,7 @@ const AdminDashboard = () => {
                           <input 
                             type="number" 
                             value={settings.premiumPrice} 
-                            onChange={(e) => setSettings({...settings, premiumPrice: parseInt(e.target.value) || 0})}
+                            onChange={(e) => setSettings({...settings, premiumPrice: e.target.value === '' ? '' : parseInt(e.target.value, 10)})}
                             className="w-full bg-slate-900 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-crimson-500 transition-colors"
                           />
                         </div>
@@ -1294,7 +1294,7 @@ const AdminDashboard = () => {
                           <input 
                             type="number" 
                             value={settings.elitePrice} 
-                            onChange={(e) => setSettings({...settings, elitePrice: parseInt(e.target.value) || 0})}
+                            onChange={(e) => setSettings({...settings, elitePrice: e.target.value === '' ? '' : parseInt(e.target.value, 10)})}
                             className="w-full bg-slate-900 border border-slate-600 text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-gold-500 transition-colors"
                           />
                         </div>
@@ -1411,24 +1411,21 @@ const AdminDashboard = () => {
                       <div className="pt-2 border-t border-slate-850 flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Profile Views (per plan):</label>
-                          <input type="number" value={settings.freePlanFeatures?.totalViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, totalViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.freePlanFeatures?.totalViewLimit ?? ''} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, totalViewLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Interests (per plan):</label>
-                          <input type="number" value={settings.freePlanFeatures?.totalInterestLimit ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, totalInterestLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.freePlanFeatures?.totalInterestLimit ?? ''} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, totalInterestLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Contact Views Limit:</label>
-                          <input type="number" value={settings.freePlanFeatures?.contactViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, contactViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.freePlanFeatures?.contactViewLimit ?? ''} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, contactViewLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Recommendations (per plan):</label>
-                          <input type="number" value={settings.freePlanFeatures?.totalRecommendationLimit ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, totalRecommendationLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.freePlanFeatures?.totalRecommendationLimit ?? ''} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, totalRecommendationLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs text-slate-400">Profile Boost Level:</label>
-                          <input type="number" value={settings.freePlanFeatures?.profileBoost ?? 0} onChange={(e) => setSettings({ ...settings, freePlanFeatures: { ...settings.freePlanFeatures, profileBoost: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
-                        </div>
+
                       </div>
                     </div>
 
@@ -1460,24 +1457,21 @@ const AdminDashboard = () => {
                       <div className="pt-2 border-t border-slate-850 flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Profile Views (per plan):</label>
-                          <input type="number" value={settings.premiumPlanFeatures?.totalViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, totalViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.premiumPlanFeatures?.totalViewLimit ?? ''} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, totalViewLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Interests (per plan):</label>
-                          <input type="number" value={settings.premiumPlanFeatures?.totalInterestLimit ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, totalInterestLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.premiumPlanFeatures?.totalInterestLimit ?? ''} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, totalInterestLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Contact Views Limit:</label>
-                          <input type="number" value={settings.premiumPlanFeatures?.contactViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, contactViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.premiumPlanFeatures?.contactViewLimit ?? ''} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, contactViewLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Recommendations (per plan):</label>
-                          <input type="number" value={settings.premiumPlanFeatures?.totalRecommendationLimit ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, totalRecommendationLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.premiumPlanFeatures?.totalRecommendationLimit ?? ''} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, totalRecommendationLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs text-slate-400">Profile Boost Level:</label>
-                          <input type="number" value={settings.premiumPlanFeatures?.profileBoost ?? 0} onChange={(e) => setSettings({ ...settings, premiumPlanFeatures: { ...settings.premiumPlanFeatures, profileBoost: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
-                        </div>
+
                       </div>
                     </div>
 
@@ -1509,24 +1503,21 @@ const AdminDashboard = () => {
                       <div className="pt-2 border-t border-slate-850 flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Profile Views (per plan):</label>
-                          <input type="number" value={settings.elitePlanFeatures?.totalViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, totalViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.elitePlanFeatures?.totalViewLimit ?? ''} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, totalViewLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Interests (per plan):</label>
-                          <input type="number" value={settings.elitePlanFeatures?.totalInterestLimit ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, totalInterestLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.elitePlanFeatures?.totalInterestLimit ?? ''} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, totalInterestLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Contact Views Limit:</label>
-                          <input type="number" value={settings.elitePlanFeatures?.contactViewLimit ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, contactViewLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.elitePlanFeatures?.contactViewLimit ?? ''} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, contactViewLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
                         <div className="flex items-center justify-between">
                           <label className="text-xs text-slate-400">Total Recommendations (per plan):</label>
-                          <input type="number" value={settings.elitePlanFeatures?.totalRecommendationLimit ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, totalRecommendationLimit: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
+                          <input type="number" value={settings.elitePlanFeatures?.totalRecommendationLimit ?? ''} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, totalRecommendationLimit: e.target.value === '' ? '' : parseInt(e.target.value, 10) } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs text-slate-400">Profile Boost Level:</label>
-                          <input type="number" value={settings.elitePlanFeatures?.profileBoost ?? 0} onChange={(e) => setSettings({ ...settings, elitePlanFeatures: { ...settings.elitePlanFeatures, profileBoost: parseInt(e.target.value) || 0 } })} className="w-16 bg-slate-800 border border-slate-700 text-white rounded px-2 py-0.5 text-xs text-center focus:outline-none" />
-                        </div>
+
                       </div>
                     </div>
 
