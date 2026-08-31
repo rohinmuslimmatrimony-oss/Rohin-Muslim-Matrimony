@@ -54,10 +54,9 @@ const Footer = () => {
         <div className="col-span-1 md:col-span-1 flex flex-col gap-2 md:gap-3">
           <h4 className="text-[#4f080e] font-serif font-extrabold text-xs md:text-base border-b border-gold-500/20 pb-1 md:pb-2 mb-1 md:mb-2 uppercase tracking-wider">Quick Links</h4>
           <ul className="text-[10px] md:text-sm space-y-1 md:space-y-3">
-            <li><a href="/" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Home Landing</a></li>
-            <li><a href="/plans" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Premium Plans</a></li>
-            <li><a href="/login" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Sign In Account</a></li>
-            <li><a href="/register" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Join Matrimony Free</a></li>
+            <li><a href="/terms" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Terms &amp; Conditions</a></li>
+            <li><a href="/privacy-policy" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Privacy Policy</a></li>
+            <li><a href="/data-deletion" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">User Data Deletion Request</a></li>
           </ul>
         </div>
 

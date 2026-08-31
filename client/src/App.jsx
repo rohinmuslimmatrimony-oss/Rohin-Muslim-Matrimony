@@ -29,6 +29,9 @@ import PaymentInfoPage from './pages/PaymentInfoPage';
 import BlockedUsersPage from './pages/BlockedUsersPage';
 import SupportPage from './pages/SupportPage';
 import PrivacySettings from './pages/PrivacySettings';
+import TermsPage from './pages/TermsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import DataDeletionPage from './pages/DataDeletionPage';
 
 // Protected Route Guard (Must be logged in)
 const ProtectedRoute = ({ children }) => {
@@ -128,6 +131,9 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/plans" element={<PlansPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/data-deletion" element={<DataDeletionPage />} />
 
           {/* Authenticated Member Views */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
