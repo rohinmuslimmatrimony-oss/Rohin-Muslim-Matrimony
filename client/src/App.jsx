@@ -32,6 +32,7 @@ import PrivacySettings from './pages/PrivacySettings';
 import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import DataDeletionPage from './pages/DataDeletionPage';
+import ChildSafetyPage from './pages/ChildSafetyPage';
 
 // Protected Route Guard (Must be logged in)
 const ProtectedRoute = ({ children }) => {
@@ -134,6 +135,7 @@ function AppContent() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/data-deletion" element={<DataDeletionPage />} />
+          <Route path="/child-safety" element={<ChildSafetyPage />} />
 
           {/* Authenticated Member Views */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

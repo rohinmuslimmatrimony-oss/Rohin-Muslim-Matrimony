@@ -796,12 +796,12 @@ const LandingPage = () => {
           {/* Disclaimer text */}
           <p className="text-[9px] sm:text-[10px] text-gray-300/80 text-center font-medium leading-relaxed max-w-full tracking-tight whitespace-nowrap drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
             By continuing, you agree to our{' '}
-            <a href="#" className="underline hover:text-white transition-colors duration-200">
+            <a href="/privacy-policy" className="underline hover:text-white transition-colors duration-200">
               Privacy Policy
             </a>{' '}
             &{' '}
-            <a href="#" className="underline hover:text-white transition-colors duration-200">
-              Terms & Conditions
+            <a href="/child-safety" className="underline hover:text-white transition-colors duration-200">
+              Child Safety
             </a>
           </p>
         </div>

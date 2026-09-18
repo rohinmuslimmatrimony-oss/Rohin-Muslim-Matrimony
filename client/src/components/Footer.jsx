@@ -57,6 +57,7 @@ const Footer = () => {
             <li><a href="/terms" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Terms &amp; Conditions</a></li>
             <li><a href="/privacy-policy" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Privacy Policy</a></li>
             <li><a href="/data-deletion" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">User Data Deletion Request</a></li>
+            <li><a href="/child-safety" className="text-slate-700 hover:text-[#4f080e] hover:translate-x-1 transition-all duration-300 inline-block font-semibold">Child Safety Standards</a></li>
           </ul>
         </div>
 
