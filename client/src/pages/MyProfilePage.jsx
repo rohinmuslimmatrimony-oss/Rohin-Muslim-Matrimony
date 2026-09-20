@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   FaCheckCircle, FaChevronRight, FaPen, 
-  FaCreditCard, FaCrown, FaBan, FaInfoCircle, FaSignOutAlt, FaLock, FaShieldAlt, FaCamera, FaUserShield, FaEnvelope
+  FaCreditCard, FaCrown, FaBan, FaInfoCircle, FaSignOutAlt, FaLock, FaShieldAlt, FaCamera, FaUserShield, FaEnvelope, FaWhatsapp
 } from 'react-icons/fa';
 import { SOCKET_BASE_URL } from '../services/api';
 import DefaultAvatar from '../components/DefaultAvatar';
@@ -128,6 +128,8 @@ const MyProfilePage = () => {
     { icon: <FaUserShield className="text-[15px]" />, label: 'Privacy Settings', action: () => navigate('/privacy-settings'), adminOnly: false, hideForAdmin: true },
     { icon: <FaEnvelope className="text-[15px]" />, label: 'Change Email', action: () => setShowEmailModal(true), adminOnly: false },
     { icon: <FaLock className="text-[15px]" />, label: 'Change Password', action: () => setShowPasswordModal(true), adminOnly: false },
+    { icon: <FaWhatsapp className="text-green-600 text-[15px]" />, label: 'Help & Support', action: () => navigate('/support'), adminOnly: false },
+    { icon: <FaInfoCircle className="text-gold-600 text-[15px]" />, label: 'About Us', action: () => navigate('/about'), adminOnly: false },
     { icon: <FaSignOutAlt className="text-red-500 text-[15px]" />, label: 'Logout', action: () => { logout(); navigate('/'); }, danger: true }
   ];
 

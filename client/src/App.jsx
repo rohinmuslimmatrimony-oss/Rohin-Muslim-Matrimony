@@ -8,7 +8,6 @@ import ProfileCompletenessBanner from './components/ProfileCompletenessBanner';
 import BottomNavigation from './components/BottomNavigation';
 import LogoLoader from './components/LogoLoader';
 import SimpleSpinner from './components/SimpleSpinner';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Page Imports
 import LandingPage from './pages/LandingPage';
@@ -32,6 +31,7 @@ import PrivacySettings from './pages/PrivacySettings';
 import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import DataDeletionPage from './pages/DataDeletionPage';
+import AboutPage from './pages/AboutPage';
 import ChildSafetyPage from './pages/ChildSafetyPage';
 
 // Protected Route Guard (Must be logged in)
@@ -116,8 +116,6 @@ function AppContent() {
         }}
       />
 
-      {/* PWA Install Banner - shown on mobile when app is installable */}
-      <PWAInstallPrompt />
 
       {/* Sticky Header Wrapper (Navbar) */}
       <header className={`sticky top-0 z-50 w-full ${(location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register') ? 'hidden md:block' : ''}`}>
@@ -135,6 +133,7 @@ function AppContent() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/data-deletion" element={<DataDeletionPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/child-safety" element={<ChildSafetyPage />} />
 
           {/* Authenticated Member Views */}

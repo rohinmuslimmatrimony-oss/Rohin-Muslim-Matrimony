@@ -8,32 +8,6 @@ import toast from 'react-hot-toast';
 
 const SupportPage = () => {
   const navigate = useNavigate();
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    category: 'general',
-    subject: '',
-    message: ''
-  });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.subject.trim() || !form.message.trim()) {
-      toast.error('Please fill in all the fields.');
-      return;
-    }
-
-    setSubmitting(true);
-    // Simulate submission delay
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    setSubmitting(false);
-    toast.success('Support ticket submitted successfully! We will contact you soon.');
-    setForm({
-      category: 'general',
-      subject: '',
-      message: ''
-    });
-  };
-
   const handleWhatsAppClick = () => {
     // Official support numbers: +91 73860 83446 or +91 70759 00448
     window.open('https://wa.me/917386083446?text=Assalamu%20Alaikum,%20I%20need%20support%20with%20Rohin%20Matrimony%20app.', '_blank');
@@ -47,7 +21,7 @@ const SupportPage = () => {
       <div className="max-w-xl mx-auto">
         {/* Back Button */}
         <button 
-          onClick={() => navigate('/edit-profile')} 
+          onClick={() => navigate('/my-profile')} 
           className="mb-6 text-crimson-900 font-bold flex items-center gap-1.5 bg-white border border-slate-200/80 px-4 py-2 rounded-full shadow-sm hover:bg-slate-50 transition-all text-xs uppercase tracking-wider cursor-pointer"
         >
           <FaChevronLeft className="text-[10px]" /> Back to Profile
@@ -115,71 +89,6 @@ const SupportPage = () => {
           </button>
         </div>
 
-        {/* Mock Support Ticket Form */}
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">
-            ✉️ Submit a Support Ticket
-          </h3>
-
-          {/* Category */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Query Category</label>
-            <select
-              value={form.category}
-              onChange={e => setForm({ ...form, category: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-900/10 focus:border-crimson-900"
-            >
-              <option value="general">General Query</option>
-              <option value="billing">Payment & Subscriptions</option>
-              <option value="profile">Profile & Photo Verification</option>
-              <option value="safety">Safety & Reporting Abuse</option>
-            </select>
-          </div>
-
-          {/* Subject */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Subject</label>
-            <input
-              type="text"
-              value={form.subject}
-              onChange={e => setForm({ ...form, subject: e.target.value })}
-              placeholder="e.g. Issues with photo uploading"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-900/10 focus:border-crimson-900"
-              required
-            />
-          </div>
-
-          {/* Message */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Message Details</label>
-            <textarea
-              value={form.message}
-              onChange={e => setForm({ ...form, message: e.target.value })}
-              rows="4"
-              placeholder="Write detailed queries or issues here..."
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-900/10 focus:border-crimson-900 resize-none"
-              required
-            ></textarea>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-crimson-950 hover:bg-crimson-900 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 text-sm uppercase tracking-wide cursor-pointer"
-          >
-            {submitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Sending...
-              </>
-            ) : (
-              <>
-                <FaPaperPlane className="text-xs" /> Submit Ticket
-              </>
-            )}
-          </button>
-        </form>
       </div>
     </div>
   );

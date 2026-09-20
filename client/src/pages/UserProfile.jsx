@@ -516,9 +516,20 @@ const UserProfile = () => {
                     </div>
                     
                     {profile.phoneNumber?.includes('🔒') && !isOwnProfile && (
-                      <div className="mt-2 text-xs text-crimson-800 bg-crimson-100 p-2 rounded flex items-start gap-2">
-                        <FaLock className="mt-0.5" /> 
-                        To view contact details, you must send an interest and have it accepted by this user.
+                      <div className="mt-3 space-y-2">
+                        <div className="text-xs text-crimson-800 bg-crimson-100 p-2.5 rounded-lg flex items-start gap-2 border border-crimson-200">
+                          <FaLock className="mt-0.5 shrink-0" /> 
+                          <span>To view contact details, you must send an interest and have it accepted by this user.</span>
+                        </div>
+                        <div className="text-xs text-gold-700 bg-gold-50 p-2.5 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-gold-200">
+                          <div className="flex items-start gap-2">
+                            <FaCrown className="mt-0.5 shrink-0 text-gold-500" />
+                            <span>Subscribe to our Premium plans to send interests and view contact details once accepted.</span>
+                          </div>
+                          <Link to="/plans" className="bg-gradient-to-r from-gold-400 to-gold-600 hover:from-gold-500 hover:to-gold-700 text-crimson-950 font-bold px-4 py-1.5 rounded-md shadow-sm transition-all text-center whitespace-nowrap">
+                            Subscribe Now
+                          </Link>
+                        </div>
                       </div>
                     )}
                   </div>

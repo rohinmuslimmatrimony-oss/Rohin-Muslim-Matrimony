@@ -102,6 +102,7 @@ const Navbar = () => {
           {(!user || user.role !== 'admin') && (
             <>
               <Link to="/" className={isActive('/')}>Home</Link>
+              <Link to="/about" className={isActive('/about')}>About</Link>
               <Link to="/plans" className={isActive('/plans')}>Plans</Link>
             </>
           )}
@@ -376,6 +377,7 @@ const Navbar = () => {
               {(!user || user.role !== 'admin') && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Home</Link>
+                  <Link to="/about" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">About</Link>
                   <Link to="/plans" onClick={() => setIsOpen(false)} className="text-slate-700 hover:text-[#4f080e] font-semibold py-1.5 transition-colors">Plans</Link>
                 </>
               )}
